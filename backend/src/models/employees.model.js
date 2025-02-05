@@ -4,18 +4,15 @@ const employeeSchema = new mongoose.Schema({
     // Work Contact Information
     employeeID: {
         type: String,
-        required: true
     },
     firstName: {
         type: String,
-        required: true
     },
     middleName: {
         type: String
     },
     lastName: {
         type: String,
-        required: true
     },
     preferredName: {
         type: String
@@ -28,7 +25,6 @@ const employeeSchema = new mongoose.Schema({
     },
     workEmailAddress: {
         type: String,
-        required: true
     },
     workPhone: {
         type: String

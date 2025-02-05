@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Collapse } from 'reactstrap';
 // Import Data
 import navdata from "../LayoutMenuData";
@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import { createSelector } from 'reselect';
 
 const VerticalLayout = (props) => {
+    const navigate = useNavigate();
     const navData = navdata().props.children;
     const path = props.router.location.pathname;
 
@@ -162,7 +163,13 @@ const VerticalLayout = (props) => {
                                 (item.subItems ? (
                                     <li className="nav-item">
                                         <Link
-                                            onClick={item.click}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                item.click(e);
+                                                if (item.link !== "/#") {
+                                                    navigate(item.link);
+                                                }
+                                            }}
                                             className="nav-link menu-link"
                                             to={item.link}
                                             data-bs-toggle={item.subItems ? "collapse" : undefined}
@@ -183,23 +190,78 @@ const VerticalLayout = (props) => {
                                                     <React.Fragment key={key}>
                                                         {!subItem.isChildItem ? (
                                                             <li className="nav-item">
-                                                                <Link
-                                                                    to={subItem.link ? subItem.link : "/#"}
-                                                                    className="nav-link"
-                                                                >
-                                                                    {props.t(subItem.label)}
-                                                                    {subItem.badgeName ?
-                                                                        <span className={"badge badge-pill bg-" + subItem.badgeColor} data-key="t-new">{subItem.badgeName}</span>
-                                                                        : null}
-                                                                </Link>
+                                                                <div className="nav-link-container d-flex align-items-center">
+                                                                    <Link
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            navigate(subItem.link);
+                                                                        }}
+                                                                        className="nav-link flex-grow-1"
+                                                                        to={subItem.link}
+                                                                    >
+                                                                        {props.t(subItem.label)}
+                                                                        {subItem.badgeName ?
+                                                                            <span className={"badge badge-pill bg-" + subItem.badgeColor} data-key="t-new">
+                                                                                {subItem.badgeName}
+                                                                            </span>
+                                                                            : null}
+                                                                    </Link>
+                                                                    {subItem.childItems?.length > 0 && (
+                                                                        <button
+                                                                            className="btn btn-sm collapse-btn"
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                subItem.click(e);
+                                                                            }}
+                                                                            data-bs-toggle="collapse"
+                                                                        >
+                                                                            <i className="ri-arrow-down-s-line"></i>
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                                <Collapse className="menu-dropdown" isOpen={subItem.stateVariables} id="sidebarEcommerce">
+                                                                    <ul className="nav nav-sm flex-column">
+                                                                        {/* child subItms  */}
+                                                                        {subItem.childItems && (
+                                                                            (subItem.childItems || []).map((childItem, key) => (
+                                                                                <React.Fragment key={key}>
+                                                                                    {!childItem.childItems ?
+                                                                                        <li className="nav-item">
+                                                                                            <Link
+                                                                                                to={childItem.link ? childItem.link : "/#"}
+                                                                                                className="nav-link">
+                                                                                                {props.t(childItem.label)}
+                                                                                            </Link>
+                                                                                        </li>
+                                                                                        : <li className="nav-item">
+                                                                                            <Link to="/#" className="nav-link" onClick={childItem.click} data-bs-toggle="collapse">
+                                                                                                {props.t(childItem.label)}
+                                                                                            </Link>
+                                                                                            <Collapse className="menu-dropdown" isOpen={childItem.stateVariables} id="sidebaremailTemplates">
+                                                                                                <ul className="nav nav-sm flex-column">
+                                                                                                    {childItem.childItems.map((subChildItem, key) => (
+                                                                                                        <li className="nav-item" key={key}>
+                                                                                                            <Link to={subChildItem.link} className="nav-link" data-key="t-basic-action">{props.t(subChildItem.label)} </Link>
+                                                                                                        </li>
+                                                                                                    ))}
+                                                                                                </ul>
+                                                                                            </Collapse>
+                                                                                        </li>
+                                                                                    }
+                                                                                </React.Fragment>
+                                                                            ))
+                                                                        )}
+                                                                    </ul>
+                                                                </Collapse>
                                                             </li>
                                                         ) : (
                                                             <li className="nav-item">
                                                                 <Link
                                                                     onClick={subItem.click}
                                                                     className="nav-link"
-                                                                    to="/#"
-                                                                    data-bs-toggle="collapse"
+                                                                    to={subItem.link}
+                                                                    data-bs-toggle={subItem.isChildItem && subItem.childItems?.length > 0 ? "collapse" : undefined}
                                                                 >
                                                                     {props.t(subItem.label)}
                                                                     {subItem.badgeName ?
@@ -252,9 +314,16 @@ const VerticalLayout = (props) => {
                                 ) : (
                                     <li className="nav-item">
                                         <Link
+                                            onClick={(e) => {
+                                                if (item.link !== "/#") {
+                                                    navigate(item.link);
+                                                }
+                                            }}
                                             className="nav-link menu-link"
-                                            to={item.link ? item.link : "/#"}>
-                                            <i className={item.icon}></i> <span>{props.t(item.label)}</span>
+                                            to={item.link}
+                                        >
+                                            <i className={item.icon}></i>
+                                            <span>{props.t(item.label)}</span>
                                             {item.badgeName ?
                                                 <span className={"badge badge-pill bg-" + item.badgeColor} data-key="t-new">{item.badgeName}</span>
                                                 : null}

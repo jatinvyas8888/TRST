@@ -11,7 +11,7 @@ import { verifyJWT } from '../middlewares/auth.middleware.js';
 const router = Router();
 
 // Create new employee
-router.route("/").post(verifyJWT, createEmployee)
+router.route("/create").post( createEmployee)
 
 router.route("/all").get(verifyJWT, getAllEmployees); // Get all employees with filtering and pagination
 

@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Sen:wght@400..800&display=swap');
 
 body {
-    font-family: "Montserrat", serif;
+    font-family: 'Dubai', 'Montserrat', sans-serif;
 }
 
 .header-text {
@@ -62,7 +62,7 @@ button {
 }
 
 .button1 {
-    background-color: #ef5b18;
+    background-color: #435fff;
     color: #fff;
     box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.1) !important;
     padding-right: 10px !important;
@@ -74,7 +74,7 @@ button {
 }
 
 .button3 {
-    background-color: #ef5b18;
+    background-color: #435fff;
     color: #fff;
     box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.1) !important;
     padding-right: 2rem !important;
@@ -219,6 +219,7 @@ border-radius: 2px;
 .table {
   margin-bottom: 0;
   border: 1px solid #c5c3c3;
+  font-family:'Montserrat', sans-serif;
 }
 
 .table thead th {
@@ -263,4 +264,67 @@ border-radius: 2px;
 .loading-coordinates {
   color: #6c757d;
   font-style: italic;
+}
+
+/* Light mode styles */
+.location-table {
+    background-color: #ffffff;
+    border-color: #dee2e6;
+}
+
+/* Dark mode styles */
+[data-bs-theme='dark'] .location-table {
+    background-color: #2a2a2a;
+    border-color: #404040;
+}
+
+[data-bs-theme='dark'] .table thead th {
+    background-color: #333333;
+    color: #e4e4e4;
+    border-color: #404040;
+}
+
+[data-bs-theme='dark'] .table tbody td {
+    background-color: #2a2a2a;
+    border-color: #404040;
+    color: #e4e4e4;
+}
+
+[data-bs-theme='dark'] .table tbody tr:hover {
+    background-color: #333333;
+}
+
+[data-bs-theme='dark'] .card {
+    background-color: #2a2a2a;
+    border-color: #404040;
+}
+
+[data-bs-theme='dark'] .card-header {
+    background-color: #333333;
+    border-color: #404040;
+    color: #e4e4e4;
+}
+
+[data-bs-theme='dark'] .form-control {
+    background-color: #333333;
+    border-color: #404040;
+    color: #e4e4e4;
+}
+
+[data-bs-theme='dark'] .dropdown-menu {
+    background-color: #2a2a2a;
+    border-color: #404040;
+}
+
+[data-bs-theme='dark'] .dropdown-item {
+    color: #e4e4e4;
+}
+
+[data-bs-theme='dark'] .dropdown-item:hover {
+    background-color: #404040;
+}
+
+[data-bs-theme='dark'] .map-container {
+    border-color: #404040;
+    background-color: #2a2a2a;
 }

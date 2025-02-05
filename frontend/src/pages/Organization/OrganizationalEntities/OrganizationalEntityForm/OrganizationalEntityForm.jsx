@@ -324,7 +324,7 @@ const EditOrganizationalEntity = () => {
       <div className="d-flex align-items-center justify-content-between mb-4">
         <h1 className="header-text">Organizational Entity: New Entity</h1>
         <div className="d-flex align-items-center">
-          <NavLink
+        <NavLink
             className="btn btn-outline-secondary me-2"
             to="/organizational-entities"
             title="Cancel"

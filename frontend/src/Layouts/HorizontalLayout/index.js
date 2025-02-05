@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from "prop-types";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Col, Collapse, Row } from 'reactstrap';
 import withRouter from '../../Components/Common/withRouter';
 
@@ -10,6 +10,7 @@ import navdata from "../LayoutMenuData";
 import { withTranslation } from "react-i18next";
 
 const HorizontalLayout = (props) => {
+    const navigate = useNavigate();
     // const [isMoreMenu, setIsMoreMenu] = useState(false);
     const navData = navdata().props.children;
     let menuItems = [];
@@ -109,14 +110,34 @@ const HorizontalLayout = (props) => {
                         {!item['isHeader'] ?
                             (item.subItems ? (
                                 <li className="nav-item">
-                                    <Link
-                                        onClick={item.click}
-                                        className="nav-link menu-link"
-                                        to={item.link ? item.link : "/#"}
-                                        data-bs-toggle="collapse"
-                                    >
-                                        <i className={item.icon}></i> <span data-key="t-apps">{props.t(item.label)}</span>
-                                    </Link>
+                                    <div className="nav-link-container d-flex align-items-center">
+                                        <Link
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (item.link !== "/#") {
+                                                    navigate(item.link);
+                                                }
+                                            }}
+                                            className="nav-link menu-link flex-grow-1"
+                                            to={item.link}
+                                        >
+                                            <i className={item.icon}></i> 
+                                            <span data-key="t-apps">{props.t(item.label)}</span>
+                                        </Link>
+                                        {item.subItems?.length > 0 && (
+                                            <button
+                                                className="btn btn-sm collapse-btn"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    item.click(e);
+                                                }}
+                                                data-bs-toggle="collapse"
+                                            >
+                                                <i className="ri-arrow-down-s-line"></i>
+                                            </button>
+                                        )}
+                                    </div>
                                     <Collapse
                                         className={item.id === "baseUi" && item.subItems.length > 13 ? "menu-dropdown mega-dropdown-menu" : "menu-dropdown"}
                                         isOpen={item.stateVariables}
@@ -157,7 +178,11 @@ const HorizontalLayout = (props) => {
                                                         {!subItem.isChildItem ? (
                                                             <li className="nav-item">
                                                                 <Link
-                                                                    to={subItem.link ? subItem.link : "/#"}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        navigate(subItem.link);
+                                                                    }}
+                                                                    to={subItem.link}
                                                                     className="nav-link"
                                                                 >
                                                                     {props.t(subItem.label)}
@@ -165,13 +190,31 @@ const HorizontalLayout = (props) => {
                                                             </li>
                                                         ) : (
                                                             <li className="nav-item">
-                                                                <Link
-                                                                    onClick={subItem.click}
-                                                                    className="nav-link"
-                                                                    to="/#"
-                                                                    data-bs-toggle="collapse"
-                                                                > {props.t(subItem.label)}
-                                                                </Link>
+                                                                <div className="nav-link-container d-flex align-items-center">
+                                                                    <Link
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            navigate(subItem.link);
+                                                                        }}
+                                                                        className="nav-link flex-grow-1"
+                                                                        to={subItem.link}
+                                                                    >
+                                                                        {props.t(subItem.label)}
+                                                                    </Link>
+                                                                    {subItem.childItems?.length > 0 && (
+                                                                        <button
+                                                                            className="btn btn-sm collapse-btn"
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                subItem.click(e);
+                                                                            }}
+                                                                            data-bs-toggle="collapse"
+                                                                        >
+                                                                            <i className="ri-arrow-down-s-line"></i>
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                                 <Collapse className="menu-dropdown" isOpen={subItem.stateVariables} id="sidebarEcommerce">
                                                                     <ul className="nav nav-sm flex-column">
                                                                         {/* child subItms  */}
@@ -263,9 +306,17 @@ const HorizontalLayout = (props) => {
                             ) : (
                                 <li className="nav-item">
                                     <Link
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (item.link !== "/#") {
+                                                navigate(item.link);
+                                            }
+                                        }}
                                         className="nav-link menu-link"
-                                        to={item.link ? item.link : "/#"}>
-                                        <i className={item.icon}></i> <span>{props.t(item.label)}</span>
+                                        to={item.link}
+                                    >
+                                        <i className={item.icon}></i> 
+                                        <span>{props.t(item.label)}</span>
                                     </Link>
                                 </li>
                             ))

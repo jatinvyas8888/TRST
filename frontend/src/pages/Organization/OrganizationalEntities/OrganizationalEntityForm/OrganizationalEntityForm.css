@@ -1,6 +1,10 @@
 /* .page-content {
   padding: calc(50px + 1.5rem) calc(1.5rem * 0.5) 60px calc(1.5rem * 0.5) !important;
 } */
+body {
+  font-family: "Dubai", "Montserrat", serif;
+}
+
 .label {
   font-weight: 600;
   font-size: 14px;
@@ -8,7 +12,7 @@
 }
 
 .button3 {
-  background-color: #ef5b18;
+  background-color: #435fff;
   color: #fff;
   box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.1) !important;
   padding-right: 2rem !important;
@@ -27,7 +31,7 @@
   right: -2px;
 }
 
-.w-20{
+.w-20 {
   width: 28%;
 }
 
@@ -47,7 +51,7 @@
   outline: 0;
 }
 
-.form-select1{
+.form-select1 {
   width: 40%;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -73,7 +77,8 @@
   z-index: 1;
 }
 
-.table td, .table th {
+.table td,
+.table th {
   padding: 0.75rem;
   vertical-align: middle;
 }
@@ -100,12 +105,11 @@
 }
 
 .pagination button {
-  background-color: #FF914D ;
-  color: white;
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
   border-color: #002955;
   border: 1px solid #ddd;
   border-radius: 6px;
   margin-right: 5px;
   padding: 5px 5px;
 }
-

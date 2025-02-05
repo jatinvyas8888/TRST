@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Helmet } from "react-helmet"; //head Customization
 import { NavLink, useNavigate } from "react-router-dom";
-import { RiDeleteBin6Line } from "react-icons/ri";
-import { CiEdit } from "react-icons/ci";
+import { Helmet } from "react-helmet"; //head Customization
 import axios from "axios";
+
+import { RiDeleteBin6Line,RiEdit2Line  } from "react-icons/ri";
 
 
 //icons
@@ -670,7 +670,7 @@ const OrganizationalEntitiesPage = () => {
               <div>
                 <NavLink
                   className="button1 border-1"
-                  to="/new-organizational-entities"
+                  to="/new-organizational-entity"
                 >
                   <TiPlus className="hw-20" />
                   Organizational Entity
@@ -779,7 +779,7 @@ const OrganizationalEntitiesPage = () => {
                       </td>
                       <td>
                         <div className="d-flex gap-2">
-                          <CiEdit
+                          <RiEdit2Line 
                             style={{ cursor: "pointer", fontSize: "1.2em",color:'green' }}
                             title="Edit"
                             onClick={() => handleEdit(row.id)}

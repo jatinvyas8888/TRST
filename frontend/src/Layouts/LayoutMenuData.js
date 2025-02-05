@@ -125,7 +125,7 @@ const Navdata = () => {
     {
       id: "admin-home",
       label: "Admin Home",
-      icon: "ri-dashboard-2-line",
+      icon: "ri-home-8-line",
       link: "/admin-home",
       stateVariables: isDashboard,
       click: function (e) {
@@ -140,19 +140,19 @@ const Navdata = () => {
         {
           id: "action-items",
           label: "Action Items",
-          link: "/action-items",
+          link: "/admin/action-items",
           parentId: "admin-home",
         },
         {
           id: "bcic-support-portal",
           label: "BCIC Support Portal",
-          link: "/bcic-support-portal",
+          link: "/admin/bcic-support-portal",
           parentId: "admin-home",
         },
         {
           id: "calendar",
           label: "Calendar",
-          link: "/calendar",
+          link: "/admin/calendar",
           parentId: "admin-home",
         },
         {
@@ -164,14 +164,14 @@ const Navdata = () => {
         {
           id: "manage-users",
           label: "Manage Users",
-          link: "/manage-users",
+          link: "/admin/manage-users",
           parentId: "admin-home",
         },
         { id: "rto", label: "RTO", link: "/rto", parentId: "admin-home" },
         {
           id: "settings",
           label: "Settings",
-          link: "/settings",
+          link: "/admin/settings",
           parentId: "admin-home",
           isChildItem: true,
           click: function (e) {
@@ -183,7 +183,7 @@ const Navdata = () => {
             {
               id: "import",
               label: "Import",
-              link: "/import",
+              link: "/admin/import",
               parentId: "settings",
               isChildItem: true,
               stateVariables: isImport,
@@ -195,25 +195,25 @@ const Navdata = () => {
                 {
                   id: "locations",
                   label: "Locations",
-                  link: "/locations1",
+                  link: "/admin/locations",
                   parentId: "import",
                 },
                 {
                   id: "business-entities",
                   label: "Business Entities",
-                  link: "/business-entities1",
+                  link: "/admin/business-entities",
                   parentId: "import",
                 },
                 {
                   id: "employees",
                   label: "Employees",
-                  link: "/employees1",
+                  link: "/admin/employees",
                   parentId: "import",
                 },
                 {
                   id: "vendors",
                   label: "Vendors",
-                  link: "/vendors",
+                  link: "/admin/vendors",
                   isChildItem: true,
                   stateVariables: isVendors,
                   click: function (e) {
@@ -225,19 +225,19 @@ const Navdata = () => {
                     {
                       id: "vendor-locations",
                       label: "Vendor Locations",
-                      link: "/vendor-locations",
+                      link: "/admin/vendor-locations",
                       parentId: "vendors",
                     },
                     {
                       id: "vendor-contracts",
                       label: "Vendor Contracts",
-                      link: "/vendor-contracts",
+                      link: "/admin/vendor-contracts",
                       parentId: "vendors",
                     },
                     {
                       id: "vendor-services",
                       label: "Vendor Services",
-                      link: "/vendor-services",
+                      link: "/admin/vendor-services",
                       parentId: "vendors",
                     },
                   ],
@@ -245,25 +245,25 @@ const Navdata = () => {
                 {
                   id: "clients",
                   label: "Clients",
-                  link: "/clients",
+                  link: "/admin/clients",
                   parentId: "import",
                 },
                 {
                   id: "applications",
                   label: "Applications",
-                  link: "/applications",
+                  link: "/admin/applications",
                   parentId: "import",
                 },
                 {
                   id: "hardware",
                   label: "Hardware",
-                  link: "/hardware",
+                  link: "/admin/hardware",
                   parentId: "import",
                 },
                 {
                   id: "databases",
                   label: "Databases",
-                  link: "/databases",
+                  link: "/admin/databases",
                   parentId: "import",
                 },
               ],
@@ -271,13 +271,13 @@ const Navdata = () => {
             {
               id: "action-item-library",
               label: "Action Item Library",
-              link: "/action-item-library",
+              link: "/admin/action-item-library",
               parentId: "settings",
             },
             {
               id: "exercise-objective-library",
               label: "Exercise Objective Library",
-              link: "/exercise-objective-library",
+              link: "/admin/exercise-objective-library",
               parentId: "settings",
             },
           ],
@@ -332,9 +332,9 @@ const Navdata = () => {
       link: "/resources",
       stateVariables: isResources,
       click: function (e) {
-        if (e.target.getAttribute("data-bs-toggle")) {
-          e.preventDefault();
-        }
+       if (e.target.getAttribute("data-bs-toggle")) {
+            e.preventDefault();
+      }
         setIsResources(!isResources);
         setIscurrentState("Resources");
         updateIconSidebar(e);
@@ -346,17 +346,17 @@ const Navdata = () => {
           link: "/clients",
           parentId: "resources",
           isChildItem: true,
+          stateVariables: isClients,
           click: function (e) {
-            e.preventDefault();
+            // Only handle collapse
             setIsClients(!isClients);
           },
-          stateVariables: isClients,
           childItems: [
             {
               id: "client-contacts",
               label: "Client Contacts",
-              link: "/#",
-              parentId: "resources",
+              link: "/client-contacts",
+              parentId: "clients",
             },
           ],
         },
@@ -378,36 +378,36 @@ const Navdata = () => {
           link: "/it",
           parentId: "resources",
           isChildItem: true,
+          stateVariables: isIt,
           click: function (e) {
-            e.preventDefault();
+            // Only handle collapse
             setIsIt(!isIt);
           },
-          stateVariables: isIt,
           childItems: [
             {
               id: "application",
               label: "Application",
-              link: "/application",
-              parentId: "resources",
+              link: "/applications",
+              parentId: "it",
             },
             {
               id: "database",
               label: "Database",
-              link: "/database",
-              parentId: "resources",
+              link: "/databases",
+              parentId: "it",
             },
             {
               id: "hardware",
               label: "Hardware",
               link: "/hardware",
-              parentId: "resources",
+              parentId: "it",
             },
           ],
         },
         {
           id: "supplies",
           label: "Supplies",
-          link: "/supplies",
+          link: "/supplies",  // Updated path
           parentId: "resources",
         },
         {
@@ -416,22 +416,22 @@ const Navdata = () => {
           link: "/vendors",
           parentId: "resources",
           isChildItem: true,
+          stateVariables: isVendors,
           click: function (e) {
-            e.preventDefault();
+            // Only handle collapse
             setIsVendors(!isVendors);
           },
-          stateVariables: isVendors,
           childItems: [
             {
-              id: "vendor-contracts",
-              label: "Vendor Contracts",
-              link: "/vendor-contracts",
+              id: "vendor-contacts",
+              label: "Vendor Contacts",
+              link: "/vendors-contacts",
               parentId: "vendors",
             },
             {
               id: "service-type",
               label: "Service Type",
-              link: "/service-type",
+              link: "/service-types",
               parentId: "vendors",
             },
           ],
@@ -482,7 +482,7 @@ const Navdata = () => {
     {
       id: "plans",
       label: "Plans",
-      icon: "ri-dashboard-line",
+      icon: "ri-book-2-fill",
       link: "/plans",
       stateVariables: isPlans,
       click: function (e) {

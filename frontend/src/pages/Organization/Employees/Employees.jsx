@@ -18,6 +18,7 @@ import { FaSync } from "react-icons/fa";
 import "./Employees.css";
 import axios from "axios";
 import LoadingSpinner from "../../../Components/Common/LoadingSpinner/LoadingSpinner";
+import { useSelector } from "react-redux";
 
 function Employees() {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,6 +31,9 @@ function Employees() {
   const [pageInput, setPageInput] = useState(1);
   const itemsPerPage = 10;
   const navigate = useNavigate();
+  const { layoutMode } = useSelector(state => ({
+    layoutMode: state.Layout.layoutMode
+  }));
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -80,10 +84,10 @@ function Employees() {
       setLoading(false);
     }
   };
-  console.log("Employees state:", employees); // Log the employees state
+  // console.log("Employees state:", employees); // Log the employees state
 
   const handleEdit = (employeeId) => {
-    navigate(`/edit-employee/${employeeId}`);
+    navigate(`/employees/edit/${employeeId}`);
   };
 
   const handleDelete = async (employeeId) => {
@@ -211,7 +215,7 @@ function Employees() {
         <meta name="description" content="This is the home page description" />
         <meta name="keywords" content="home, react, meta tags" />
       </Helmet>
-      <div className="page-content">
+      <div className="page-content" data-bs-theme={layoutMode}>
         <div className="maincontent">
           <div className="main-content1">
             <div className="d-flex align-items-center justify-content-between">
@@ -691,17 +695,15 @@ function Employees() {
                       </div>
                     </td>
                     <td>{employee._id}</td>
-                    <td>{`${employee.firstName} ${
-                      employee.lastName
-                    }`}</td>
-                    <td>{employee.firstName || "-"}</td>
-                    <td>{employee.lastName || "-"}</td>
-                    <td>{employee.employeeID || "-"}</td>
+                    <td>{`${employee.firstName} ${employee.lastName}`}</td>
+                    <td>{employee.firstName}</td>
+                    <td>{employee.lastName}</td>
+                    <td>{employee.employeeID}</td>
                     <td>{employee.workEmailAddress || "-"}</td>
-                    <td>{employee.homePhone || "-"}</td>
-                    <td>{employee.workMobile || "-"}</td>
+                    <td>{employee.homePhoneNumber || "-"}</td>
+                    <td>{employee.workMobilePhone || "-"}</td>
                     <td>{employee.workPhone || "-"}</td>
-                    <td>{employee.personalMobile || "-"}</td>
+                    <td>{employee.personalMobilePhone || "-"}</td>
                     <td>{employee.departmentNames?.join(", ") || "-"}</td>
                     <td>
                       {employee.portalUser ? (
