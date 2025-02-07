@@ -41,9 +41,10 @@ import NewEmployee from "../pages/Organization/Employees/NewEmployee.jsx";
 import EditEmployee from "../pages/Organization/Employees/EditEmployee.jsx";
 import Locations from "../pages/Organization/Locations/Locations.jsx";
 import NewLocation from "../pages/Organization/Locations/NewLocation.jsx";
+import EditLocation from "../pages/Organization/Locations/EditLocation.jsx";
 import LocationMap from "../pages/Organization/LocationMap/LocationMap.jsx";
 
-// Add these imports at the top of the file
+//Resources Routes
 import Resources from "../pages/Resources/Resources.jsx";
 import IT from "../pages/Resources/IT/IT.jsx";
 import NewIT from "../pages/Resources/IT/NewIT.jsx";
@@ -71,6 +72,17 @@ import ServiceType from "../pages/Resources/Vendors/ServiceType/ServiceType.jsx"
 import NewServiceType from "../pages/Resources/Vendors/ServiceType/NewServiceType.jsx";
 import VitalRecords from "../pages/Resources/VitalRecords/VitalRecords.jsx";
 import NewVitalRecord from "../pages/Resources/VitalRecords/NewVitalRecord.jsx";
+import EditClient from "../pages/Resources/Clients/EditClient";
+
+//BIA Routes
+import BIA from "../pages/BIA/BIA.jsx";
+import NewBIA from "../pages/BIA/NewBIA.jsx";
+import BIADashboard from "../pages/BIA/BIADashboard/BIADashboard.jsx";
+import NewBIADashboard from "../pages/BIA/BIADashboard/NewBIADashboard.jsx";
+import Activities from "../pages/BIA/Activities/Activities.jsx";
+import NewActivities from "../pages/BIA/Activities/NewActivities.jsx";
+import ApprovalGroups from "../pages/BIA/ApprovalGroups/ApprovalGroups.jsx";
+import NewApprovalGroups from "../pages/BIA/ApprovalGroups/NewApprovalGroups.jsx";
 
 const authProtectedRoutes = [
   // Home Routes
@@ -106,6 +118,7 @@ const authProtectedRoutes = [
 
   { path: "/locations", component: <Locations /> },
   { path: "/new-location", component: <NewLocation /> },
+  { path: "/locations/edit/:id", component: <EditLocation /> },
   { path: "/location-map", component: <LocationMap /> },
 
   // Resources Routes
@@ -116,6 +129,7 @@ const authProtectedRoutes = [
   { path: "/new-clients", component: <NewClients /> },
   { path: "/client-contacts", component: <ClientContacts /> },
   { path: "/new-client-contact", component: <NewClientContact /> },
+  { path: "/clients/edit/:id", component: <EditClient /> },
 
   // BCM Routes
   { path: "/bcm-seats-requirements", component: <BCMSeatsRequirements /> },
@@ -153,6 +167,16 @@ const authProtectedRoutes = [
   // Vital Records Routes
   { path: "/vital-records", component: <VitalRecords /> },
   { path: "/new-vital-record", component: <NewVitalRecord /> },
+
+  //BIA Routes
+  { path: "/bia", component: <BIA /> },
+  { path: "/new-bia", component: <NewBIA /> },
+  { path: "/bia-dashboard", component: <BIADashboard /> },
+  { path: "/new-bia-dashboard", component: <NewBIADashboard /> },
+  { path: "/activities", component: <Activities /> },
+  { path: "/new-activities", component: <NewActivities /> },
+  { path: "/approval-groups", component: <ApprovalGroups /> },
+  { path: "/new-approval-groups", component: <NewApprovalGroups /> },
 
   // User Profile
   { path: "/profile", component: <UserProfile /> },

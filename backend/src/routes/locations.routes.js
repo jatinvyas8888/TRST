@@ -1,15 +1,25 @@
-import express from "express";
-import { createLocation, getAllLocations, getLocationById, updateLocation, deleteLocation } from "../controllers/locations.controller.js";
+import { Router } from 'express';
+import { 
+    createLocation, 
+    getLocationById, 
+    getAllLocations, 
+    updateLocation, 
+    deleteLocation 
+} from '../controllers/locations.controller.js';
+import { verifyJWT } from '../middlewares/auth.middleware.js';
 
-const router = express.Router();
+const router = Router();
 
-// Create a new location
-router.post("/", createLocation);
+// Create new location
+router.route("/create").post(verifyJWT, createLocation);
 
-// Other routes (if needed)
-router.get("/all", getAllLocations);
-router.get("/:id", getLocationById);
-router.put("/:id", updateLocation);
-router.delete("/:id", deleteLocation);
+// Get all locations with filtering and pagination
+router.route("/all").get(verifyJWT, getAllLocations);
+
+// Handle operations on specific location by ID
+router.route("/:id")
+    .get(verifyJWT, getLocationById)      // Get single location
+    .patch(verifyJWT, updateLocation)     // Update location
+    .delete(verifyJWT, deleteLocation);   // Delete location
 
 export default router; 

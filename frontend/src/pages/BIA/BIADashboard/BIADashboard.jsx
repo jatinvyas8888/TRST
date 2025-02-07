@@ -12,9 +12,9 @@ import { TiExport, TiPlus } from "react-icons/ti";
 import { FaRegTrashCan, FaTableColumns } from "react-icons/fa6";
 import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal } from "react-icons/hi";
-import "./BCMSeatsRequirements.css";
+// import "./BIADashboard.css";
 
-function BCMSeatsRequirements() {
+function BIADashboard() {
   const [isOpen, setIsOpen] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isColumnOpen, setIsColumnOpen] = useState(false);
@@ -32,14 +32,14 @@ function BCMSeatsRequirements() {
   return (
     <React.Fragment>
       <Helmet>
-        <title>BCM Seats Requirements Page | TRST</title>
+        <title>BIA Dashboard | TRST</title>
         <meta name="description" content="This is the home page description" />
         <meta name="keywords" content="home, react, meta tags" />
       </Helmet>
       <div className="page-content">
         <div className="main-content1">
           <div className="d-flex align-items-center justify-content-between">
-            <div className="header-text">BCM Seats Requirements</div>
+            <div className="header-text">BIA Dashboard</div>
             <div
               className="map-action k-widget k-button-group order-1"
               id="map-action-toggle"
@@ -109,7 +109,7 @@ function BCMSeatsRequirements() {
         <div className="main-content2 pt-3">
           <div className="d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center">
-              <span className="header-title">BCM Seats Requirements </span>
+              <span className="header-title">BIA Information</span>
               <div className="dropdown">
                 <button
                   className="btn btn-secondary dropdown-toggle border-radius-2"
@@ -119,7 +119,8 @@ function BCMSeatsRequirements() {
                   aria-expanded={isOpen}
                   onClick={toggleDropdown}
                 >
-                All BCM Seats Requirements <IoMdArrowDropdown className="hw-20" />
+                  All BIAs
+                  <IoMdArrowDropdown className="hw-20" />
                 </button>
                 <ul
                   className={`dropdown-menu ${isOpen ? "show" : ""}`}
@@ -138,8 +139,7 @@ function BCMSeatsRequirements() {
                   <li>
                     <a className="dropdown-item" href="#">
                       <IoMdArrowDropright className="hw-20" />
-                      All BCM Seats Requirements{" "}
-                      <BiSolidEdit className="hw-15 ml-20px" />
+                      All BIAs <BiSolidEdit className="hw-15 ml-20px" />
                       <FaTableColumns className="hw-15 ml-5px" />
                       <ImCopy className="hw-15 ml-5px" />
                     </a>
@@ -147,12 +147,27 @@ function BCMSeatsRequirements() {
                   <span className="ms-1">Select Another View...</span>
                   <li>
                     <a className="dropdown-item" href="#">
-                      Export Only
+                      BIA Scorecard
                     </a>
                   </li>
                   <li>
                     <a className="dropdown-item" href="#">
-                      Data Migration
+                      BIAs Completed in Last Year
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      My BIAs
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      My Expired BIAs (Icon Count)
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
+                      All Expired BIAs
                     </a>
                   </li>
                 </ul>
@@ -189,79 +204,31 @@ function BCMSeatsRequirements() {
                   <li class="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
-                      BCM Seats Requirements{" "}
+                      BIA Name{" "}
                     </label>
                   </li>
                   <li class="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
-                      Activities{" "}
+                      Status Summary{" "}
                     </label>
                   </li>
                   <li class="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
-                      BCM Seats Required for Recovery{" "}
+                      Department{" "}
                     </label>
                   </li>
                   <li class="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
-                      Time of Operations{" "}
+                      Next Update Date{" "}
                     </label>
                   </li>
                   <li class="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
-                      Primary Critical Staff{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Primary Staff ID{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Primary Email ID{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Primary Mobile number{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Primary Critical Staff{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Primary Staff Email ID{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Primary Staff Mobile number{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Primary Seat number{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Primary Site{" "}
+                      Updated At{" "}
                     </label>
                   </li>
                 </ul>
@@ -271,12 +238,9 @@ function BCMSeatsRequirements() {
               </button>
             </div>
             <div>
-              <NavLink
-                className="button1 border-1"
-                to="/new-bcm-seats-requirement"
-              >
+              <NavLink className="button1 border-1" to="/new-bia-dashboard">
                 <TiPlus className="hw-20" />
-                BCM Seats Requirements
+                BIA
               </NavLink>
               <button className="button border-1 ms-1">
                 <FaRegTrashCan className="hw-18" />
@@ -295,4 +259,4 @@ function BCMSeatsRequirements() {
   );
 }
 
-export default BCMSeatsRequirements;
+export default BIADashboard;

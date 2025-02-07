@@ -321,53 +321,47 @@ const getEmployee = asyncHandler(async (req, res) => {
 
 // Get all employees with filtering and pagination
 const getAllEmployees = asyncHandler(async (req, res) => {
-    const { 
-        page = 1, 
-        limit = 10,
-        search,
-        department,
-        employeeStatus 
-    } = req.query;
+    // const { 
+    //     page = 1, 
+    //     limit = 10,
+    //     search,
+    //     department,
+    //     employeeStatus 
+    // } = req.query;
 
-    let query = {};
+    // let query = {};
 
     // Search functionality
-    if (search) {
-        query.$or = [
-            { firstName: { $regex: search, $options: 'i' } },
-            { lastName: { $regex: search, $options: 'i' } },
-            { employeeID: { $regex: search, $options: 'i' } }
-        ];
-    }
+    // if (search) {
+    //     query.$or = [
+    //         { firstName: { $regex: search, $options: 'i' } },
+    //         { lastName: { $regex: search, $options: 'i' } },
+    //         { employeeID: { $regex: search, $options: 'i' } }
+    //     ];
+    // }
 
     // Department filter - using departmentNames array instead of department ObjectIds
-    if (department) {
-        query.departmentNames = department;
-    }
+    // if (department) {
+    //     query.departmentNames = department;
+    // }
 
-    // Status filter
-    if (employeeStatus) {
-        query.employeeStatus = employeeStatus;
-    }
+    // // Status filter
+    // if (employeeStatus) {
+    //     query.employeeStatus = employeeStatus;
+    // }
 
-    const employees = await Employee.find(query)
+    const employees = await Employee.find()
         .populate('manager', 'firstName lastName employeeID')
         .populate('subordinates', 'firstName lastName employeeID')
         .populate('department', 'businessEntity businessEntityType businessEntityId')
         .populate('location', 'locationName locationId')
         .populate('updatedBy', 'fullName email')
-        .limit(limit * 1)
-        .skip((page - 1) * limit)
-        .exec();
 
-    const count = await Employee.countDocuments(query);
+    // const count = await Employee.countDocuments(query);
 
     return res.status(200).json(
         new ApiResponse(200, {
             employees,
-            totalPages: Math.ceil(count / limit),
-            currentPage: parseInt(page),
-            totalEmployees: count
         }, "Employees fetched successfully!")
     );
 });
@@ -543,6 +537,7 @@ const updateEmployee = asyncHandler(async (req, res) => {
         homePhoneNumber: homePhoneNumber === undefined ? existingEmployee.homePhoneNumber : homePhoneNumber,
         personalMobilePhone: personalMobilePhone === undefined ? existingEmployee.personalMobilePhone : personalMobilePhone,
         personalEmailAddress: personalEmailAddress === undefined ? existingEmployee.personalEmailAddress : personalEmailAddress,
+        
     };
 
     // Update the employee

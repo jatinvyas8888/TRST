@@ -17,6 +17,8 @@ import { HiDotsHorizontal } from "react-icons/hi";
 import "./Locations.css";
 import LoadingSpinner from "../../../Components/Common/LoadingSpinner/LoadingSpinner";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Locations() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,24 +27,78 @@ function Locations() {
   const [locations, setLocations] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageInput, setPageInput] = useState(1);
-  const itemsPerPage = 10;
+  const [pageInput, setPageInput] = useState("1");
   const [isLoadingCoordinates, setIsLoadingCoordinates] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { layoutMode } = useSelector(state => ({
     layoutMode: state.Layout.layoutMode
   }));
-
-  // Calculate pagination values
+  const navigate = useNavigate();
+  const [rows, setRows] = useState([]);
+  
+  // Calculate pagination values safely with nullish coalescing
+  const itemsPerPage = 10;
   const indexOfLastRow = currentPage * itemsPerPage;
   const indexOfFirstRow = indexOfLastRow - itemsPerPage;
-  const currentRows = locations.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows = rows?.slice(indexOfFirstRow, indexOfLastRow) || [];
 
-  // Now useEffect can safely use currentRows
-  useEffect(() => {
-    console.log("Current locations:", locations);
-    console.log("Current rows:", currentRows);
-  }, [locations, currentRows]);
+  // Add these states at the top
+  const [columns, setColumns] = useState([
+    { id: 'checkbox', label: '', draggable: false },
+    { id: 'actions', label: 'Actions', draggable: false },
+    { id: 'locationName', label: 'Location Name', draggable: true },
+    { id: 'locationType', label: 'Location Type', draggable: true },
+    { id: 'streetAddress1', label: 'Street Address 1', draggable: true },
+    { id: 'streetAddress2', label: 'Street Address 2', draggable: true },
+    { id: 'city', label: 'City', draggable: true },
+    { id: 'stateProvince', label: 'State/Province', draggable: true },
+    { id: 'zipPostalCode', label: 'ZIP/Postal Code', draggable: true },
+    { id: 'country', label: 'Country', draggable: true },
+    { id: 'mainPhone', label: 'Main Phone', draggable: true },
+    { id: 'capacity', label: 'Capacity', draggable: true },
+    { id: 'capacityUsed', label: 'Capacity Used(%)', draggable: true },
+    { id: 'latitude', label: 'Latitude', draggable: true },
+    { id: 'longitude', label: 'Longitude', draggable: true },
+    { id: 'locationId', label: 'ID', draggable: true }
+  ]);
+
+  const [columnWidths, setColumnWidths] = useState({
+    checkbox: 40,
+    actions: 100,
+    locationName: 200,
+    locationType: 150,
+    streetAddress1: 200,
+    streetAddress2: 200,
+    city: 150,
+    stateProvince: 150,
+    zipPostalCode: 120,
+    country: 150,
+    mainPhone: 150,
+    capacity: 100,
+    capacityUsed: 120,
+    latitude: 120,
+    longitude: 120,
+    locationId: 120
+  });
+
+  const [visibleColumns, setVisibleColumns] = useState({
+    locationName: true,
+    locationType: true,
+    streetAddress1: true,
+    streetAddress2: true,
+    city: true,
+    stateProvince: true,
+    zipPostalCode: true,
+    country: true,
+    mainPhone: true,
+    capacity: true,
+    capacityUsed: true,
+    latitude: true,
+    longitude: true,
+    locationId: true
+  });
+
+  const [draggedColumn, setDraggedColumn] = useState(null);
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -55,32 +111,37 @@ function Locations() {
             "Content-Type": "application/json",
           },
         });
-        const data = await response.json();
         
-        if (data.success) {
+        const data = await response.json();
+        console.log(data);
+        
+        if (data.success && data.data) {
           const formattedLocations = data.data.map((location) => ({
             _id: location._id,
             id: location.locationId,
-            locationName: location.locationName || '-',
-            locationType: location.locationType || '-',
-            streetAddress1: location.streetAddress1 || '-',
-            streetAddress2: location.streetAddress2 || '-',
-            city: location.city || '-',
-            stateProvince: location.stateProvince || '-',
-            zipPostalCode: location.zipPostalCode || '-',
-            country: location.country || '-',
-            mainPhone: location.mainPhone || '-',
-            capacity: location.capacity || '-',
-            capacityUsed: location.capacityUsed || '-',
+            locationName: location.locationName || '',
+            locationType: location.locationType || '',
+            streetAddress1: location.streetAddress1 || '',
+            streetAddress2: location.streetAddress2 || '',
+            city: location.city || '',
+            stateProvince: location.stateProvince || '',
+            zipPostalCode: location.zipPostalCode || '',
+            country: location.country || '',
+            mainPhone: location.mainPhone || '',
+            capacity: location.capacity || 0,
+            capacityUsed: location.capacityUsed || 0,
             latitude: location.latitude || '-',
             longitude: location.longitude || '-'
           }));
           
-          setLocations(formattedLocations);
-          console.log("Fetched locations:", formattedLocations);
+          console.log('Formatted Locations:', formattedLocations);
+          setRows(formattedLocations);
+        } else {
+          setRows([]); // Set empty array if no data
         }
       } catch (error) {
         console.error("Error fetching locations:", error);
+        setRows([]); // Set empty array on error
       } finally {
         setIsLoading(false);
         setIsLoadingCoordinates(false);
@@ -110,18 +171,31 @@ function Locations() {
   const handleDelete = async (locationId) => {
     if (window.confirm(`Are you sure you want to delete this location?`)) {
       try {
-        await fetch(`http://localhost:8000/api/v1/locations/${locationId}`, {
-          method: "DELETE",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        // Refresh the list after deletion
-        const updatedLocations = locations.filter(loc => loc._id !== locationId);
-        setLocations(updatedLocations);
+        const response = await axios.delete(
+          `http://localhost:8000/api/v1/locations/${locationId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+
+        if (response.data) {
+          // Remove the deleted location from the state
+          setRows(prevRows => 
+            prevRows.filter(loc => loc._id !== locationId)
+          );
+          // Also remove from selected locations if it was selected
+          setSelectedLocations(prev => 
+            prev.filter(id => id !== locationId)
+          );
+          // Show success message
+          alert("Location deleted successfully");
+        }
       } catch (error) {
         console.error("Error deleting location:", error);
+        alert(error.response?.data?.message || "Failed to delete location. Please try again.");
       }
     }
   };
@@ -131,105 +205,234 @@ function Locations() {
 
     if (window.confirm(`Are you sure you want to delete ${selectedLocations.length} selected item(s)?`)) {
       try {
-        // Delete all selected locations
-        await Promise.all(
-          selectedLocations.map((id) =>
-            fetch(`http://localhost:8000/api/v1/locations/${id}`, {
-              method: "DELETE",
-              credentials: "include",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            })
-          )
+        const deletePromises = selectedLocations.map(id =>
+          axios.delete(`http://localhost:8000/api/v1/locations/${id}`, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          })
         );
 
-        // Update the locations list by removing deleted items
-        const updatedLocations = locations.filter(
-          loc => !selectedLocations.includes(loc._id)
-        );
-        setLocations(updatedLocations);
-        setSelectedLocations([]); // Clear selection after deletion
+        const results = await Promise.allSettled(deletePromises);
+        
+        // Filter out the successfully deleted locations
+        const successfulDeletes = results
+          .map((result, index) => 
+            result.status === 'fulfilled' ? selectedLocations[index] : null
+          )
+          .filter(id => id !== null);
+
+        if (successfulDeletes.length > 0) {
+          // Update locations list
+          setRows(prevRows => 
+            prevRows.filter(loc => !successfulDeletes.includes(loc._id))
+          );
+          // Clear selected locations
+          setSelectedLocations([]);
+          // Show success message
+          alert(`Successfully deleted ${successfulDeletes.length} location(s)`);
+        }
+
+        // Check if any deletions failed
+        const failedCount = results.filter(r => r.status === 'rejected').length;
+        if (failedCount > 0) {
+          alert(`Failed to delete ${failedCount} location(s). Please try again.`);
+        }
       } catch (error) {
-        console.error("Error deleting locations:", error);
+        console.error("Error in bulk delete:", error);
+        alert(error.response?.data?.message || "Error deleting locations. Please try again.");
       }
     }
   };
 
   const handlePageInputChange = (e) => {
-    const value = e.target.value;
-    setPageInput(value);
-    
     if (e.key === 'Enter' || e.type === 'blur') {
-      const numValue = parseInt(value);
-      const maxPage = Math.ceil(locations.length / itemsPerPage);
+      const value = parseInt(e.target.value);
+      const maxPage = Math.ceil(rows.length / itemsPerPage);
       
-      if (value === '' || isNaN(numValue) || numValue < 1) {
-        setCurrentPage(1);
-        setPageInput(1);
+      if (!isNaN(value) && value >= 1 && value <= maxPage) {
+        setCurrentPage(value);
+      } else {
+        setPageInput(currentPage.toString());
       }
-      else if (numValue > maxPage) {
-        setCurrentPage(maxPage);
-        setPageInput(maxPage);
-      }
-      else {
-        setCurrentPage(numValue);
-        setPageInput(numValue);
-      }
+    } else {
+      setPageInput(e.target.value);
     }
   };
 
   const handleFirstPage = () => {
     setCurrentPage(1);
-    setPageInput(1);
+    setPageInput("1");
   };
 
   const handlePrevPage = () => {
-    setCurrentPage(prev => {
-      const newPage = prev - 1;
-      setPageInput(newPage);
-      return newPage;
-    });
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
+      setPageInput((currentPage - 1).toString());
+    }
   };
 
   const handleNextPage = () => {
-    setCurrentPage(prev => {
-      const newPage = prev + 1;
-      setPageInput(newPage);
-      return newPage;
-    });
+    const maxPage = Math.ceil(rows.length / itemsPerPage);
+    if (currentPage < maxPage) {
+      setCurrentPage(prev => prev + 1);
+      setPageInput((currentPage + 1).toString());
+    }
   };
 
   const handleLastPage = () => {
-    const lastPage = Math.ceil(locations.length / itemsPerPage);
+    const lastPage = Math.ceil(rows.length / itemsPerPage);
     setCurrentPage(lastPage);
-    setPageInput(lastPage);
+    setPageInput(lastPage.toString());
   };
 
-  // Add this function to get coordinates from address
-  const getCoordinates = async (address) => {
+  const handleEdit = (locationId) => {
+    navigate(`/locations/edit/${locationId}`);
+  };
+
+  const handleRefresh = async () => {
     try {
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=YOUR_GOOGLE_API_KEY`
+      setIsLoading(true);
+      const response = await axios.get(
+        "http://localhost:8000/api/v1/locations/all",
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
       );
-      const data = await response.json();
-      
-      if (data.results && data.results.length > 0) {
-        const { lat, lng } = data.results[0].geometry.location;
-        return { latitude: lat, longitude: lng };
+
+      if (response.data) {
+        const formattedLocations = response.data.map((location) => ({
+          _id: location._id,
+          id: location.locationId,
+          locationName: location.locationName || '',
+          locationType: location.locationType || '',
+          streetAddress1: location.streetAddress1 || '',
+          streetAddress2: location.streetAddress2 || '',
+          city: location.city || '',
+          stateProvince: location.stateProvince || '',
+          zipPostalCode: location.zipPostalCode || '',
+          country: location.country || '',
+          mainPhone: location.mainPhone || '',
+          capacity: location.capacity || 0,
+          capacityUsed: location.capacityUsed || 0,
+          latitude: location.latitude || '-',
+          longitude: location.longitude || '-'
+        }));
+        
+        setRows(formattedLocations);
+        setCurrentPage(1);
+        setPageInput("1");
+        setSelectedLocations([]);
+      } else {
+        setRows([]);
       }
-      return null;
     } catch (error) {
-      console.error('Error getting coordinates:', error);
-      return null;
+      console.error("Error refreshing locations:", error);
+      setRows([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Add this function near your other functions
-  const viewOnMap = (lat, lon) => {
-    if (lat !== '-' && lon !== '-') {
-      window.open(`https://www.google.com/maps?q=${lat},${lon}`, '_blank');
-    }
+  const viewOnMap = (latitude, longitude) => {
+    if (!latitude || !longitude) return;
+    
+    // Open in Google Maps in a new tab
+    const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+    window.open(mapsUrl, '_blank');
+  };
+
+  // Add handlers for drag and resize
+  const handleDragStart = (e, column) => {
+    if (!column.draggable) return;
+    setDraggedColumn(column);
+    e.target.style.opacity = '0.5';
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedColumn(null);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, targetColumn) => {
+    e.preventDefault();
+    if (!draggedColumn || !targetColumn.draggable) return;
+
+    const newColumns = [...columns];
+    const draggedIdx = columns.findIndex(col => col.id === draggedColumn.id);
+    const targetIdx = columns.findIndex(col => col.id === targetColumn.id);
+
+    newColumns.splice(draggedIdx, 1);
+    newColumns.splice(targetIdx, 0, draggedColumn);
+
+    setColumns(newColumns);
+  };
+
+  const handleResizeStart = (e, columnId) => {
+    e.preventDefault();
+    
+    const startX = e.pageX;
+    const startWidth = columnWidths[columnId];
+
+    const handleMouseMove = (moveEvent) => {
+      const newWidth = Math.max(50, startWidth + (moveEvent.pageX - startX));
+      setColumnWidths(prev => ({
+        ...prev,
+        [columnId]: newWidth
+      }));
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleColumnToggle = (columnName) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [columnName]: !prev[columnName]
+    }));
+  };
+
+  const resetColumns = () => {
+    setVisibleColumns({
+      locationName: true,
+      locationType: true,
+      streetAddress1: true,
+      streetAddress2: true,
+      city: true,
+      stateProvince: true,
+      zipPostalCode: true,
+      country: true,
+      mainPhone: true,
+      capacity: true,
+      capacityUsed: true,
+      latitude: true,
+      longitude: true,
+      locationId: true
+    });
+  };
+
+  const getVisibleColumnCount = () => {
+    // Count checkbox and actions columns
+    let count = 2;
+    // Add count of visible columns
+    Object.values(visibleColumns).forEach(isVisible => {
+      if (isVisible) count++;
+    });
+    return count;
   };
 
   return (
@@ -367,8 +570,12 @@ function Locations() {
               <button className="button border-1 ms-1">
                 <FaHome className="hw-15" />
               </button>
-              <button className="button border-1 ms-1">
-                <LuRefreshCw className="hw-18" />
+              <button 
+                className="button border-1 ms-1" 
+                onClick={handleRefresh}
+                title="Refresh"
+              >
+                <LuRefreshCw className="hw-15" />
               </button>
               <span className="dropdown">
                 <button
@@ -391,95 +598,159 @@ function Locations() {
                 >
                   <li className="align-items-center justify-content-between d-flex me-1 ms-1">
                     <span className="fw-bold">Columns</span>{" "}
-                    <a className="blue">Reset</a>
+                    <a className="blue" onClick={resetColumns} style={{ cursor: 'pointer' }}>Reset</a>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Location Name{" "}
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.locationName}
+                        onChange={() => handleColumnToggle('locationName')}
+                      />
+                      Location Name
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" /> Location
-                      Type{" "}
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.locationType}
+                        onChange={() => handleColumnToggle('locationType')}
+                      />
+                      Location Type
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.streetAddress1}
+                        onChange={() => handleColumnToggle('streetAddress1')}
+                      />
                       Street Address 1
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.streetAddress2}
+                        onChange={() => handleColumnToggle('streetAddress2')}
+                      />
                       Street Address 2
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.city}
+                        onChange={() => handleColumnToggle('city')}
+                      />
                       City
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.stateProvince}
+                        onChange={() => handleColumnToggle('stateProvince')}
+                      />
                       State/Province
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.zipPostalCode}
+                        onChange={() => handleColumnToggle('zipPostalCode')}
+                      />
                       Zip/Postal Code
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.country}
+                        onChange={() => handleColumnToggle('country')}
+                      />
                       Country
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.mainPhone}
+                        onChange={() => handleColumnToggle('mainPhone')}
+                      />
                       Main Phone
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Employee Count
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.capacity}
+                        onChange={() => handleColumnToggle('capacity')}
+                      />
                       Capacity
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.capacityUsed}
+                        onChange={() => handleColumnToggle('capacityUsed')}
+                      />
                       Capacity Used(%)
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.latitude}
+                        onChange={() => handleColumnToggle('latitude')}
+                      />
                       Latitude
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.longitude}
+                        onChange={() => handleColumnToggle('longitude')}
+                      />
                       Longitude
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
-                      <input type="checkbox" className="ms-2 me-1" />
+                      <input 
+                        type="checkbox" 
+                        className="ms-2 me-1"
+                        checked={visibleColumns.locationId}
+                        onChange={() => handleColumnToggle('locationId')}
+                      />
                       ID
                     </label>
                   </li>
@@ -489,7 +760,7 @@ function Locations() {
                 <FaFilter className="hw-15" />
               </button>
             </div>
-            <div>
+            <div  className="d-flex align-items-center">
               <NavLink className="button1 border-1" to="/new-location">
                 <TiPlus className="hw-20" />
                 Location
@@ -517,7 +788,7 @@ function Locations() {
       </div>
       <div className="border-1 mb-2 mt-2"></div>
       <div className="table-container">
-        {locations.length > itemsPerPage && (
+        {rows.length > itemsPerPage && (
           <div className="pagination-wrapper">
             <div className="d-flex align-items-center gap-3 p-2 justify-content-between">
               <div className="d-flex align-items-center">
@@ -540,20 +811,20 @@ function Locations() {
                   onKeyDown={handlePageInputChange}
                   onBlur={handlePageInputChange}
                 />
-                <span className="mx-2">of {Math.ceil(locations.length / itemsPerPage)}</span>
+                <span className="mx-2">of {Math.ceil(rows.length / itemsPerPage)}</span>
                 <button 
                   className="btn btn-sm btn-outline-secondary" 
                   onClick={handleNextPage}
-                  disabled={currentPage === Math.ceil(locations.length / itemsPerPage)}
+                  disabled={currentPage === Math.ceil(rows.length / itemsPerPage)}
                 >{">"}</button>
                 <button 
                   className="btn btn-sm btn-outline-secondary" 
                   onClick={handleLastPage}
-                  disabled={currentPage === Math.ceil(locations.length / itemsPerPage)}
+                  disabled={currentPage === Math.ceil(rows.length / itemsPerPage)}
                 >{">>"}</button>
               </div>
               <span className="ms-2 fw-bold">
-                {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, locations.length)} of {locations.length} items
+                {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, rows.length)} of {rows.length} items
               </span>
             </div>
           </div>
@@ -568,41 +839,48 @@ function Locations() {
                     type="checkbox"
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelectedLocations(locations.map(loc => loc._id));
+                        setSelectedLocations(rows.map(loc => loc._id));
                       } else {
                         setSelectedLocations([]);
                       }
                     }}
-                    checked={selectedLocations.length === locations.length}
+                    checked={selectedLocations.length === rows.length}
                   />
                 </th>
                 <th>Actions</th>
-                <th>Location Name</th>
-                <th>Location Type</th>
-                <th>Street Address 1</th>
-                <th>Street Address 2</th>
-                <th>City</th>
-                <th>State/Province</th>
-                <th>Zip/Postal Code</th>
-                <th>Country</th>
-                <th>Main Phone</th>
-                <th>Capacity</th>
-                <th>Capacity Used(%)</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-                <th>ID</th>
+                {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
+                  <th
+                    key={column.id}
+                    draggable={true}
+                    onDragStart={(e) => handleDragStart(e, column)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, column)}
+                    style={{ 
+                      // cursor: 'move',
+                      width: `${columnWidths[column.id]}px`,
+                      position: 'relative'
+                    }}
+                  >
+                    {column.label}
+                    <div
+                      className="resize-handle"
+                      onMouseDown={(e) => handleResizeStart(e, column.id)}
+                    />
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan="16" className="text-center py-4">
+                  <td colSpan={getVisibleColumnCount()} className="text-center py-4">
                     <LoadingSpinner />
                   </td>
                 </tr>
-              ) : locations.length === 0 ? (
+              ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan="16" className="text-center py-3 text-muted">
+                  <td colSpan={getVisibleColumnCount()} className="text-center py-3 text-muted">
                     No locations available
                   </td>
                 </tr>
@@ -617,61 +895,37 @@ function Locations() {
                       />
                     </td>
                     <td>
-                      <div style={{ display: "flex", gap: "10px" }}>
+                      <div style={{gap: "10px" }} className="d-flex align-items-center">
                         <CiEdit
                           style={{ cursor: "pointer", color: "green" }}
                           title="Edit"
                           onClick={() => handleEdit(location._id)}
                         />
                         <RiDeleteBin6Line
-                          style={{ 
-                            cursor: "pointer", 
-                            color: "red",
-                            opacity: selectedLocations.includes(location._id) ? 1 : 0.7 
-                          }}
+                          style={{ cursor: "pointer", color: "red" }}
                           title="Delete"
                           onClick={() => handleDelete(location._id)}
                         />
                       </div>
                     </td>
-                    <td>{location.locationName}</td>
-                    <td>{location.locationType}</td>
-                    <td>{location.streetAddress1}</td>
-                    <td>{location.streetAddress2}</td>
-                    <td>{location.city}</td>
-                    <td>{location.stateProvince}</td>
-                    <td>{location.zipPostalCode}</td>
-                    <td>{location.country}</td>
-                    <td>{location.mainPhone}</td>
-                    <td>{location.capacity}</td>
-                    <td>{location.capacityUsed}</td>
-                    <td className="coordinate-cell">
-                      {isLoadingCoordinates ? (
-                        <span className="loading-coordinates">Loading...</span>
-                      ) : (
-                        <span 
-                          className={`coordinate-value ${location.latitude !== '-' ? 'clickable' : ''}`}
-                          onClick={() => location.latitude !== '-' && viewOnMap(location.latitude, location.longitude)}
-                          title={location.latitude !== '-' ? "Click to view on map" : ""}
-                        >
-                          {location.latitude}
-                        </span>
-                      )}
-                    </td>
-                    <td className="coordinate-cell">
-                      {isLoadingCoordinates ? (
-                        <span className="loading-coordinates">Loading...</span>
-                      ) : (
-                        <span 
-                          className={`coordinate-value ${location.longitude !== '-' ? 'clickable' : ''}`}
-                          onClick={() => location.longitude !== '-' && viewOnMap(location.latitude, location.longitude)}
-                          title={location.longitude !== '-' ? "Click to view on map" : ""}
-                        >
-                          {location.longitude}
-                        </span>
-                      )}
-                    </td>
-                    <td>{location.id}</td>
+                    {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
+                      <td key={`${location._id}-${column.id}`}>
+                        {column.id === 'locationName' && location.locationName}
+                        {column.id === 'locationType' && location.locationType}
+                        {column.id === 'streetAddress1' && location.streetAddress1}
+                        {column.id === 'streetAddress2' && location.streetAddress2}
+                        {column.id === 'city' && location.city}
+                        {column.id === 'stateProvince' && location.stateProvince}
+                        {column.id === 'zipPostalCode' && location.zipPostalCode}
+                        {column.id === 'country' && location.country}
+                        {column.id === 'mainPhone' && location.mainPhone}
+                        {column.id === 'capacity' && location.capacity}
+                        {column.id === 'capacityUsed' && location.capacityUsed}
+                        {column.id === 'latitude' && location.latitude}
+                        {column.id === 'longitude' && location.longitude}
+                        {column.id === 'locationId' && location.id}
+                      </td>
+                    ))}
                   </tr>
                 ))
               )}
@@ -679,7 +933,7 @@ function Locations() {
           </table>
         </div>
 
-        {locations.length > itemsPerPage && (
+        {rows.length > itemsPerPage && (
           <div className="pagination-wrapper">
             <div className="d-flex align-items-center gap-3 p-2 justify-content-between">
               <div className="d-flex align-items-center">
@@ -702,20 +956,20 @@ function Locations() {
                   onKeyDown={handlePageInputChange}
                   onBlur={handlePageInputChange}
                 />
-                <span className="mx-2">of {Math.ceil(locations.length / itemsPerPage)}</span>
+                <span className="mx-2">of {Math.ceil(rows.length / itemsPerPage)}</span>
                 <button 
                   className="btn btn-sm btn-outline-secondary" 
                   onClick={handleNextPage}
-                  disabled={currentPage === Math.ceil(locations.length / itemsPerPage)}
+                  disabled={currentPage === Math.ceil(rows.length / itemsPerPage)}
                 >{">"}</button>
                 <button 
                   className="btn btn-sm btn-outline-secondary" 
                   onClick={handleLastPage}
-                  disabled={currentPage === Math.ceil(locations.length / itemsPerPage)}
+                  disabled={currentPage === Math.ceil(rows.length / itemsPerPage)}
                 >{">>"}</button>
               </div>
               <span className="ms-2 fw-bold">
-                {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, locations.length)} of {locations.length} items
+                {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, rows.length)} of {rows.length} items
               </span>
             </div>
           </div>

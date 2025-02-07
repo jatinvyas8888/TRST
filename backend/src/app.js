@@ -27,6 +27,8 @@ import userRouter from './routes/user.routes.js';
 import organizationalEntitiesRouter from './routes/organizationalEntities.routes.js';
 import employeesRouter from './routes/employees.routes.js';
 import locationsRoutes from './routes/locations.routes.js';
+import clientsRoutes from './routes/clients.routes.js';
+import clientContactsRoutes from './routes/clientContacts.routes.js';
 
 
 //Routes declaration
@@ -34,5 +36,6 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/organizational-entities', organizationalEntitiesRouter);
 app.use('/api/v1/employees', employeesRouter);
 app.use('/api/v1/locations', locationsRoutes);
-
+app.use('/api/v1/clients', clientsRoutes);
+app.use('/api/v1/client-contacts', clientContactsRoutes);
 export { app };

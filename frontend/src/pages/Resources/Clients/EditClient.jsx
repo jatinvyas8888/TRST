@@ -1,34 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { NavLink } from "react-router-dom";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaPrint, FaRegFilePdf } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { HiMiniWrench } from "react-icons/hi2";
 import { BiSolidEdit } from "react-icons/bi";
 import { FcSettings } from "react-icons/fc";
 import { LuTableOfContents, LuClock9 } from "react-icons/lu";
-import { FaPrint, FaRegFilePdf } from "react-icons/fa";
-import { IoIosSearch } from "react-icons/io";
-import { FaCircleQuestion } from "react-icons/fa6";
-import "./Vendors.css";
-import { BiSearchAlt2 } from "react-icons/bi";
+import "./Clients.css";
 import {
-  Card,
-  CardBody,
-  Col,
-  Container,
   Input,
   Label,
-  Row,
-  Button,
   Form,
-  FormFeedback,
-  Alert,
-  Spinner,
 } from "reactstrap";
-import { TiPlus } from "react-icons/ti";
+import axios from "axios";
+import Toastify from "toastify-js";
 
-function NewVendor() {
+function EditClient() {
+  const navigate = useNavigate();
+  const { id } = useParams();
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isTimeZoneOpen, setIsTimeZoneOpen] = useState(false); // Time Zone dropdown
   const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
@@ -297,29 +287,145 @@ function NewVendor() {
     "Zimbabwe",
   ];
   const handleSelectState = (option) => {
-    setSelectedSate(option);
+    setSelectedState(option);
     setIsStateOpen(false);
+    setFormData(prev => ({
+      ...prev,
+      stateProvince: option === "-- Please select --" ? "" : option
+    }));
   };
   const handleSelectCountry = (option) => {
     setSelectedCountry(option);
     setIsCountryOpen(false);
+    setFormData(prev => ({
+      ...prev,
+      country: option === "-- Please select --" ? "" : option
+    }));
   };
+
+  const [formData, setFormData] = useState({
+    company: "",
+    website: "",
+    mainPhone: "",
+    fax: "",
+    address1: "",
+    address2: "",
+    city: "",
+    stateProvince: "",
+    country: "",
+    zipCode: ""
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchClient = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/clients/${id}`,
+          {
+            withCredentials: true
+          }
+        );
+
+        const clientData = response.data;
+        
+        setFormData({
+          company: clientData.company || "",
+          website: clientData.website || "",
+          mainPhone: clientData.mainPhone || "",
+          fax: clientData.fax || "",
+          address1: clientData.address1 || "",
+          address2: clientData.address2 || "",
+          city: clientData.city || "",
+          stateProvince: clientData.stateProvince || "",
+          country: clientData.country || "",
+          zipCode: clientData.zipCode || ""
+        });
+
+        setSelectedState(clientData.stateProvince || "-- Please select --");
+        setSelectedCountry(clientData.country || "-- Please select --");
+
+      } catch (error) {
+        console.error("Error fetching client:", error);
+        alert(error.response?.data?.message || "Error fetching client details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchClient();
+    }
+  }, [id]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      
+      if (!formData.company) {
+        alert("Company name is required");
+        return;
+      }
+      
+      const response = await axios.patch(
+        `http://localhost:8000/api/v1/clients/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true
+        }
+      );
+
+      Toastify({
+        text: "Client updated successfully!",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+          background: "#28a745",
+        },
+      }).showToast();
+      navigate("/clients");
+    } catch (error) {
+      console.error("Error updating client:", error);
+      if (error.response) {
+        alert(error.response.data.message || "Error updating client");
+      } else {
+        alert("Network error occurred");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <React.Fragment>
       <Helmet>
-        <title> New Vendor Page | TRST</title>
+        <title>Edit Client | TRST</title>
         <meta name="description" content="This is the home page description" />
         <meta name="keywords" content="home, react, meta tags" />
       </Helmet>
       <div className="page-content">
         <div className="main-content1">
           <div className="d-flex align-items-center justify-content-between">
-            <div className="header-text">Vendor: New Vendor</div>
+            <div className="header-text">Client: Edit Client</div>
             <div className="d-flex align-items-center justify-content-end">
               <div>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
+              <button
+                  className="btn btn-secondary me-2"
+                  onClick={() => navigate("/clients")}
                   title="Cancel"
                 >
                   <RxCross2
@@ -327,21 +433,20 @@ function NewVendor() {
                     style={{ width: "15px", height: "15px" }}
                   />
                   Cancel
-                </NavLink>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save & New"
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  title="Update Client"
                 >
-                  Save & New
-                </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
                   <FaCheck
                     className="me-1"
                     style={{ width: "15px", height: "15px" }}
                   />
-                  Save
-                </NavLink>
+                  {loading ? "Saving..." : "Update"}
+                </button>
               </div>
               <div
                 className="map-action k-widget k-button-group order-1"
@@ -404,157 +509,60 @@ function NewVendor() {
           </div>
         </div>
         <div className="form-content">
-          <div className="form-heading">Vendor Information</div>
+          <div className="form-heading">Client Information </div>
           <div className="border-1"></div>
           <Form>
             <div className="row pt-4">
               <div className="col-6">
-                {["Vendor"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                      <span class="text-danger">*</span>
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
-                {["Main Phone", "Fax Number", "Website"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="company" className="form-label me-2 fs-15 w-40">
+                    Company<span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="company"
+                    className="form-control"
+                    type="text"
+                    value={formData.company}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="website" className="form-label me-2 fs-15 w-40">
+                    Website
+                  </Label>
+                  <Input
+                    name="website"
+                    className="form-control"
+                    type="text"
+                    value={formData.website}
+                    onChange={handleInputChange}
+                  />
+                </div>
               </div>
               <div className="col-6">
                 <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="criticality"
-                    className="form-label me-2 fs-15 w-40"
-                  >
-                    Criticality
+                  <Label htmlFor="mainPhone" className="form-label me-2 fs-15 w-40">
+                    Main Phone
                   </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleStatusDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedStatus}</span>
-                      <svg
-                        className={`ms-2 ${isStatusOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isStatusOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {statusOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectStatus(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <Input
+                    name="mainPhone"
+                    className="form-control"
+                    type="text"
+                    value={formData.mainPhone}
+                    onChange={handleInputChange}
+                  />
                 </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2 d-flex justify-content-between align-items-center"
-                  >
-                    Business Owner(s){" "}
-                    <FaCircleQuestion className="me-2 hw-20" />
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2 d-flex justify-content-between align-items-center"
-                  >
-                    Vendor Management Contact(s)
-                    <FaCircleQuestion className="me-2 hw-20" />
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2 d-flex justify-content-between align-items-center"
-                  >
-                    Service Types <FaCircleQuestion className="me-2 hw-20" />
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="fax" className="form-label me-2 fs-15 w-40">
+                    Fax
+                  </Label>
+                  <Input
+                    name="fax"
+                    className="form-control"
+                    type="text"
+                    value={formData.fax}
+                    onChange={handleInputChange}
+                  />
                 </div>
               </div>
             </div>
@@ -566,17 +574,42 @@ function NewVendor() {
           <Form>
             <div className="row pt-4">
               <div className="col-6">
-                {["Address 1", "Address 2", "City"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="address1" className="form-label me-2 fs-15 w-40">
+                    Address 1
+                  </Label>
+                  <Input
+                    name="address1"
+                    className="form-control"
+                    type="text"
+                    value={formData.address1}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="address2" className="form-label me-2 fs-15 w-40">
+                    Address 2
+                  </Label>
+                  <Input
+                    name="address2"
+                    className="form-control"
+                    type="text"
+                    value={formData.address2}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="city" className="form-label me-2 fs-15 w-40">
+                    City
+                  </Label>
+                  <Input
+                    name="city"
+                    className="form-control"
+                    type="text"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                  />
+                </div>
               </div>
               <div className="col-6">
                 <div className="mb-3 d-flex align-items-center">
@@ -627,18 +660,6 @@ function NewVendor() {
                     )}
                   </div>
                 </div>
-
-                {["Zip Code"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
                 <div className="mb-3 d-flex align-items-center">
                   <Label
                     htmlFor="Country"
@@ -687,16 +708,19 @@ function NewVendor() {
                     )}
                   </div>
                 </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="zipCode" className="form-label me-2 fs-15 w-40">
+                    Zip Code
+                  </Label>
+                  <Input
+                    name="zipCode"
+                    className="form-control"
+                    type="text"
+                    value={formData.zipCode}
+                    onChange={handleInputChange}
+                  />
+                </div>
               </div>
-            </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Notes</div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-12"></div>
             </div>
           </Form>
         </div>
@@ -705,4 +729,4 @@ function NewVendor() {
   );
 }
 
-export default NewVendor;
+export default EditClient;

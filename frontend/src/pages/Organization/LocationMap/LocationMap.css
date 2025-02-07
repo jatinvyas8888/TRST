@@ -23,8 +23,31 @@ body {
   color: #666;
 }
 
-
+/* Ensure dropdowns appear above map */
+.leaflet-container {
+  z-index: 1;
+}
 
 .dropdown-menu {
-    z-index: 9999;
+  z-index: 1000 !important;
+}
+
+/* Fix any map controls that need to be above the base map */
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 900 !important;
+}
+
+/* Ensure other UI elements stay above map */
+.page-content {
+  position: relative;
+}
+
+.dropdown {
+  position: relative;
+}
+
+/* Optional: Add transition for smoother dropdown appearance */
+.dropdown-menu {
+  transition: all 0.2s ease-in-out;
 }

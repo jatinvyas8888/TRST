@@ -1002,3 +1002,76 @@ input[type="checkbox"] {
 [data-bs-theme='dark'] .dropdown-item:hover {
     background-color: #404040;
 }
+
+/* Add styles for draggable columns */
+.table th[draggable="true"] {
+  user-select: none;
+  position: relative;
+}
+
+.table th[draggable="true"]::after {
+  content: '⋮';
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.5;
+}
+
+.table th[draggable="true"]:hover::after {
+  opacity: 1;
+}
+
+.table th.dragging {
+  opacity: 0.5;
+  background-color: #f0f0f0;
+}
+
+/* Add styles for resizable columns */
+.table th {
+  position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: transparent;
+  cursor: col-resize;
+  z-index: 1;
+}
+
+/* .resize-handle:hover,
+.resize-handle.active {
+  background-color: #8C52FF;
+} */
+
+/* Make table cells respect column widths */
+.table td {
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Ensure table doesn't expand beyond container */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  table-layout: fixed;
+  width: max-content;
+  min-width: 100%;
+}
+
+/* Dark mode styles for resize handle */
+[data-bs-theme='dark'] .resize-handle:hover,
+[data-bs-theme='dark'] .resize-handle.active {
+  background-color: #6b3cc9;
+}

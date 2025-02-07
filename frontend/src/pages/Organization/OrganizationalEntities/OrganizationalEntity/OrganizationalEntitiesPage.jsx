@@ -93,15 +93,18 @@ const OrganizationalEntitiesPage = () => {
         const formattedRows = response.data.map((entity) => ({
           id: entity._id,
           businessEntity: entity.businessEntity || "",
-          entityType: entity.businessEntityType || "",
+          businessEntityType: entity.businessEntityType || "",
           businessEntityId: entity.businessEntityId || "",
           description: entity.description || "",
-          location: Array.isArray(entity.relatedLocations)
-            ? entity.relatedLocations.join(", ")
-            : "",
+          locations: entity.relatedLocations?.map(loc => 
+            typeof loc === 'object' ? loc.locationName : loc
+          ).join(', ') || "",
           parentEntity: entity.parentBusinessEntity
             ? entity.parentBusinessEntity.businessEntity
             : "",
+          childEntities: entity.childBusinessEntities?.map(child => 
+            typeof child === 'object' ? child.businessEntity : child
+          ).join(' | ') || "",
           updatedAt: entity.updatedAt
             ? new Date(entity.updatedAt).toLocaleString("en-US", {
                 year: "numeric",
@@ -111,12 +114,7 @@ const OrganizationalEntitiesPage = () => {
                 minute: "numeric",
                 hour12: true,
               })
-            : "",
-          childEntities: Array.isArray(entity.childBusinessEntities)
-            ? entity.childBusinessEntities
-                .map((child) => child.businessEntity)
-                .join(" | ")
-            : "",
+            : ""
         }));
 
         setRows(formattedRows);
@@ -140,14 +138,14 @@ const OrganizationalEntitiesPage = () => {
     if (entityToEdit) {
       navigate(`/organizational-entities/edit/${id}`, {
         state: {
-          businessEntityType: entityToEdit.entityType,
+          businessEntityType: entityToEdit.businessEntityType,
           businessEntity: entityToEdit.businessEntity,
           businessEntityId: entityToEdit.businessEntityId,
           description: entityToEdit.description,
           parentBusinessEntity: entityToEdit.parentEntity,
           childBusinessEntities:
             entityToEdit.childEntities.match(/[^|]+/g) || [],
-          relatedLocations: entityToEdit.location,
+          relatedLocations: entityToEdit.locations,
           editors: [],
         },
       });
@@ -305,6 +303,119 @@ const OrganizationalEntitiesPage = () => {
     const lastPage = Math.ceil(rows.length / itemsPerPage);
     setCurrentPage(lastPage);
     setPageInput(lastPage);
+  };
+
+  // Add column visibility state
+  const [columns, setColumns] = useState([
+    { id: 'checkbox', label: '', draggable: false },
+    { id: 'actions', label: 'Actions', draggable: false },
+    { id: 'businessEntity', label: 'Business Entity', draggable: true },
+    { id: 'businessEntityType', label: 'Business Entity Type', draggable: true },
+    { id: 'businessEntityId', label: 'Business Entity ID', draggable: true },
+    { id: 'parentEntity', label: 'Parent Business Entity', draggable: true },
+    { id: 'childEntities', label: 'Child Business Entities', draggable: true },
+    { id: 'locations', label: 'Related Locations', draggable: true },
+    { id: 'updatedAt', label: 'Updated At', draggable: true }
+  ]);
+
+  const [columnWidths, setColumnWidths] = useState({
+    checkbox: 40,
+    actions: 100,
+    businessEntity: 200,
+    businessEntityType: 180,
+    businessEntityId: 150,
+    parentEntity: 200,
+    childEntities: 250,
+    locations: 200,
+    updatedAt: 180
+  });
+
+  const [visibleColumns, setVisibleColumns] = useState({
+    businessEntity: true,
+    businessEntityType: true,
+    businessEntityId: true,
+    parentEntity: true,
+    childEntities: true,
+    locations: true,
+    updatedAt: true
+  });
+
+  // Add drag and resize handlers (same as Employees.jsx)
+  const [draggedColumn, setDraggedColumn] = useState(null);
+
+  // Add column toggle handler
+  const handleColumnToggle = (columnName) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [columnName]: !prev[columnName]
+    }));
+  };
+
+  // Add reset columns function
+  const resetColumns = () => {
+    setVisibleColumns({
+      businessEntity: true,
+      businessEntityType: true,
+      businessEntityId: true,
+      parentEntity: true,
+      childEntities: true,
+      locations: true,
+      updatedAt: true
+    });
+  };
+
+  // Add these handlers after the state declarations
+  const handleDragStart = (e, column) => {
+    if (!column.draggable) return;
+    setDraggedColumn(column);
+    e.target.style.opacity = '0.5';
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedColumn(null);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, targetColumn) => {
+    e.preventDefault();
+    if (!draggedColumn || !targetColumn.draggable) return;
+
+    const newColumns = [...columns];
+    const draggedIdx = columns.findIndex(col => col.id === draggedColumn.id);
+    const targetIdx = columns.findIndex(col => col.id === targetColumn.id);
+
+    newColumns.splice(draggedIdx, 1);
+    newColumns.splice(targetIdx, 0, draggedColumn);
+
+    setColumns(newColumns);
+  };
+
+  // Add resize handlers
+  const handleResizeStart = (e, columnId) => {
+    e.preventDefault();
+    
+    const startX = e.pageX;
+    const startWidth = columnWidths[columnId];
+
+    const handleMouseMove = (moveEvent) => {
+      const newWidth = Math.max(50, startWidth + (moveEvent.pageX - startX));
+      setColumnWidths(prev => ({
+        ...prev,
+        [columnId]: newWidth
+      }));
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   return (
@@ -604,61 +715,82 @@ const OrganizationalEntitiesPage = () => {
                   <button
                     className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
                     type="button"
-                    id="TollFropdown"
+                    id="columnDropdown"
                     data-bs-toggle="dropdown"
                     aria-expanded={isColumnOpen}
                     onClick={ColumnDropDown}
                   >
-                    <FaTableColumns style={{ width: "14px", height: "14px" }} />
+                    <FaTableColumns className="hw-14" />
                   </button>
-                  <ul
-                    className={`dropdown-menu ${isColumnOpen ? "show" : ""}`}
-                    aria-labelledby="TollFropdown"
-                    style={{
-                      "--vz-dropdown-min-width": "15rem",
-                      "--vz-dropdown-font-size": "14px;",
-                    }}
-                  >
+                  <ul style={{'--vz-dropdown-min-width': '13rem'}} className={`dropdown-menu ${isColumnOpen ? "show" : ""}`}>
                     <li className="align-items-center justify-content-between d-flex me-1 ms-1">
                       <span className="fw-bold">Columns</span>
-                      <button className="blue reset-btn" title="Reset">
-                        Reset
-                      </button>
+                      <a className="blue" onClick={resetColumns} style={{ cursor: 'pointer' }}>Reset</a>
                     </li>
                     <li className="dropdown-checkbox">
                       <label>
-                        <input type="checkbox" className="ms-2 me-1" />{" "}
-                        Organizational Entity
+                        <input 
+                          type="checkbox" 
+                          className="ms-2 me-1"
+                          checked={visibleColumns.businessEntity}
+                          onChange={() => handleColumnToggle('businessEntity')}
+                        />
+                        Business Entity
                       </label>
                     </li>
                     <li className="dropdown-checkbox">
                       <label>
-                        <input type="checkbox" className="ms-2 me-1" />{" "}
-                        Organizational Entity Type
+                        <input 
+                          type="checkbox" 
+                          className="ms-2 me-1"
+                          checked={visibleColumns.businessEntityType}
+                          onChange={() => handleColumnToggle('businessEntityType')}
+                        />
+                        Business Entity Type
                       </label>
                     </li>
                     <li className="dropdown-checkbox">
                       <label>
-                        <input type="checkbox" className="ms-2 me-1" /> Related
-                        Locations
+                        <input 
+                          type="checkbox" 
+                          className="ms-2 me-1"
+                          checked={visibleColumns.businessEntityId}
+                          onChange={() => handleColumnToggle('businessEntityId')}
+                        />
+                        Business Entity ID
                       </label>
                     </li>
                     <li className="dropdown-checkbox">
                       <label>
-                        <input type="checkbox" className="ms-2 me-1" /> Parent
-                        Organizational Entity
+                        <input 
+                          type="checkbox" 
+                          className="ms-2 me-1"
+                          checked={visibleColumns.parentEntity}
+                          onChange={() => handleColumnToggle('parentEntity')}
+                        />
+                        Parent Business Entity
                       </label>
                     </li>
                     <li className="dropdown-checkbox">
                       <label>
-                        <input type="checkbox" className="ms-2 me-1" /> Updated
-                        At
+                        <input 
+                          type="checkbox" 
+                          className="ms-2 me-1"
+                          checked={visibleColumns.childEntities}
+                          onChange={() => handleColumnToggle('childEntities')}
+                        />
+                        Child Business Entities
                       </label>
                     </li>
                     <li className="dropdown-checkbox">
                       <label>
-                        <input type="checkbox" className="ms-2 me-1" /> Child
-                        Organizational Entities
+                        <input 
+                          type="checkbox" 
+                          className="ms-2 me-1"
+                          checked={visibleColumns.locations}
+                          onChange={() => handleColumnToggle('locations')}
+                        />
+                        Related Locations
                       </label>
                     </li>
                   </ul>
@@ -667,7 +799,7 @@ const OrganizationalEntitiesPage = () => {
                   <FaFilter style={{ width: "15px", height: "15px" }} />
                 </button>
               </div>
-              <div>
+              <div className="d-flex align-items-center">
                 <NavLink
                   className="button1 border-1"
                   to="/new-organizational-entity"
@@ -759,12 +891,27 @@ const OrganizationalEntitiesPage = () => {
                       />
                     </th>
                     <th>Actions</th>
-                    <th>Business Entity</th>
-                    <th>Business Entity Type</th>
-                    <th>Related Locations</th>
-                    <th>Parent Business Entity</th>
-                    <th>Child Business Entities</th>
-                    <th>Updated At</th>
+                    {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
+                      <th
+                        key={column.id}
+                        draggable={true}
+                        onDragStart={(e) => handleDragStart(e, column)}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, column)}
+                        style={{ 
+                          // cursor: 'move',
+                          width: `${columnWidths[column.id]}px`,
+                          position: 'relative'
+                        }}
+                      >
+                        {column.label}
+                        <div
+                          className="resize-handle"
+                          onMouseDown={(e) => handleResizeStart(e, column.id)}
+                        />
+                      </th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
@@ -778,25 +925,22 @@ const OrganizationalEntitiesPage = () => {
                         />
                       </td>
                       <td>
-                        <div className="d-flex gap-2">
+                        <div className="d-flex align-items-center gap-2">
                           <RiEdit2Line 
-                            style={{ cursor: "pointer", fontSize: "1.2em",color:'green' }}
+                            style={{ cursor: "pointer", fontSize: "1.2em", color:'green' }}
                             title="Edit"
                             onClick={() => handleEdit(row.id)}
                           />
                           <RiDeleteBin6Line
-                            style={{ cursor: "pointer", fontSize: "1.2em",color:'red' }}
+                            style={{ cursor: "pointer", fontSize: "1.2em", color:'red' }}
                             title="Delete"
                             onClick={() => handleDelete(row.id)}
                           />
                         </div>
                       </td>
-                      <td>{row.businessEntity}</td>
-                      <td>{row.entityType}</td>
-                      <td>{row.location}</td>
-                      <td>{row.parentEntity}</td>
-                      <td>{row.childEntities}</td>
-                      <td>{row.updatedAt}</td>
+                      {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
+                        <td key={`${row.id}-${column.id}`}>{row[column.id]}</td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>

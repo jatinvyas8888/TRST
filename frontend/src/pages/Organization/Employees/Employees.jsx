@@ -34,6 +34,66 @@ function Employees() {
   const { layoutMode } = useSelector(state => ({
     layoutMode: state.Layout.layoutMode
   }));
+  const [visibleColumns, setVisibleColumns] = useState({
+    id: true,
+    employee: true,
+    firstName: true,
+    lastName: true,
+    employeeID: true,
+    workEmailAddress: true,
+    homePhoneNumber: true,
+    workMobilePhone: true,
+    workPhone: true,
+    personalMobilePhone: true,
+    department: true,
+    portalUser: true,
+    portalLoginName: true,
+    updatedAt: true,
+    updatedBy: true
+  });
+
+  const [columns, setColumns] = useState([
+    { id: 'checkbox', label: '', draggable: false },
+    { id: 'actions', label: 'Actions', draggable: false },
+    { id: 'id', label: 'ID', draggable: true },
+    { id: 'employee', label: 'Employee', draggable: true },
+    { id: 'firstName', label: 'First Name', draggable: true },
+    { id: 'lastName', label: 'Last Name', draggable: true },
+    { id: 'employeeID', label: 'Employee ID', draggable: true },
+    { id: 'workEmailAddress', label: 'Work Email Address', draggable: true },
+    { id: 'homePhoneNumber', label: 'Home Phone Number', draggable: true },
+    { id: 'workMobilePhone', label: 'Work Mobile Phone', draggable: true },
+    { id: 'workPhone', label: 'Work Phone', draggable: true },
+    { id: 'personalMobilePhone', label: 'Personal Mobile Phone', draggable: true },
+    { id: 'department', label: 'Department', draggable: true },
+    { id: 'portalUser', label: 'Portal User', draggable: true },
+    { id: 'portalLoginName', label: 'Portal Login Name', draggable: true },
+    { id: 'updatedAt', label: 'Updated At', draggable: true },
+    { id: 'updatedBy', label: 'Updated By', draggable: true }
+  ]);
+
+  const [draggedColumn, setDraggedColumn] = useState(null);
+
+  // Add this state for column widths
+  const [columnWidths, setColumnWidths] = useState({
+    checkbox: 40,
+    actions: 100,
+    id: 150,
+    employee: 200,
+    firstName: 150,
+    lastName: 150,
+    employeeID: 120,
+    workEmailAddress: 200,
+    homePhoneNumber: 150,
+    workMobilePhone: 150,
+    workPhone: 150,
+    personalMobilePhone: 150,
+    department: 200,
+    portalUser: 120,
+    portalLoginName: 150,
+    updatedAt: 180,
+    updatedBy: 150
+  });
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -207,6 +267,86 @@ function Employees() {
   const indexOfLastRow = currentPage * itemsPerPage;
   const indexOfFirstRow = indexOfLastRow - itemsPerPage;
   const currentRows = employees.slice(indexOfFirstRow, indexOfLastRow);
+
+  const handleColumnToggle = (columnName) => {
+    setVisibleColumns(prev => ({
+      ...prev,
+      [columnName]: !prev[columnName]
+    }));
+  };
+
+  const resetColumns = () => {
+    setVisibleColumns({
+      id: true,
+      employee: true,
+      firstName: true,
+      lastName: true,
+      employeeID: true,
+      workEmailAddress: true,
+      homePhoneNumber: true,
+      workMobilePhone: true,
+      workPhone: true,
+      personalMobilePhone: true,
+      department: true,
+      portalUser: true,
+      portalLoginName: true,
+      updatedAt: true,
+      updatedBy: true
+    });
+  };
+
+  const handleDragStart = (e, column) => {
+    if (!column.draggable) return;
+    setDraggedColumn(column);
+    e.target.style.opacity = '0.5';
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedColumn(null);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e, targetColumn) => {
+    e.preventDefault();
+    if (!draggedColumn || !targetColumn.draggable) return;
+
+    const newColumns = [...columns];
+    const draggedIdx = columns.findIndex(col => col.id === draggedColumn.id);
+    const targetIdx = columns.findIndex(col => col.id === targetColumn.id);
+
+    newColumns.splice(draggedIdx, 1);
+    newColumns.splice(targetIdx, 0, draggedColumn);
+
+    setColumns(newColumns);
+  };
+
+  // Add resize handlers
+  const handleResizeStart = (e, columnId) => {
+    e.preventDefault();
+    
+    const startX = e.pageX;
+    const startWidth = columnWidths[columnId];
+
+    const handleMouseMove = (moveEvent) => {
+      const newWidth = Math.max(50, startWidth + (moveEvent.pageX - startX));
+      setColumnWidths(prev => ({
+        ...prev,
+        [columnId]: newWidth
+      }));
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
 
   return (
     <React.Fragment>
@@ -438,130 +578,46 @@ function Employees() {
                 <button
                   className="button border-1 ms-1"
                   onClick={handleRefresh}
-                  disabled={loading}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                  style={{ border: 'none', cursor: 'pointer' }}
                 >
-                  {loading ? <FaSync className="spinner" /> : <FaSync />}
+                  <LuRefreshCw className="hw-15" />
                 </button>
                 <span className="dropdown">
                   <button
                     className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
                     type="button"
-                    id="TollFropdown"
+                    id="columnDropdown"
                     data-bs-toggle="dropdown"
                     aria-expanded={isColumnOpen}
                     onClick={ColumnDropDown}
                   >
                     <FaTableColumns className="hw-14" />
                   </button>
-                  <ul
-                    className={`dropdown-menu ${isColumnOpen ? "show" : ""}`}
-                    aria-labelledby="TollFropdown"
-                    style={{
-                      "--vz-dropdown-min-width": "15rem",
-                      "--vz-dropdown-font-size": "14px;",
-                    }}
-                  >
+                  <ul style={{'--vz-dropdown-min-width': '13rem'}} className={`dropdown-menu ${isColumnOpen ? "show" : ""}`}>
                     <li className="align-items-center justify-content-between d-flex me-1 ms-1">
-                      <span className="fw-bold">Columns</span>{" "}
-                      <a className="blue">Reset</a>
+                      <span className="fw-bold">Columns</span>
+                      <a className="blue" onClick={resetColumns} style={{ cursor: 'pointer' }}>Reset</a>
                     </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        ID{" "}
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" /> Employee{" "}
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        First Name
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Last Name
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Employee ID
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Work Email Address{" "}
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Home Phone Number
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Work Mobile Number{" "}
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Work Phone{" "}
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Personal Mobile Phone{" "}
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Department{" "}
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Portal User
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Portal Login Name
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Updated At{" "}
-                      </label>
-                    </li>
-                    <li class="dropdown-checkbox">
-                      <label>
-                        <input type="checkbox" className="ms-2 me-1" />
-                        Updated By
-                      </label>
-                    </li>
+                    {columns.filter(col => col.draggable).map(column => (
+                      <li key={column.id} className="dropdown-checkbox">
+                        <label>
+                          <input 
+                            type="checkbox" 
+                            className="ms-2 me-1"
+                            checked={visibleColumns[column.id]}
+                            onChange={() => handleColumnToggle(column.id)}
+                          />
+                          {column.label}
+                        </label>
+                      </li>
+                    ))}
                   </ul>
                 </span>
                 <button className="button border-1 ms-1">
                   <FaFilter className="hw-15" />
                 </button>
               </div>
-              <div>
+              <div className="d-flex align-items-center">
                 <NavLink className="button1 border-1" to="/new-employee">
                   <TiPlus className="hw-20" />
                   Employees
@@ -649,21 +705,27 @@ function Employees() {
                     />
                   </th>
                   <th>Actions</th>
-                  <th>ID</th>
-                  <th>Employee</th>
-                  <th>First Name</th>
-                  <th>Last Name</th>
-                  <th>Employee ID</th>
-                  <th>Work Email Address</th>
-                  <th>Home Phone Number</th>
-                  <th>Work Mobile Phone</th>
-                  <th>Work Phone</th>
-                  <th>Personal Mobile Phone</th>
-                  <th>Department</th>
-                  <th>Portal User</th>
-                  <th>Portal Login Name</th>
-                  <th>Updated At</th>
-                  <th>Updated By</th>
+                  {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
+                    <th
+                      key={column.id}
+                      draggable={true}
+                      onDragStart={(e) => handleDragStart(e, column)}
+                      onDragEnd={handleDragEnd}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, column)}
+                      style={{ 
+                        // cursor: 'move',
+                        width: `${columnWidths[column.id]}px`,
+                        position: 'relative'
+                      }}
+                    >
+                      {column.label}
+                      <div
+                        className="resize-handle"
+                        onMouseDown={(e) => handleResizeStart(e, column.id)}
+                      />
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -677,46 +739,46 @@ function Employees() {
                       />
                     </td>
                     <td>
-                      <div style={{ display: "flex", gap: "10px" }}>
+                      <div style={{gap: "10px" }} className="d-flex align-items-center">
                         <CiEdit
                           style={{ cursor: "pointer", color: "green" }}
                           title="Edit"
                           onClick={() => handleEdit(employee._id)}
                         />
                         <RiDeleteBin6Line
-                          style={{ 
-                            cursor: "pointer", 
-                            color: "red",
-                            opacity: checkedItems.includes(employee._id) ? 1 : 0.7 
-                          }}
+                          style={{ cursor: "pointer", color: "red" }}
                           title="Delete"
                           onClick={() => handleDelete(employee._id)}
                         />
                       </div>
                     </td>
-                    <td>{employee._id}</td>
-                    <td>{`${employee.firstName} ${employee.lastName}`}</td>
-                    <td>{employee.firstName}</td>
-                    <td>{employee.lastName}</td>
-                    <td>{employee.employeeID}</td>
-                    <td>{employee.workEmailAddress || "-"}</td>
-                    <td>{employee.homePhoneNumber || "-"}</td>
-                    <td>{employee.workMobilePhone || "-"}</td>
-                    <td>{employee.workPhone || "-"}</td>
-                    <td>{employee.personalMobilePhone || "-"}</td>
-                    <td>{employee.departmentNames?.join(", ") || "-"}</td>
-                    <td>
-                      {employee.portalUser ? (
-                        <span className="badge bg-success">Yes</span>
-                      ) : (
-                        <span className="badge bg-secondary">No</span>
-                      )}
-                    </td>
-                    <td>{employee.portalLoginName || "-"}</td>
-                    <td>{new Date(employee.updatedAt).toLocaleString()}</td>
-                    <td>
-                      {employee.updatedBy?.fullName || "-"}
-                    </td>
+                    {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
+                      <td key={`${employee._id}-${column.id}`}>
+                        {column.id === 'id' && employee._id}
+                        {column.id === 'employee' && `${employee.firstName} ${employee.lastName}`}
+                        {column.id === 'firstName' && employee.firstName}
+                        {column.id === 'lastName' && employee.lastName}
+                        {column.id === 'employeeID' && employee.employeeID}
+                        {column.id === 'workEmailAddress' && (employee.workEmailAddress || "-")}
+                        {column.id === 'homePhoneNumber' && (employee.homePhoneNumber || "-")}
+                        {column.id === 'workMobilePhone' && (employee.workMobilePhone || "-")}
+                        {column.id === 'workPhone' && (employee.workPhone || "-")}
+                        {column.id === 'personalMobilePhone' && (employee.personalMobilePhone || "-")}
+                        {column.id === 'department' && (employee.departmentNames?.join(", ") || "-")}
+                        {column.id === 'portalUser' && (
+                          <span className={`badge ${employee.portalUser ? 'bg-success' : 'bg-secondary'}`}>
+                            {employee.portalUser ? "Yes" : "No"}
+                          </span>
+                        )}
+                        {column.id === 'portalLoginName' && (employee.portalLoginName || "-")}
+                        {column.id === 'updatedAt' && (
+                          employee.updatedAt ? 
+                          new Date(employee.updatedAt).toLocaleString() : 
+                          "-"
+                        )}
+                        {column.id === 'updatedBy' && (employee.updatedBy || "-")}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>

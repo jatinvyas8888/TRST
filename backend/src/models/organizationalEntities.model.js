@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 
 // Define the allowed business entity types
-const BUSINESS_ENTITY_TYPES = ['Company', 'Business Unit', 'Division', 'Department'];
+// const BUSINESS_ENTITY_TYPES = ['Company', 'Business Unit', 'Division', 'Department'];
 
 const businessEntitySchema = new mongoose.Schema({
     businessEntityType: {
@@ -17,7 +17,6 @@ const businessEntitySchema = new mongoose.Schema({
     },
     businessEntityId: {
         type: String,
-        unique: true,
     },
     editors: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -54,4 +53,4 @@ businessEntitySchema.pre('save', function (next) {
 
 export const BusinessEntity = mongoose.model("BusinessEntity", businessEntitySchema)
 
-export { BUSINESS_ENTITY_TYPES };
+// export { BUSINESS_ENTITY_TYPES };

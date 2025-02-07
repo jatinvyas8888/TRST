@@ -1,33 +1,23 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { NavLink } from "react-router-dom";
 import { FaCheck, FaPrint, FaRegFilePdf } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { HiMiniWrench } from "react-icons/hi2";
-import { BiSolidEdit, BiSearchAlt2 } from "react-icons/bi";
+import { BiSolidEdit } from "react-icons/bi";
 import { FcSettings } from "react-icons/fc";
 import { LuTableOfContents, LuClock9 } from "react-icons/lu";
-import { IoIosSearch } from "react-icons/io";
-import { FaCircleQuestion } from "react-icons/fa6";
 import "./Clients.css";
-import { SlCalender } from "react-icons/sl";
 import {
-  Card,
-  CardBody,
-  Col,
-  Container,
   Input,
   Label,
-  Row,
-  Button,
   Form,
-  FormFeedback,
-  Alert,
-  Spinner,
 } from "reactstrap";
-import { TiPlus } from "react-icons/ti";
+import axios from "axios";
+import Toastify from "toastify-js";
 
 function NewClient() {
+  const navigate = useNavigate();
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isTimeZoneOpen, setIsTimeZoneOpen] = useState(false); // Time Zone dropdown
   const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
@@ -60,23 +50,329 @@ function NewClient() {
     "Alabama",
     "Alaska",
     "Arizona",
+    "Arkansas",
+    "California",
+    "Colorado",
+    "Connecticut",
+    "Delaware",
+    "District of Columbia",
+    "Florida",
+    "Georgia",
+    "Hawaii",
+    "Idaho",
+    "Illinois",
     "Indiana",
-  ];
+    "Iowa",
+    "Kansas",
+    "Kentucky",
+    "Louisiana",
+    "Maine",
+    "Maryland",
+    "Massachusetts",
+    "Michigan",
+    "Minnesota",
+    "Mississippi",
+    "Missouri",
+    "Montana",
+    "Nebraska",
+    "Nevada",
+    "New Hampshire",
+    "New Jersey",
+    "New Mexico",
+    "New York",
+    "North Carolina",
+    "North Dakota",
+    "Ohio",
+    "Oklahoma",
+    "Oregon",
+    "Pennsylvania",
+    "Rhode Island",
+    "South Carolina",
+    "South Dakota",
+    "Tennessee",
+    "Texas",
+    "Utah",
+    "Vermont",
+    "Virginia",
+    "Washington",
+    "West Virginia",
+    "Wisconsin",
+    "Wyoming",
+  ];
   const CountryOptions = [
     "-- Please select --",
-    "United States",
-    "Canada",
-    "United Kingdom",
+    "Afghanistan",
+    "Alaska",
+    "Algeria",
+    "American Samoa",
+    "Andorra",
+    "Angola",
+    "Anguilla",
+    "Antarctica",
+    "Antigua",
+    "Argentina",
+    "Armenia",
+    "Aruba",
     "Australia",
-  ];
+    "Austria",
+    "Azerbaijan",
+    "Bahamas",
+    "Bahrain",
+    "Bangladesh",
+    "Barbados",
+    "Belarus",
+    "Belgium",
+    "Belize",
+    "Benin",
+    "Bermuda",
+    "Bhutan",
+    "Bolivia",
+    "Bosnia",
+    "Botswana",
+    "Brazil",
+    "Brunei Darussalam",
+    "Bulgaria",
+    "Burkina Faso",
+    "Burundi",
+    "Cambodia",
+    "Cameroon",
+    "Canada",
+    "Cayman Islands",
+    "Chad",
+    "Chile",
+    "China",
+    "Colombia",
+    "Comoros",
+    "Congo",
+    "Costa Rica",
+    "Croatia",
+    "Cuba",
+    "Cyprus",
+    "Czech Republic",
+    "Denmark",
+    "Dominican Republic",
+    "Ecuador",
+    "Egypt",
+    "El Salvador",
+    "Equatorial Guinea",
+    "Eritrea",
+    "Estonia",
+    "Ethiopia",
+    "Fiji",
+    "Finland",
+    "France",
+    "Gabon",
+    "Gambia",
+    "Georgia",
+    "Germany",
+    "Ghana",
+    "Greece",
+    "Greenland",
+    "Grenada",
+    "Guadeloupe",
+    "Guam",
+    "Guatemala",
+    "Guinea",
+    "Guyana",
+    "Haiti",
+    "Honduras",
+    "Hong Kong",
+    "Hungary",
+    "Iceland",
+    "India",
+    "Indonesia",
+    "Iran",
+    "Iraq",
+    "Ireland",
+    "Israel",
+    "Italy",
+    "Jamaica",
+    "Japan",
+    "Jordan",
+    "Kazakhstan",
+    "Korea, North",
+    "Korea, South",
+    "Kuwait",
+    "Kyrgyzstan",
+    "Lao Democratic Republic",
+    "Latvia",
+    "Lebanon",
+    "Liberia",
+    "Libya",
+    "Liechtenstein",
+    "Lithuania",
+    "Luxembourg",
+    "Macedonia",
+    "Madagascar",
+    "Malawi",
+    "Malaysia",
+    "Maldives",
+    "Malta",
+    "Mexico",
+    "Micronesia",
+    "Moldova",
+    "Monaco",
+    "Mongolia",
+    "Morocco",
+    "Mozambique",
+    "Myanmar",
+    "Namibia",
+    "Nepal",
+    "Netherlands",
+    "New Zealand",
+    "Nicaragua",
+    "Niger",
+    "Nigeria",
+    "Norway",
+    "Oman",
+    "Pakistan",
+    "Palau",
+    "Palestine",
+    "Panama",
+    "Papua New Guinea",
+    "Paraguay",
+    "Peru",
+    "Philippines",
+    "Poland",
+    "Portugal",
+    "Puerto Rico",
+    "Qatar",
+    "Romania",
+    "Russian Federation",
+    "Rwanda",
+    "Saint Lucia",
+    "Saint Vincent Grenadines",
+    "Samoa",
+    "San Marino",
+    "Sao Tome and Principe",
+    "Saudi Arabia",
+    "Senegal",
+    "Serbia",
+    "Sierra Leone",
+    "Singapore",
+    "Slovakia",
+    "Slovenia",
+    "Somalia",
+    "South Africa",
+    "Spain",
+    "Sri Lanka",
+    "Sudan",
+    "Suriname",
+    "Sweden",
+    "Switzerland",
+    "Syria",
+    "Taiwan",
+    "Tajikistan",
+    "Tanzania",
+    "Thailand",
+    "Togo",
+    "Trinidad and Tobago",
+    "Tunisia",
+    "Turkey",
+    "Turkmenistan",
+    "Tuvalu",
+    "Uganda",
+    "Ukraine",
+    "United Arab Emirates",
+    "United Kingdom",
+    "United States",
+    "Uruguay",
+    "Uzbekistan",
+    "Vatican",
+    "Venezuela",
+    "Vietnam",
+    "Yemen",
+    "Zambia",
+    "Zimbabwe",
+  ];
   const handleSelectState = (option) => {
-    setSelectedSate(option);
+    setSelectedState(option);
     setIsStateOpen(false);
+    setFormData(prev => ({
+      ...prev,
+      stateProvince: option === "-- Please select --" ? "" : option
+    }));
   };
   const handleSelectCountry = (option) => {
     setSelectedCountry(option);
     setIsCountryOpen(false);
+    setFormData(prev => ({
+      ...prev,
+      country: option === "-- Please select --" ? "" : option
+    }));
   };
+
+  const [formData, setFormData] = useState({
+    company: "",
+    website: "",
+    mainPhone: "",
+    fax: "",
+    address1: "",
+    address2: "",
+    city: "",
+    stateProvince: "",
+    country: "",
+    zipCode: ""
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      
+      // Validate required fields
+      if (!formData.company) {
+        alert("Company name is required");
+        return;
+      }
+      
+      console.log("Sending FormData:", formData);
+      
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/clients/create",
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true
+        }
+      );
+      
+      console.log("Response:", response.data);
+
+      Toastify({
+        text: "Client created successfully!",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+          background: "#28a745",
+        },
+      }).showToast();
+      navigate("/clients");
+    } catch (error) {
+      console.error("Full error:", error);
+      if (error.response) {
+        console.log("Error response:", error.response.data);
+        alert(error.response.data.message || "Error creating client");
+      } else {
+        alert("Network error occurred");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <React.Fragment>
       <Helmet>
@@ -90,31 +386,30 @@ function NewClient() {
             <div className="header-text">Client: New Client</div>
             <div className="d-flex align-items-center justify-content-end">
               <div>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save"
+              <button
+                  className="btn btn-secondary me-2"
+                  onClick={() => navigate("/clients")}
+                  title="Cancel"
                 >
                   <RxCross2
                     className="me-1"
                     style={{ width: "15px", height: "15px" }}
                   />
                   Cancel
-                </NavLink>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save"
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                  title="Create Client"
                 >
-                  Save & New
-                </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
                   <FaCheck
                     className="me-1"
                     style={{ width: "15px", height: "15px" }}
                   />
-                  Save
-                </NavLink>
+                  {loading ? "Saving..." : "Save"}
+                </button>
               </div>
               <div
                 className="map-action k-widget k-button-group order-1"
@@ -182,42 +477,56 @@ function NewClient() {
           <Form>
             <div className="row pt-4">
               <div className="col-6">
-                {["Company"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                      <span class="text-danger">*</span>
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
-                {["Website"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="company" className="form-label me-2 fs-15 w-40">
+                    Company<span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="company"
+                    className="form-control"
+                    type="text"
+                    value={formData.company}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="website" className="form-label me-2 fs-15 w-40">
+                    Website
+                  </Label>
+                  <Input
+                    name="website"
+                    className="form-control"
+                    type="text"
+                    value={formData.website}
+                    onChange={handleInputChange}
+                  />
+                </div>
               </div>
               <div className="col-6">
-                {["Main Phone", "Fax"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="mainPhone" className="form-label me-2 fs-15 w-40">
+                    Main Phone
+                  </Label>
+                  <Input
+                    name="mainPhone"
+                    className="form-control"
+                    type="text"
+                    value={formData.mainPhone}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="fax" className="form-label me-2 fs-15 w-40">
+                    Fax
+                  </Label>
+                  <Input
+                    name="fax"
+                    className="form-control"
+                    type="text"
+                    value={formData.fax}
+                    onChange={handleInputChange}
+                  />
+                </div>
               </div>
             </div>
           </Form>
@@ -228,17 +537,42 @@ function NewClient() {
           <Form>
             <div className="row pt-4">
               <div className="col-6">
-                {["Address 1", "Address 2", "City"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="address1" className="form-label me-2 fs-15 w-40">
+                    Address 1
+                  </Label>
+                  <Input
+                    name="address1"
+                    className="form-control"
+                    type="text"
+                    value={formData.address1}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="address2" className="form-label me-2 fs-15 w-40">
+                    Address 2
+                  </Label>
+                  <Input
+                    name="address2"
+                    className="form-control"
+                    type="text"
+                    value={formData.address2}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="city" className="form-label me-2 fs-15 w-40">
+                    City
+                  </Label>
+                  <Input
+                    name="city"
+                    className="form-control"
+                    type="text"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                  />
+                </div>
               </div>
               <div className="col-6">
                 <div className="mb-3 d-flex align-items-center">
@@ -337,17 +671,18 @@ function NewClient() {
                     )}
                   </div>
                 </div>
-                {["Zip Code"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="zipCode" className="form-label me-2 fs-15 w-40">
+                    Zip Code
+                  </Label>
+                  <Input
+                    name="zipCode"
+                    className="form-control"
+                    type="text"
+                    value={formData.zipCode}
+                    onChange={handleInputChange}
+                  />
+                </div>
               </div>
             </div>
           </Form>

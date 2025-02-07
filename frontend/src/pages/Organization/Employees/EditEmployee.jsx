@@ -1,28 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { NavLink, useNavigate, useParams } from "react-router-dom";
-import { FaCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { HiMiniWrench } from "react-icons/hi2";
-import { BiSolidEdit } from "react-icons/bi";
-import { FcSettings } from "react-icons/fc";
 import { LuTableOfContents, LuClock9 } from "react-icons/lu";
 import { FaPrint, FaRegFilePdf } from "react-icons/fa";
-import { IoIosSearch } from "react-icons/io";
 import { BiRefresh } from "react-icons/bi";
 import {
-  Card,
-  CardBody,
-  Col,
-  Container,
   Input,
   Label,
-  Row,
-  Button,
   Form,
-  FormFeedback,
-  Alert,
-  Spinner,
 } from "reactstrap";
 import "./Employees.css";
 import axios from "axios";
@@ -101,12 +88,141 @@ function EditEmployee() {
     "-- Please select --",
     "GMT - Coordinated Universal Time",
     "GMT - Greenwich Mean Time",
-    "GMT - Western European",
-    "EST - Eastern Standard Time",
-    "CST - Central Standard Time",
-    "MST - Mountain Standard Time",
-    "PST - Pacific Standard Time",
-  ];
+    "GMT - Western European Time",
+    "GMT+01 - AIX specific equivalent of Central European Time",
+    "GMT+01 - Central European Time",
+    "GMT+01 - Irish Summer Time",
+    "GMT+01 - Middle European Time Same zone as CET",
+    "GMT+01 - West Africa Time",
+    "GMT+01 - Western European Daylight Time",
+    "GMT+01 - Western European Summer Time",
+    "GMT+02 - Central Africa Time",
+    "GMT+02 - Central European Daylight Time",
+    "GMT+02 - Central European Summer Time (Cf. HAEC)",
+    "GMT+02 - Eastern European Time",
+    "GMT+02 - Israel Standard Time",
+    "GMT+02 - Middle European Saving Time",
+    "GMT+02 - South African Standard Time",
+    "GMT+03 - Arab Standard Time (Kuwait)",
+    "GMT+03 - Arabic Standard Time (Baghdad)",
+    "GMT+03 - East Africa Time",
+    "GMT+03 - Eastern European Daylight Time",
+    "GMT+03 - Eastern European Summer Time",
+    "GMT+03 - Israeli Daylight Time",
+    "GMT+03 - Moscow Standard Time",
+    "GMT+03:30 - Iran Standard Time",
+    "GMT+04 - Arabian Standard Time (Abu Dhabi)",
+    "GMT+04 - Armenia Time",
+    "GMT+04 - Azerbaijan Time",
+    "GMT+04 - Georgia Standard Time",
+    "GMT+04 - Gulf Standard Time",
+    "GMT+04 - Mauritius Time",
+    "GMT+04 - Moscow Summer Time",
+    "GMT+04 - Réunion Time",
+    "GMT+04 - Samara Time",
+    "GMT+04 - Seychelles Time",
+    "GMT+04:30 - Afghanistan Time",
+    "GMT+05 - Armenia Summer Time",
+    "GMT+05 - Heard and McDonald Islands Time",
+    "GMT+05 - Pakistan Standard Time",
+    "GMT+05 - Yekaterinburg Time",
+    "GMT+05:30 - Indian Standard Time",
+    "GMT+05:30 - Sri Lanka Time",
+    "GMT+05:45 - Nepal Time",
+    "GMT+06 - Bangladesh Standard Time",
+    "GMT+06 - Bhutan Time",
+    "GMT+06 - British Indian Ocean Time",
+    "GMT+06 - Omsk Time",
+    "GMT+06:30 - Cocos Islands Time",
+    "GMT+06:30 - Myanmar Standard Time",
+    "GMT+07 - Christmas Island Time",
+    "GMT+07 - Indochina Time",
+    "GMT+07 - Krasnoyarsk Time",
+    "GMT+07 - Thailand Standard Time",
+    "GMT+08 - ASEAN Common Time",
+    "GMT+08 - Australian Western Standard Time",
+    "GMT+08 - Brunei Time",
+    "GMT+08 - China Standard Time",
+    "GMT+08 - China Time",
+    "GMT+08 - Hong Kong Time",
+    "GMT+08 - Irkutsk Time",
+    "GMT+08 - Malaysia Time",
+    "GMT+08 - Malaysian Standard Time",
+    "GMT+08 - Philippine Standard Time",
+    "GMT+08 - Singapore Standard Time",
+    "GMT+08 - Singapore Time",
+    "GMT+08 - Western Standard Time",
+    "GMT+09 - Australian Western Daylight Time",
+    "GMT+09 - Japan Standard Time",
+    "GMT+09 - Korea Standard Time",
+    "GMT+09 - Yakutsk Time",
+    "GMT+09:30 - Australian Central Standard Time",
+    "GMT+09:30 - Central Standard Time (Australia)",
+    "GMT+10 - Australian Eastern Standard Time",
+    "GMT+10 - Chamorro Standard Time",
+    "GMT+10 - Vladivostok Time",
+    "GMT+10:30 - Australian Central Daylight Time",
+    "GMT+10:30 - Lord Howe Standard Time",
+    "GMT+11 - Australian Eastern Daylight Time",
+    "GMT+11 - Magadan Time",
+    "GMT+11 - Solomon Islands Time",
+    "GMT+11:30 - Norfolk Time",
+    "GMT+12 - Fiji Time",
+    "GMT+12 - Gilbert Island Time",
+    "GMT+12 - Kamchatka Time",
+    "GMT+12 - New Zealand Standard Time",
+    "GMT+12:45 - Chatham Standard Time",
+    "GMT+13 - New Zealand Daylight Time",
+    "GMT+13 - Phoenix Island Time",
+    "GMT+13:45 - Chatham Daylight Time",
+    "GMT+14 -  Line Islands Time",
+    "GMT-01 - Azores Standard Time",
+    "GMT-01 - Cape Verde Time",
+    "GMT-02 - South Georgia and the South Sandwich Islands",
+    "GMT-02 - Uruguay Summer Time",
+    "GMT-02:30 - Newfoundland Daylight Time",
+    "GMT-03 - Argentina Time",
+    "GMT-03 - Atlantic Daylight Time",
+    "GMT-03 - Brasilia Time",
+    "GMT-03 - Chile Summer Time",
+    "GMT-03 - Falkland Islands Summer Time",
+    "GMT-03 - French Guiana Time",
+    "GMT-03 - Uruguay Standard Time",
+    "GMT-03:30 - Newfoundland Standard Time",
+    "GMT-03:30 - Newfoundland Time",
+    "GMT-04 - Atlantic Standard Time",
+    "GMT-04 - Bolivia Time",
+    "GMT-04 - Chile Standard Time",
+    "GMT-04 - Colombia Summer Time",
+    "GMT-04 - Eastern Caribbean Time (does not recognise DST)",
+    "GMT-04 - Eastern Daylight Time (North America)",
+    "GMT-04 - Falkland Islands Time",
+    "GMT-04 - Guyana Time",
+    "GMT-04:30 - Venezuelan Standard Time",
+    "GMT-05 - Central Daylight Time (North America)",
+    "GMT-05 - Colombia Time",
+    "GMT-05 - Eastern Standard Time (North America)",
+    "GMT-05 - Ecuador Time",
+    "GMT-06 - Central Standard Time (North America)",
+    "GMT-06 - Easter Island Standard Time",
+    "GMT-06 - Galapagos Time",
+    "GMT-06 - Mountain Daylight Time (North America)",
+    "GMT-07 - Mountain Standard Time (North America)",
+    "GMT-07 - Pacific Daylight Time&#160;(North America)",
+    "GMT-08 - Alaska Daylight Time",
+    "GMT-08 - Clipperton Island Standard Time",
+    "GMT-08 - Pacific Daylight Time (North America)",
+    "GMT-09 - Alaska Standard Time",
+    "GMT-09 - Gambier Island Time",
+    "GMT-09 - Hawaii-Aleutian Daylight Time",
+    "GMT-09:30 - Marquesas Islands Time",
+    "GMT-10 - Cook Island Time",
+    "GMT-10 - Hawaii Standard Time",
+    "GMT-10 - Hawaii-Aleutian Standard Time",
+    "GMT-10 -  Tahiti Time",
+    "GMT-11 - Samoa Standard Time",
+    "GMT-12 -  Baker Island Time",
+  ];
 
   const statusOptions = ["-- Please select --", "Active", "Terminated"];
   const StateOptions = [
@@ -114,15 +230,241 @@ function EditEmployee() {
     "Alabama",
     "Alaska",
     "Arizona",
+    "Arkansas",
+    "California",
+    "Colorado",
+    "Connecticut",
+    "Delaware",
+    "District of Columbia",
+    "Florida",
+    "Georgia",
+    "Hawaii",
+    "Idaho",
+    "Illinois",
     "Indiana",
-  ];
+    "Iowa",
+    "Kansas",
+    "Kentucky",
+    "Louisiana",
+    "Maine",
+    "Maryland",
+    "Massachusetts",
+    "Michigan",
+    "Minnesota",
+    "Mississippi",
+    "Missouri",
+    "Montana",
+    "Nebraska",
+    "Nevada",
+    "New Hampshire",
+    "New Jersey",
+    "New Mexico",
+    "New York",
+    "North Carolina",
+    "North Dakota",
+    "Ohio",
+    "Oklahoma",
+    "Oregon",
+    "Pennsylvania",
+    "Rhode Island",
+    "South Carolina",
+    "South Dakota",
+    "Tennessee",
+    "Texas",
+    "Utah",
+    "Vermont",
+    "Virginia",
+    "Washington",
+    "West Virginia",
+    "Wisconsin",
+    "Wyoming",
+  ];
   const CountryOptions = [
     "-- Please select --",
-    "United States",
-    "Canada",
-    "United Kingdom",
+    "Afghanistan",
+    "Alaska",
+    "Algeria",
+    "American Samoa",
+    "Andorra",
+    "Angola",
+    "Anguilla",
+    "Antarctica",
+    "Antigua",
+    "Argentina",
+    "Armenia",
+    "Aruba",
     "Australia",
-  ];
+    "Austria",
+    "Azerbaijan",
+    "Bahamas",
+    "Bahrain",
+    "Bangladesh",
+    "Barbados",
+    "Belarus",
+    "Belgium",
+    "Belize",
+    "Benin",
+    "Bermuda",
+    "Bhutan",
+    "Bolivia",
+    "Bosnia",
+    "Botswana",
+    "Brazil",
+    "Brunei Darussalam",
+    "Bulgaria",
+    "Burkina Faso",
+    "Burundi",
+    "Cambodia",
+    "Cameroon",
+    "Canada",
+    "Cayman Islands",
+    "Chad",
+    "Chile",
+    "China",
+    "Colombia",
+    "Comoros",
+    "Congo",
+    "Costa Rica",
+    "Croatia",
+    "Cuba",
+    "Cyprus",
+    "Czech Republic",
+    "Denmark",
+    "Dominican Republic",
+    "Ecuador",
+    "Egypt",
+    "El Salvador",
+    "Equatorial Guinea",
+    "Eritrea",
+    "Estonia",
+    "Ethiopia",
+    "Fiji",
+    "Finland",
+    "France",
+    "Gabon",
+    "Gambia",
+    "Georgia",
+    "Germany",
+    "Ghana",
+    "Greece",
+    "Greenland",
+    "Grenada",
+    "Guadeloupe",
+    "Guam",
+    "Guatemala",
+    "Guinea",
+    "Guyana",
+    "Haiti",
+    "Honduras",
+    "Hong Kong",
+    "Hungary",
+    "Iceland",
+    "India",
+    "Indonesia",
+    "Iran",
+    "Iraq",
+    "Ireland",
+    "Israel",
+    "Italy",
+    "Jamaica",
+    "Japan",
+    "Jordan",
+    "Kazakhstan",
+    "Korea, North",
+    "Korea, South",
+    "Kuwait",
+    "Kyrgyzstan",
+    "Lao Democratic Republic",
+    "Latvia",
+    "Lebanon",
+    "Liberia",
+    "Libya",
+    "Liechtenstein",
+    "Lithuania",
+    "Luxembourg",
+    "Macedonia",
+    "Madagascar",
+    "Malawi",
+    "Malaysia",
+    "Maldives",
+    "Malta",
+    "Mexico",
+    "Micronesia",
+    "Moldova",
+    "Monaco",
+    "Mongolia",
+    "Morocco",
+    "Mozambique",
+    "Myanmar",
+    "Namibia",
+    "Nepal",
+    "Netherlands",
+    "New Zealand",
+    "Nicaragua",
+    "Niger",
+    "Nigeria",
+    "Norway",
+    "Oman",
+    "Pakistan",
+    "Palau",
+    "Palestine",
+    "Panama",
+    "Papua New Guinea",
+    "Paraguay",
+    "Peru",
+    "Philippines",
+    "Poland",
+    "Portugal",
+    "Puerto Rico",
+    "Qatar",
+    "Romania",
+    "Russian Federation",
+    "Rwanda",
+    "Saint Lucia",
+    "Saint Vincent Grenadines",
+    "Samoa",
+    "San Marino",
+    "Sao Tome and Principe",
+    "Saudi Arabia",
+    "Senegal",
+    "Serbia",
+    "Sierra Leone",
+    "Singapore",
+    "Slovakia",
+    "Slovenia",
+    "Somalia",
+    "South Africa",
+    "Spain",
+    "Sri Lanka",
+    "Sudan",
+    "Suriname",
+    "Sweden",
+    "Switzerland",
+    "Syria",
+    "Taiwan",
+    "Tajikistan",
+    "Tanzania",
+    "Thailand",
+    "Togo",
+    "Trinidad and Tobago",
+    "Tunisia",
+    "Turkey",
+    "Turkmenistan",
+    "Tuvalu",
+    "Uganda",
+    "Ukraine",
+    "United Arab Emirates",
+    "United Kingdom",
+    "United States",
+    "Uruguay",
+    "Uzbekistan",
+    "Vatican",
+    "Venezuela",
+    "Vietnam",
+    "Yemen",
+    "Zambia",
+    "Zimbabwe",
+  ];
 
   // Dropdown toggles
   const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
@@ -759,13 +1101,14 @@ function EditEmployee() {
                         <td>{employee.workMobilePhone || "-"}</td>
                         <td>{employee.fax || "-"}</td>
                         <td>
-                          {typeof employee.manager === "object"
-                            ? `${employee.manager} ${employee.manager.lastName}`
+                          {employee.manager
+                            ? `${employee.manager.firstName} ${employee.manager.lastName}`
                             : employee.manager || "-"}
                         </td>
                         <td>{employee.departmentNames?.join(", ") || "-"}</td>
                         <td>{employee.streetAddress1 || "-"}</td>
                         <td>{employee.streetAddress2 || "-"}</td>
+
                         <td>{employee.city || "-"}</td>
                         <td>{employee.zipPostalCode || "-"}</td>
                         <td>{employee.stateProvince || "-"}</td>
@@ -1040,7 +1383,7 @@ function EditEmployee() {
                         <td>{employee.workMobilePhone || "-"}</td>
                         <td>{employee.fax || "-"}</td>
                         <td>
-                          {typeof employee.manager === "object"
+                          {employee.manager
                             ? `${employee.manager.firstName} ${employee.manager.lastName}`
                             : employee.manager || "-"}
                         </td>
@@ -1391,7 +1734,7 @@ function EditEmployee() {
                   </div>
                 ))}
                 <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="manager" className="form-label fs-15 w-29">
+                  <Label htmlFor="manager" className="form-label fs-15 w-29 me-4">
                     Manager
                   </Label>
                   <div className="position-relative flex-grow-1">
@@ -1458,7 +1801,7 @@ function EditEmployee() {
                 <div className="mb-3 d-flex align-items-center">
                   <Label
                     htmlFor="subordinates"
-                    className="form-label fs-15 w-29"
+                    className="form-label fs-15 w-29 me-4"
                   >
                     Subordinates
                   </Label>
@@ -1606,7 +1949,7 @@ function EditEmployee() {
             <div className="row pt-4">
               <div className="col-6">
                 <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="location" className="form-label fs-18 w-29">
+                  <Label htmlFor="location" className="form-label fs-18 w-29 me-4">
                     Location
                   </Label>
                   <div className="position-relative flex-grow-1">
@@ -1690,7 +2033,7 @@ function EditEmployee() {
               </div>
               <div className="col-6">
                 <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="department" className="form-label fs-15 w-29">
+                  <Label htmlFor="department" className="form-label fs-15 w-29 me-4">
                     Department
                   </Label>
                   <div className="d-flex position-relative flex-grow-1">
@@ -1806,7 +2149,7 @@ function EditEmployee() {
                     <div className="mb-3 d-flex align-items-center">
                       <Label
                         htmlFor="stateProvince"
-                        className="form-label fs-15 w-29"
+                        className="form-label fs-15 w-29 me-4"
                       >
                         State/Province
                       </Label>
@@ -1841,7 +2184,7 @@ function EditEmployee() {
                   <div className="mb-3 d-flex align-items-center">
                     <Label
                       htmlFor="country"
-                      className="form-label fs-15 w-29"
+                      className="form-label fs-15 w-29 me-4"
                     >
                       Country
                     </Label>
@@ -1998,17 +2341,20 @@ function EditEmployee() {
                             </td>
                             <td>{entity._id}</td>
                             <td>{entity.businessEntity}</td>
-                            <td>{entity.businessEntityType}</td>
-                            <td>{entity.relatedLocations}</td>
-                            <td>
-                              {entity.parentBusinessEntity?.businessEntity ||
-                                "-"}
-                            </td>
-                            <td>
-                              {entity.childBusinessEntities
-                                .map((child) => child.businessEntity)
-                                .join(" | ") || "-"}
-                            </td>
+                      <td>{entity.businessEntityType}</td>
+                      <td>
+                        {entity.relatedLocations
+                          .map((location) => location.locationName)
+                          .join(", ") || ""}
+                      </td>
+                      <td>
+                        {entity.parentBusinessEntity?.businessEntity || "-"}
+                      </td>
+                      <td>
+                        {entity.childBusinessEntities
+                          ?.map((c) => c.businessEntity)
+                          .join(", ") || "-"}
+                      </td>
                             <td>
                               {new Date(entity.updatedAt).toLocaleString()}
                             </td>

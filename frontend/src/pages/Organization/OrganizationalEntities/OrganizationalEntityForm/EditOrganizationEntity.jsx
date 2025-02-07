@@ -19,7 +19,12 @@ import "./OrganizationalEntityForm.css";
 import LoadingSpinner from "../../../../Components/Common/LoadingSpinner/LoadingSpinner";
 
 // Add this constant at the top of the file after imports
-const BUSINESS_ENTITY_TYPES = ['Company', 'Business Unit', 'Division', 'Department'];
+const BUSINESS_ENTITY_TYPES = [
+  "Company",
+  "Business Unit",
+  "Division",
+  "Department",
+];
 
 // Pagination Component
 const Pagination = ({ currentPage, totalPages, onPageChange }) => {
@@ -31,7 +36,9 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
       >
         &lt; {/* Previous */}
       </button>
-      <span>Page {currentPage} of {totalPages}</span>
+      <span>
+        Page {currentPage} of {totalPages}
+      </span>
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
@@ -56,7 +63,9 @@ const EditOrganizationalEntityForm = () => {
     description: state?.description || "",
     parentBusinessEntity: state?.parentBusinessEntity || null,
     childBusinessEntities: state?.childBusinessEntities || [],
-    relatedLocations: state?.relatedLocations || [],
+    relatedLocations: Array.isArray(state?.relatedLocations)
+      ? state.relatedLocations
+      : [],
   });
   const [showUserModal, setShowUserModal] = useState(false);
   const [users, setUsers] = useState([]);
@@ -64,43 +73,114 @@ const EditOrganizationalEntityForm = () => {
   const [showModal, setShowModal] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [currentField, setCurrentField] = useState('');
+  const [currentField, setCurrentField] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // Number of items to show per page
+  const [tempChildEntities, setTempChildEntities] = useState([]);
+  const [allChildEntitiesSelected, setAllChildEntitiesSelected] =
+    useState(false);
+  const [currentSelectionType, setCurrentSelectionType] = useState(""); // 'parent' or 'child'
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locations, setLocations] = useState([]);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [selectedLocations, setSelectedLocations] = useState([]);
 
   useEffect(() => {
     const fetchEntityDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/v1/organizational-entities/${id}`, {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          withCredentials: true
-        });
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/organizational-entities/${id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
 
-        console.log(response.data); // Log the response to check the structure
-        const entityData = response.data.data;
+        const entityData = response.data;
+        console.log("Entity Data:", entityData); // Debug log
 
         if (entityData) {
+          // Extract location names from the populated location objects
+          const locationNames =
+            entityData.relatedLocations?.map((loc) =>
+              typeof loc === "object" ? loc.locationName : loc
+            ) || [];
+
+          // Extract editor usernames/names from the populated editor objects
+          const editorNames =
+            entityData.editors?.map((editor) =>
+              typeof editor === "object"
+                ? editor.username || editor.fullName
+                : editor
+            ) || [];
+
+          console.log("Editor Names:", editorNames); // Debug log
+
           setInitialValues({
             businessEntityType: entityData.businessEntityType || "",
             businessEntity: entityData.businessEntity || "",
             businessEntityId: entityData.businessEntityId || "",
-            editors: entityData.editors || [],
+            editors: editorNames,
             description: entityData.description || "",
-            parentBusinessEntity: entityData.parentBusinessEntity || null,
-            childBusinessEntities: entityData.childBusinessEntities || [],
-            relatedLocations: entityData.relatedLocations || [],
+            parentBusinessEntity:
+              entityData.parentBusinessEntity?.businessEntity || null,
+            childBusinessEntities:
+              entityData.childBusinessEntities?.map((child) =>
+                typeof child === "object" ? child.businessEntity : child
+              ) || [],
+            relatedLocations: locationNames,
           });
-        } else {
-          console.error('No entity data found');
+
+          // After setting initial values, fetch locations
+          const locationsResponse = await axios.get(
+            "http://localhost:8000/api/v1/locations/all",
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              withCredentials: true,
+            }
+          );
+
+          if (locationsResponse.data) {
+            setLocations(locationsResponse.data);
+
+            // Find and set initially selected locations
+            const selectedLocs = locationsResponse.data.filter((loc) =>
+              locationNames.includes(loc.locationName)
+            );
+            setSelectedLocations(selectedLocs);
+          }
+
+          // Fetch users for editors
+          const usersResponse = await axios.get(
+            "http://localhost:8000/api/v1/users/all",
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+              withCredentials: true,
+            }
+          );
+
+          if (usersResponse.data) {
+            const allUsers = usersResponse.data;
+            setUsers(
+              allUsers.map((user) => ({
+                ...user,
+                selected: editorNames.includes(user.username || user.fullName),
+              }))
+            );
+          }
         }
       } catch (error) {
         if (error.response?.status === 401) {
-          console.error('Unauthorized access - redirecting to login');
-          navigate('/login'); // Redirect to login page
+          console.error("Unauthorized access - redirecting to login");
+          navigate("/login");
         } else {
-          console.error('Failed to fetch entity details', error);
+          console.error("Failed to fetch entity details", error);
         }
       }
     };
@@ -108,31 +188,43 @@ const EditOrganizationalEntityForm = () => {
     fetchEntityDetails();
   }, [id, navigate]);
 
+  // Add this useEffect for debugging
+  useEffect(() => {
+    console.log("Initial Values Updated:", initialValues);
+  }, [initialValues]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setInitialValues({ ...initialValues, [name]: value });
   };
 
   const handleEditorRemove = (editor) => {
-    const newEditors = initialValues.editors.filter(e => e !== editor);
-    setInitialValues({ ...initialValues, editors: newEditors });
+    setInitialValues((prev) => ({
+      ...prev,
+      editors: prev.editors.filter((e) => e !== editor),
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.patch(`http://localhost:8000/api/v1/organizational-entities/${id}`, initialValues);
+      const response = await axios.patch(
+        `http://localhost:8000/api/v1/organizational-entities/${id}`,
+        initialValues
+      );
       Toastify({
-        text: "Entity updated successfully!",
+        text: "Business Entity updated successfully!",
         duration: 3000,
         backgroundColor: "#4caf50",
         close: true,
       }).showToast();
       navigate(`/organizational-entities`);
     } catch (error) {
-      console.error('Failed to update entity', error);
+      console.error("Failed to update entity", error);
       Toastify({
-        text: "Failed to update entity",
+        text:
+          error.response?.data?.message ||
+          "Failed to update Business Entity.Check your all fields.",
         duration: 3000,
         backgroundColor: "#f44336",
         close: true,
@@ -147,18 +239,23 @@ const EditOrganizationalEntityForm = () => {
   const fetchBusinessEntities = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:8000/api/v1/organizational-entities/all', {
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        withCredentials: true
-      });
-      setSearchResults((response.data || []).map(entity => ({
-        ...entity,
-        selected: false
-      })));
+      const response = await axios.get(
+        "http://localhost:8000/api/v1/organizational-entities/all",
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      setSearchResults(
+        (response.data || []).map((entity) => ({
+          ...entity,
+          selected: false,
+        }))
+      );
     } catch (error) {
-      console.error('Error fetching business entities:', error);
+      console.error("Error fetching business entities:", error);
     } finally {
       setLoading(false);
     }
@@ -171,75 +268,91 @@ const EditOrganizationalEntityForm = () => {
   };
 
   const handleEntitySelect = (entity) => {
-    if (currentField === 'parentBusinessEntity') {
+    if (currentField === "parentBusinessEntity") {
       setInitialValues({
         ...initialValues,
         parentBusinessEntity: entity.businessEntity,
-        childBusinessEntities: initialValues.childBusinessEntities
+        childBusinessEntities: initialValues.childBusinessEntities,
       });
-    } else if (currentField === 'childBusinessEntities') {
+    } else if (currentField === "childBusinessEntities") {
       setInitialValues({
         ...initialValues,
-        childBusinessEntities: [...new Set([...initialValues.childBusinessEntities, entity.businessEntity])],
-        parentBusinessEntity: initialValues.parentBusinessEntity
+        childBusinessEntities: [
+          ...new Set([
+            ...initialValues.childBusinessEntities,
+            entity.businessEntity,
+          ]),
+        ],
+        parentBusinessEntity: initialValues.parentBusinessEntity,
       });
     }
     setShowModal(false);
   };
 
   const handleEntityCheckbox = (entityId) => {
-    setSearchResults(searchResults.map(entity =>
-      entity._id === entityId
-        ? { ...entity, selected: !entity.selected }
-        : entity
-    ));
+    setSearchResults(
+      searchResults.map((entity) =>
+        entity._id === entityId
+          ? { ...entity, selected: !entity.selected }
+          : entity
+      )
+    );
   };
 
   const handleSelectAllEntities = (e) => {
-    setSearchResults(searchResults.map(entity => ({
-      ...entity,
-      selected: e.target.checked
-    })));
+    setSearchResults(
+      searchResults.map((entity) => ({
+        ...entity,
+        selected: e.target.checked,
+      }))
+    );
   };
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/v1/users/all');
+      const response = await axios.get(
+        "http://localhost:8000/api/v1/users/all"
+      );
       setUsers(response.data.data); // Assuming the response structure
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.error("Error fetching users:", error);
     }
   };
 
   const handleUserSelect = (user) => {
+    const userIdentifier = user.username || user.fullName;
     const newEditors = initialValues.editors
-      ? [...new Set([...initialValues.editors, user.username])]
-      : [user.username];
+      ? [...new Set([...initialValues.editors, userIdentifier])]
+      : [userIdentifier];
     setInitialValues({
       ...initialValues,
-      editors: newEditors
+      editors: newEditors,
     });
     setShowUserModal(false);
   };
 
   const handleUserCheckbox = (userId) => {
-    setUsers(users.map(user =>
-      user._id === userId
-        ? { ...user, selected: !user.selected }
-        : user
-    ));
+    setUsers(
+      users.map((user) =>
+        user._id === userId ? { ...user, selected: !user.selected } : user
+      )
+    );
   };
 
   const handleSelectAllUsers = (e) => {
-    setUsers(users.map(user => ({ ...user, selected: e.target.checked })));
+    setUsers(users.map((user) => ({ ...user, selected: e.target.checked })));
   };
 
   const handleSelectEntities = () => {
-    const selectedEntities = searchResults.filter(entity => entity.selected);
+    const selectedEntities = searchResults.filter((entity) => entity.selected);
     setInitialValues({
       ...initialValues,
-      parentBusinessEntity: selectedEntities.map(entity => entity.businessEntity),
-      childBusinessEntities: selectedEntities.map(entity => entity.businessEntity)
+      parentBusinessEntity: selectedEntities.map(
+        (entity) => entity.businessEntity
+      ),
+      childBusinessEntities: selectedEntities.map(
+        (entity) => entity.businessEntity
+      ),
     });
     setShowModal(false);
     // Add your logic here to handle the selected entities
@@ -258,10 +371,122 @@ const EditOrganizationalEntityForm = () => {
   // Calculate the current items to display
   const indexOfLastEntity = currentPage * itemsPerPage;
   const indexOfFirstEntity = indexOfLastEntity - itemsPerPage;
-  const currentEntities = searchResults.slice(indexOfFirstEntity, indexOfLastEntity);
+  const currentEntities = searchResults.slice(
+    indexOfFirstEntity,
+    indexOfLastEntity
+  );
 
   // Calculate total pages
   const totalPages = Math.ceil(searchResults.length / itemsPerPage);
+
+  const handleChildEntitySelect = (entity) => {
+    setTempChildEntities((prev) => {
+      const isAlreadySelected = prev.some((item) => item._id === entity._id);
+      if (isAlreadySelected) {
+        return prev.filter((item) => item._id !== entity._id);
+      }
+      return [...prev, entity];
+    });
+  };
+
+  const handleConfirmChildEntities = () => {
+    setInitialValues((prev) => ({
+      ...prev,
+      childBusinessEntities: tempChildEntities.map(
+        (entity) => entity.businessEntity
+      ),
+    }));
+    setShowModal(false);
+    setTempChildEntities([]);
+  };
+
+  const handleParentEntitySelect = (entity) => {
+    setInitialValues((prev) => ({
+      ...prev,
+      parentBusinessEntity: entity.businessEntity,
+    }));
+    setShowModal(false);
+  };
+
+  // Update the fetchLocations function
+  const fetchLocations = async () => {
+    try {
+      setLocationLoading(true);
+      const response = await axios.get(
+        "http://localhost:8000/api/v1/locations/all",
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data) {
+        setLocations(response.data);
+        // If there are existing locations in initialValues, find and select them
+        if (
+          Array.isArray(initialValues.relatedLocations) &&
+          initialValues.relatedLocations.length > 0
+        ) {
+          const existingLocations = response.data.filter((location) =>
+            initialValues.relatedLocations.includes(location.locationName)
+          );
+          setSelectedLocations(existingLocations);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching locations:", error);
+      setLocations([]);
+    } finally {
+      setLocationLoading(false);
+    }
+  };
+
+  // Add location selection handlers
+  const handleLocationSelect = (location) => {
+    setSelectedLocations((prev) => {
+      const isAlreadySelected = prev.some((loc) => loc._id === location._id);
+      if (isAlreadySelected) {
+        return prev.filter((loc) => loc._id !== location._id);
+      }
+      return [...prev, location];
+    });
+  };
+
+  const handleBulkLocationSelection = (e) => {
+    if (e.target.checked) {
+      setSelectedLocations(locations);
+    } else {
+      setSelectedLocations([]);
+    }
+  };
+
+  // Add useEffect to fetch locations when modal opens
+  useEffect(() => {
+    if (showLocationModal) {
+      fetchLocations();
+    }
+  }, [showLocationModal]);
+
+  // Update handleConfirmLocations to handle location objects
+  const handleConfirmLocations = () => {
+    const locationNames = selectedLocations.map((loc) => loc.locationName);
+    setInitialValues((prev) => ({
+      ...prev,
+      relatedLocations: locationNames,
+    }));
+    setShowLocationModal(false);
+  };
+
+  // Add a function to handle clearing all locations
+  const handleClearAllLocations = () => {
+    setSelectedLocations([]);
+    setInitialValues((prev) => ({
+      ...prev,
+      relatedLocations: [],
+    }));
+  };
 
   return (
     <div className="page-content">
@@ -359,265 +584,328 @@ const EditOrganizationalEntityForm = () => {
       </div>
 
       {/* Form Section */}
-      <div className="container">
-        <div className="card shadow">
-          <div className="card-body">
-            <div className="row">
-              <div className="col-9">
-                <form onSubmit={handleSubmit}>
-                  {/* Organizational Entity Information */}
-                  <h4 className="mb-3">Organizational Entity Information</h4>
-                  <div className="border-1 mb-3"></div>
-                  <div className="mb-3 d-flex">
-                    <label htmlFor="businessEntityType" className="form-label label w-20">
-                      Business Entity Type <span className="text-danger">*</span>
-                    </label>
-                    <select
-                      id="businessEntityType"
-                      name="businessEntityType"
-                      value={initialValues.businessEntityType}
-                      onChange={handleChange}
-                      className="form-select1"
-                      required
-                    >
-                      <option value="">-- Please select --</option>
-                      {BUSINESS_ENTITY_TYPES.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mb-3 d-flex">
-                    <label htmlFor="businessEntity" className="form-label label w-20">
-                      Organizational Entity <span className="text-danger">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="businessEntity"
-                      name="businessEntity"
-                      value={initialValues.businessEntity}
-                      onChange={handleChange}
-                      className="form-control1"
-                      required
-                    />
-                  </div>
-                  <div className="mb-3 d-flex">
-                    <label
-                      htmlFor="businessEntityId"
-                      className="form-label label w-20"
-                    >
-                      Organizational Entity ID <span className="text-danger">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="businessEntityId"
-                      name="businessEntityId"
-                      value={initialValues.businessEntityId || ""}
-                      onChange={handleChange}
-                      className="form-control1"
-                    />
-                  </div>
-                  <div className="mb-3 d-flex">
-                    <label htmlFor="editors" className="form-label label w-20">
-                      Editor(s)
-                    </label>
-                    <div
-                      className="form-control1 d-flex flex-wrap gap-2"
+      <div className="form-content">
+        <div className="form-heading">Organizational Entity Information</div>
+        <div className="border-1 mb-3"></div>
+        <div className="row">
+          <div className="col-9">
+            <form onSubmit={handleSubmit}>
+              <div className="mb-3 d-flex">
+                <label
+                  htmlFor="businessEntityType"
+                  className="form-label label w-20"
+                >
+                  Business Entity Type <span className="text-danger">*</span>
+                </label>
+                <select
+                  id="businessEntityType"
+                  name="businessEntityType"
+                  value={initialValues.businessEntityType}
+                  onChange={handleChange}
+                  className="form-select1"
+                  required
+                >
+                  <option value="">-- Please select --</option>
+                  {BUSINESS_ENTITY_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-3 d-flex">
+                <label
+                  htmlFor="businessEntity"
+                  className="form-label label w-20"
+                >
+                  Organizational Entity <span className="text-danger">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="businessEntity"
+                  name="businessEntity"
+                  value={initialValues.businessEntity}
+                  onChange={handleChange}
+                  className="form-control1"
+                  required
+                />
+              </div>
+              <div className="mb-3 d-flex">
+                <label
+                  htmlFor="businessEntityId"
+                  className="form-label label w-20"
+                >
+                  Organizational Entity ID
+                </label>
+                <input
+                  type="text"
+                  id="businessEntityId"
+                  name="businessEntityId"
+                  value={initialValues.businessEntityId || ""}
+                  onChange={handleChange}
+                  className="form-control1"
+                />
+              </div>
+              <div className="mb-3 d-flex">
+                <label htmlFor="editors" className="form-label label w-20">
+                  Editor(s)
+                </label>
+                <div
+                  className="form-control1 d-flex flex-wrap gap-2"
+                  style={{
+                    minHeight: "38px",
+                    border: "1px solid #ced4da",
+                    borderRadius: "4px",
+                    padding: "6px 12px",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  {initialValues.editors.map((editor, index) => (
+                    <span
+                      key={index}
+                      className="badge bg-light text-dark d-flex align-items-center"
                       style={{
-                        minHeight: '38px',
-                        border: '1px solid #ced4da',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        backgroundColor: '#fff'
+                        padding: "5px 10px !important",
+                        margin: "2px !important",
+                        border: "1px solid #ddd !important",
+                        borderRadius: "3px !important",
+                        backgroundColor: "#f8f9fa !important",
                       }}
                     >
-                      {initialValues.editors.map((editor, index) => (
+                      {editor}
+                      <button
+                        type="button"
+                        className="btn-close ms-2"
+                        style={{ fontSize: "0.5rem" }}
+                        onClick={() => handleEditorRemove(editor)}
+                      ></button>
+                    </span>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-secondary border-radius-2"
+                  onClick={() => {
+                    setShowUserModal(true);
+                    fetchUsers();
+                  }}
+                >
+                  <BiSearchAlt2 />
+                </button>
+              </div>
+              <div className="mb-3 d-flex">
+                <label htmlFor="description" className="form-label label w-20">
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={initialValues.description}
+                  onChange={handleChange}
+                  className="form-control1"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div className="border-1"></div>
+
+              {/* Relationships */}
+              <h2 className="mt-4 mb-3">Relationships</h2>
+              <div className="mb-3 d-flex">
+                <label
+                  htmlFor="parentBusinessEntity"
+                  className="form-label label w-20"
+                >
+                  Parent Organizational Entity{" "}
+                  <span className="text-danger">*</span>
+                </label>
+                <div
+                  className="form-control1 d-flex flex-wrap gap-2"
+                  style={{
+                    minHeight: "38px",
+                    border: "1px solid #ced4da",
+                    borderRadius: "4px",
+                    padding: "6px 12px",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  {initialValues.parentBusinessEntity && (
+                    <span
+                      className="badge bg-light text-dark d-flex align-items-center"
+                      style={{
+                        padding: "5px 10px !important",
+                        margin: "2px !important",
+                        border: "1px solid #ddd !important",
+                        borderRadius: "3px !important",
+                      }}
+                    >
+                      {initialValues.parentBusinessEntity}
+                      <button
+                        type="button"
+                        className="btn-close ms-2"
+                        style={{ fontSize: "0.5rem" }}
+                        onClick={() => {
+                          setInitialValues({
+                            ...initialValues,
+                            parentBusinessEntity: null,
+                          });
+                        }}
+                      ></button>
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setCurrentSelectionType("parent");
+                    setShowModal(true);
+                    fetchBusinessEntities();
+                  }}
+                >
+                  <BiSearchAlt2 />
+                </button>
+              </div>
+              <div className="mb-3 d-flex">
+                <label
+                  htmlFor="childBusinessEntities"
+                  className="form-label label w-20"
+                >
+                  Child Organizational Entities
+                </label>
+                <div
+                  className="form-control1 d-flex flex-wrap gap-2"
+                  style={{
+                    minHeight: "38px",
+                    border: "1px solid #ced4da",
+                    borderRadius: "4px",
+                    padding: "6px 12px",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  {initialValues.childBusinessEntities.map((entity, index) => (
+                    <span
+                      key={index}
+                      className="badge bg-light text-dark d-flex align-items-center"
+                      style={{
+                        padding: "5px 10px !important",
+                        margin: "2px !important",
+                        border: "1px solid #ddd !important",
+                        borderRadius: "3px !important",
+                      }}
+                    >
+                      {entity}
+                      <button
+                        type="button"
+                        className="btn-close ms-2"
+                        style={{ fontSize: "0.5rem" }}
+                        onClick={() => {
+                          const newChildEntities =
+                            initialValues.childBusinessEntities.filter(
+                              (e) => e !== entity
+                            );
+                          setInitialValues({
+                            ...initialValues,
+                            childBusinessEntities: newChildEntities,
+                          });
+                        }}
+                      ></button>
+                    </span>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setCurrentSelectionType("child");
+                    setShowModal(true);
+                    fetchBusinessEntities();
+                  }}
+                >
+                  <BiSearchAlt2 />
+                </button>
+              </div>
+              <div className="mb-3 d-flex">
+                <label
+                  htmlFor="relatedLocations"
+                  className="form-label label w-20"
+                >
+                  Related Locations
+                </label>
+                <div className="position-relative flex-grow-1">
+                  <div
+                    className="form-control1 d-flex flex-wrap gap-2"
+                    style={{
+                      minHeight: "38px",
+                      border: "1px solid #ced4da",
+                      borderRadius: "4px",
+                      padding: "6px 12px",
+                      backgroundColor: "#fff",
+                    }}
+                  >
+                    {Array.isArray(initialValues.relatedLocations) &&
+                    initialValues.relatedLocations.length > 0 ? (
+                      initialValues.relatedLocations.map((location, index) => (
                         <span
                           key={index}
                           className="badge bg-light text-dark d-flex align-items-center"
                           style={{
-                            padding: '5px 10px !important',
-                            margin: '2px !important',
-                            border: '1px solid #ddd !important',
-                            borderRadius: '3px !important',
-                            backgroundColor: '#f8f9fa !important'
+                            padding: "5px 10px",
+                            margin: "2px",
+                            border: "1px solid #ddd",
+                            borderRadius: "3px",
                           }}
                         >
-                          {editor}
+                          {location}
                           <button
                             type="button"
                             className="btn-close ms-2"
-                            style={{ fontSize: '0.5rem' }}
-                            onClick={() => handleEditorRemove(editor)}
-                          ></button>
-                        </span>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      className="btn btn-secondary border-radius-2"
-                      onClick={() => {
-                        setShowUserModal(true);
-                        fetchUsers();
-                      }}
-                    >
-                      <BiSearchAlt2 />
-                    </button>
-                  </div>
-                  <div className="mb-3 d-flex">
-                    <label htmlFor="description" className="form-label label w-20">
-                      Description
-                    </label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      value={initialValues.description}
-                      onChange={handleChange}
-                      className="form-control1"
-                      rows="3"
-                    ></textarea>
-                  </div>
-                  <div className="border-1"></div>
-
-                  {/* Relationships */}
-                  <h4 className="mt-4 mb-3">Relationships</h4>
-                  <div className="mb-3 d-flex">
-                    <label htmlFor="parentBusinessEntity" className="form-label label w-20">
-                      Parent Organizational Entity <span className="text-danger">*</span>
-                    </label>
-                    <div
-                      className="form-control1 d-flex flex-wrap gap-2"
-                      style={{
-                        minHeight: '38px',
-                        border: '1px solid #ced4da',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        backgroundColor: '#fff'
-                      }}
-                    >
-                      {initialValues.parentBusinessEntity && (
-                        <span
-                          className="badge bg-light text-dark d-flex align-items-center"
-                          style={{
-                            padding: '5px 10px !important',
-                            margin: '2px !important',
-                            border: '1px solid #ddd !important',
-                            borderRadius: '3px !important'
-                          }}
-                        >
-                          {initialValues.parentBusinessEntity}
-                          <button
-                            type="button"
-                            className="btn-close ms-2"
-                            style={{ fontSize: '0.5rem' }}
+                            style={{ fontSize: "0.5rem" }}
                             onClick={() => {
-                              setInitialValues({
-                                ...initialValues,
-                                parentBusinessEntity: null
-                              });
+                              setInitialValues((prev) => ({
+                                ...prev,
+                                relatedLocations: prev.relatedLocations.filter(
+                                  (loc) => loc !== location
+                                ),
+                              }));
                             }}
-                          ></button>
+                          />
                         </span>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      className="btn btn-secondary border-radius-2"
-                      onClick={() => openEntityModal('parentBusinessEntity')}
-                    >
-                      <BiSearchAlt2 />
-                    </button>
+                      ))
+                    ) : (
+                      <span className="text-muted">No locations selected</span>
+                    )}
                   </div>
-                  <div className="mb-3 d-flex">
-                    <label htmlFor="childBusinessEntities" className="form-label label w-20">
-                      Child Organizational Entities
-                    </label>
-                    <div
-                      className="form-control1 d-flex flex-wrap gap-2"
-                      style={{
-                        minHeight: '38px',
-                        border: '1px solid #ced4da',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        backgroundColor: '#fff'
-                      }}
-                    >
-                      {initialValues.childBusinessEntities.map((entity, index) => (
-                        <span
-                          key={index}
-                          className="badge bg-light text-dark d-flex align-items-center"
-                          style={{
-                            padding: '5px 10px !important',
-                            margin: '2px !important',
-                            border: '1px solid #ddd !important',
-                            borderRadius: '3px !important'
-                          }}
-                        >
-                          {entity}
-                          <button
-                            type="button"
-                            className="btn-close ms-2"
-                            style={{ fontSize: '0.5rem' }}
-                            onClick={() => {
-                              const newChildEntities = initialValues.childBusinessEntities.filter(e => e !== entity);
-                              setInitialValues({
-                                ...initialValues,
-                                childBusinessEntities: newChildEntities
-                              });
-                            }}
-                          ></button>
-                        </span>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      className="btn btn-secondary border-radius-2"
-                      onClick={() => openEntityModal('childBusinessEntities')}
-                    >
-                      <BiSearchAlt2 />
-                    </button>
-                  </div>
-                  <div className="mb-3 d-flex">
-                    <label
-                      htmlFor="relatedLocations"
-                      className="form-label label w-20"
-                    >
-                      Related Locations
-                    </label>
-                    <input
-                      type="text"
-                      id="relatedLocations"
-                      name="relatedLocations"
-                      value={initialValues.relatedLocations.join(', ') || ""}
-                      onChange={handleChange}
-                      className="form-control1"
-                    />
-                    <button className="btn btn-secondary border-radius-2">
-                      <BiSearchAlt2 />
-                    </button>
-                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-secondary ms-2"
+                  onClick={() => setShowLocationModal(true)}
+                >
+                  <BiSearchAlt2 />
+                </button>
+              </div>
 
-                  {/* Buttons */}
-                  <div className="d-flex justify-content-end mt-4">
-                    {/* <NavLink
+              {/* Buttons */}
+              <div className="d-flex justify-content-end mt-4">
+                {/* <NavLink
                       className="btn btn-outline-secondary me-2"
                       to="/organizational-entities"
                       title="Cancel"
                     >
                       Cancel
                     </NavLink> */}
-                    <button
-                      type="submit"
-                      className="btn btn-outline-success"
-                      disabled={!initialValues.businessEntityType || !initialValues.businessEntity}
-                    >
-                      {loading ? "Saving..." : "Save"}
-                    </button>
-                  </div>
-                </form>
+                <button
+                  type="submit"
+                  className="btn btn-outline-success"
+                  disabled={
+                    !initialValues.businessEntityType ||
+                    !initialValues.businessEntity
+                  }
+                >
+                  {loading ? "Saving..." : "Save"}
+                </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </div>
@@ -628,34 +916,55 @@ const EditOrganizationalEntityForm = () => {
           <div className="modal-dialog modal-xl">
             <div className="modal-content">
               <div className="modal-header d-flex justify-content-between align-items-center">
-                <h5 className="modal-title">Select Business Entity</h5>
-                <div className="d-flex gap-2 align-items-center">
+                <h5 className="modal-title">
+                  {currentSelectionType === "parent"
+                    ? "Select Parent Entity"
+                    : "Select Child Entities"}
+                </h5>
+                <div className="d-flex gap-2">
                   <button
                     type="button"
                     className="btn btn-outline-secondary"
-                    onClick={() => fetchBusinessEntities()}
+                    onClick={fetchBusinessEntities}
                     title="Refresh"
                   >
                     <BiRefresh />
                   </button>
-                  {/* Remove the close button */}
                   <button
                     type="button"
                     className="btn btn-outline-secondary"
                     onClick={() => setShowModal(false)}
-                    title="Close"
                   >
                     <RxCross2 />
                   </button>
                 </div>
               </div>
               <div className="modal-body">
-                {loading ? <LoadingSpinner/> : (
+                {loading ? (
+                  <LoadingSpinner />
+                ) : (
                   <div className="table-responsive">
                     <table className="table">
                       <thead>
                         <tr>
-                          <th>Actions</th>
+                          <th>
+                            {currentSelectionType === "child" ? (
+                              <input
+                                type="checkbox"
+                                onChange={(e) => {
+                                  setAllChildEntitiesSelected(e.target.checked);
+                                  if (e.target.checked) {
+                                    setTempChildEntities(searchResults);
+                                  } else {
+                                    setTempChildEntities([]);
+                                  }
+                                }}
+                                checked={allChildEntitiesSelected}
+                              />
+                            ) : (
+                              "Action"
+                            )}
+                          </th>
                           <th>Business Entity</th>
                           <th>Business Entity Type</th>
                           <th>Related Locations</th>
@@ -665,43 +974,70 @@ const EditOrganizationalEntityForm = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {currentEntities.map((entity, index) => (
-                          <tr key={index}>
+                        {searchResults.map((entity) => (
+                          <tr key={entity._id}>
                             <td>
-                              <button
-                                className="btn btn-sm btn-primary"
-                                onClick={() => handleEntitySelect(entity)}
-                              >
-                                Select
-                              </button>
+                              {currentSelectionType === "child" ? (
+                                <input
+                                  type="checkbox"
+                                  checked={tempChildEntities.some(
+                                    (item) => item._id === entity._id
+                                  )}
+                                  onChange={() =>
+                                    handleChildEntitySelect(entity)
+                                  }
+                                />
+                              ) : (
+                                <button
+                                  className="btn btn-sm btn-primary"
+                                  onClick={() =>
+                                    handleParentEntitySelect(entity)
+                                  }
+                                >
+                                  Select
+                                </button>
+                              )}
                             </td>
                             <td>{entity.businessEntity}</td>
                             <td>{entity.businessEntityType}</td>
-                            <td>{entity.relatedLocations}</td>
-                            <td>{entity.parentBusinessEntity?.businessEntity || ''}</td>
-                            <td>{entity.childBusinessEntities.map(child => child.businessEntity).join(' | ')}</td>
-                            <td>{new Date(entity.updatedAt).toLocaleString()}</td>
+                            <td>{entity.relatedLocations?.join(", ") || ""}</td>
+                            <td>
+                              {entity.parentBusinessEntity?.businessEntity ||
+                                ""}
+                            </td>
+                            <td>
+                              {entity.childBusinessEntities
+                                ?.map((child) => child.businessEntity)
+                                .join(", ") || ""}
+                            </td>
+                            <td>
+                              {new Date(entity.updatedAt).toLocaleString()}
+                            </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                    {/* Pagination Controls */}
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={handlePageChange}
-                    />
                   </div>
                 )}
               </div>
-              {/* <div className="modal-footer"> */}
-              {/* Remove the close button */}
-              {/* <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Close</button> */}
-
-              {/* Add the Select button */}
-              {/* <button onClick={handleSelectEntities}>Select</button>
-                <button onClick={handleClose}>Close</button> */}
-              {/* </div> */}
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+                {currentSelectionType === "child" && (
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleConfirmChildEntities}
+                  >
+                    Done ({tempChildEntities.length} selected)
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -745,7 +1081,10 @@ const EditOrganizationalEntityForm = () => {
                             <input
                               type="checkbox"
                               onChange={handleSelectAllUsers}
-                              checked={users.length > 0 && users.every(user => user.selected)}
+                              checked={
+                                users.length > 0 &&
+                                users.every((user) => user.selected)
+                              }
                             />
                           </th>
                           <th>User</th>
@@ -772,23 +1111,33 @@ const EditOrganizationalEntityForm = () => {
                             <td>{user.fullName}</td>
                             <td>{user.role}</td>
                             <td>{user.username}</td>
-                            <td>{new Date(user.lastLoginAt).toLocaleString('en-US', {
-                              month: '2-digit',
-                              day: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: true
-                            })}</td>
+                            <td>
+                              {new Date(user.lastLoginAt).toLocaleString(
+                                "en-US",
+                                {
+                                  month: "2-digit",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                }
+                              )}
+                            </td>
                             <td></td>
-                            <td>{new Date(user.updatedAt).toLocaleString('en-US', {
-                              month: '2-digit',
-                              day: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: true
-                            })}</td>
+                            <td>
+                              {new Date(user.updatedAt).toLocaleString(
+                                "en-US",
+                                {
+                                  month: "2-digit",
+                                  day: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                }
+                              )}
+                            </td>
                             <td>{user.updatedBy?.fullName}</td>
                             <td>{user.workflowStatus}</td>
                             <td>{user._id}</td>
@@ -807,20 +1156,165 @@ const EditOrganizationalEntityForm = () => {
                   type="button"
                   className="btn btn-primary"
                   onClick={() => {
-                    const selectedUsers = users.filter(user => user.selected);
+                    const selectedUsers = users.filter((user) => user.selected);
                     const newEditors = [
                       ...initialValues.editors,
-                      ...selectedUsers.map(user => user.fullName)
+                      ...selectedUsers.map((user) => user.fullName),
                     ];
                     setInitialValues({
                       ...initialValues,
-                      editors: [...new Set(newEditors)]
+                      editors: [...new Set(newEditors)],
                     });
                     setShowUserModal(false);
-                    setUsers(users.map(user => ({ ...user, selected: false })));
+                    setUsers(
+                      users.map((user) => ({ ...user, selected: false }))
+                    );
                   }}
                 >
                   Select
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Location Modal */}
+      {showLocationModal && (
+        <div className="modal show d-block" tabIndex="-1">
+          <div className="modal-dialog modal-xl">
+            <div className="modal-content">
+              <div className="modal-header d-flex justify-content-between align-items-center">
+                <h5 className="modal-title">Select Locations</h5>
+                <div className="d-flex gap-2 align-items-center">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={fetchLocations}
+                    title="Refresh"
+                  >
+                    <BiRefresh />
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setShowLocationModal(false)}
+                  >
+                    <RxCross2 />
+                  </button>
+                </div>
+              </div>
+              <div className="modal-body">
+                {locationLoading ? (
+                  <LoadingSpinner />
+                ) : (
+                  <div className="table-responsive">
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>
+                            <input
+                              type="checkbox"
+                              onChange={handleBulkLocationSelection}
+                              checked={
+                                locations.length > 0 &&
+                                selectedLocations.length === locations.length
+                              }
+                            />
+                          </th>
+                          <th>Location ID</th>
+                          <th>Location Name</th>
+                          <th>Location Type</th>
+                          <th>Main Phone</th>
+                          <th>Capacity</th>
+                          <th>Capacity Used</th>
+                          <th>Site Ownership</th>
+                          <th>Access/Safety/Security Equipment</th>
+                          <th>Street Address 1</th>
+                          <th>Street Address 2</th>
+                          <th>City</th>
+                          <th>State/Province</th>
+                          <th>ZIP/Postal Code</th>
+                          <th>Country</th>
+                          <th>Parent Location</th>
+                          <th>Child Locations</th>
+                          <th>Business Entities</th>
+                          <th>Latitude</th>
+                          <th>Longitude</th>
+                          <th>Created At</th>
+                          <th>Updated At</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {locations.map((location) => (
+                          <tr key={location._id}>
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={selectedLocations.some(
+                                  (selected) => selected._id === location._id
+                                )}
+                                onChange={() => handleLocationSelect(location)}
+                              />
+                            </td>
+                            <td>{location.locationId || ""}</td>
+                            <td>{location.locationName || ""}</td>
+                            <td>{location.locationType || ""}</td>
+                            <td>{location.mainPhone || ""}</td>
+                            <td>{location.capacity || ""}</td>
+                            <td>{location.capacityUsed || ""}</td>
+                            <td>{location.siteOwnership || ""}</td>
+                            <td>
+                              {location.accessSafetySecurityEquipment || ""}
+                            </td>
+                            <td>{location.streetAddress1 || ""}</td>
+                            <td>{location.streetAddress2 || ""}</td>
+                            <td>{location.city || ""}</td>
+                            <td>{location.stateProvince || ""}</td>
+                            <td>{location.zipPostalCode || ""}</td>
+                            <td>{location.country || ""}</td>
+                            <td>
+                              {location.parentLocation?.locationName || ""}
+                            </td>
+                            <td>
+                              {location.childLocations
+                                ?.map((child) => child.locationName)
+                                .join(", ") || "-"}
+                            </td>
+                            <td>
+                              {location.businessEntities
+                                ?.map((entity) => entity.businessEntity)
+                                .join(", ") || ""}
+                            </td>
+                            <td>{location.latitude || ""}</td>
+                            <td>{location.longitude || ""}</td>
+                            <td>
+                              {new Date(location.createdAt).toLocaleString()}
+                            </td>
+                            <td>
+                              {new Date(location.updatedAt).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowLocationModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleConfirmLocations}
+                >
+                  Done ({selectedLocations.length} selected)
                 </button>
               </div>
             </div>
@@ -832,4 +1326,3 @@ const EditOrganizationalEntityForm = () => {
 };
 
 export default EditOrganizationalEntityForm;
-

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 import axios from "axios";
 import Toastify from "toastify-js";
@@ -20,7 +20,8 @@ import { Input, Label, Form } from "reactstrap";
 import "./Locations.css";
 import LoadingSpinner from "../../../Components/Common/LoadingSpinner/LoadingSpinner";
 
-function NewLocation() {
+function EditLocation() {
+  const { id } = useParams(); // Get location ID from URL
   const navigate = useNavigate();
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isTimeZoneOpen, setIsTimeZoneOpen] = useState(false); // Time Zone dropdown
@@ -372,34 +373,9 @@ function NewLocation() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
 
-  // Remove or comment out the original fetchBusinessEntities function
-  // const fetchBusinessEntities = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const response = await axios.get(
-  //       "http://localhost:8000/api/v1/organizational-entities/all",
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         withCredentials: true,
-  //       }
-  //     );
-  //     setSearchResults((response.data || []).map(entity => ({
-  //       ...entity,
-  //       selected: false
-  //     })));
-  //   } catch (error) {
-  //     console.error("Error fetching business entities:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const openEntityModal = (fieldName) => {
     setCurrentField(fieldName);
     setShowModal(true);
-    // fetchBusinessEntities();
   };
 
   const handleEntitySelect = (entity) => {
@@ -484,6 +460,7 @@ function NewLocation() {
     location_id: "",
     locationType: "",
     capacity: "",
+    capacity_used: "",
     main_phone: "",
     siteOwnership: "",
     siteManager: "",
@@ -497,7 +474,118 @@ function NewLocation() {
     businessEntities: [],
     parentLocation: "",
     childLocations: [],
+    latitude: "",
+    longitude: "",
   });
+
+  // Add state for initial data loading
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch location data when component mounts
+  useEffect(() => {
+    const fetchLocationData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/locations/${id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+
+        const locationData = response.data;
+        console.log('Fetched location data:', locationData);
+
+        setFormData(prevData => ({
+          ...prevData,
+          location_name: locationData.locationName || "",
+          location_id: locationData.locationId || "",
+          capacity: locationData.capacity || "",
+          capacity_used: locationData.capacityUsed || "",
+          main_phone: locationData.mainPhone || "",
+          street_address_1: locationData.streetAddress1 || "",
+          street_address_2: locationData.streetAddress2 || "",
+          city: locationData.city || "",
+          zip_postal_code: locationData.zipPostalCode || "",
+          latitude: locationData.latitude || "",
+          longitude: locationData.longitude || "",
+        }));
+
+        // Set dropdown selections
+        setSelectedTimeZone(locationData.locationType || "-- Please select --");
+        setSelectedStatus(locationData.siteOwnership || "-- Please select --");
+        setSelectedState(locationData.stateProvince || "-- Please select --");
+        setSelectedCountry(locationData.country || "-- Please select --");
+        setSelectedAccessSafetySecurityEquipment(
+          locationData.accessSafetySecurityEquipment || "-- Please select --"
+        );
+
+        // Set relationships
+        if (locationData.siteManager) {
+          setSelectedSiteManager({
+            _id: locationData.siteManager._id,
+            fullName: `${locationData.siteManager.firstName} ${locationData.siteManager.lastName}`,
+          });
+        }
+
+        if (locationData.parentLocation) {
+          setSelectedParentLocation(locationData.parentLocation);
+        }
+
+        if (locationData.childLocations) {
+          setSelectedChildLocations(locationData.childLocations);
+        }
+
+        // Fetch full business entity details for each ID
+        if (locationData.businessEntities && locationData.businessEntities.length > 0) {
+          try {
+            const entitiesResponse = await axios.get(
+              "http://localhost:8000/api/v1/organizational-entities/all",
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                withCredentials: true,
+              }
+            );
+
+            // Map the full entity details to the IDs we have
+            const entityDetails = entitiesResponse.data;
+            const formattedEntities = locationData.businessEntities
+              .map(entityId => {
+                const fullEntity = entityDetails.find(e => e._id === entityId._id);
+                return fullEntity ? {
+                  _id: fullEntity._id,
+                  businessEntity: fullEntity.businessEntity,
+                  businessEntityType: fullEntity.businessEntityType
+                } : null;
+              })
+              .filter(Boolean);
+
+            setSelectedBusinessEntities(formattedEntities);
+          } catch (error) {
+            console.error("Error fetching business entities details:", error);
+          }
+        }
+
+      } catch (error) {
+        console.error("Error fetching location:", error);
+        Toastify({
+          text: "Error loading location data",
+          duration: 3000,
+          backgroundColor: "#f44336",
+          close: true,
+        }).showToast();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLocationData();
+  }, [id]);
 
   // Fetch locations
   const fetchLocations = async () => {
@@ -833,31 +921,9 @@ function NewLocation() {
                       <td>{location.capacity || ""}</td>
                       <td>{location.capacityUsed || ""}</td>
                       <td className="coordinate-cell">
-                        {/* {isLoadingCoordinates ? (
-                        <span className="loading-coordinates">Loading...</span>
-                      ) : (
-                        <span 
-                          className={`coordinate-value ${location.latitude !== '-' ? 'clickable' : ''}`}
-                          onClick={() => location.latitude !== '-' && viewOnMap(location.latitude, location.longitude)}
-                          title={location.latitude !== '-' ? "Click to view on map" : ""}
-                        >
-                          {location.latitude}
-                        </span>
-                      )} */}
                         {location.latitude || ""}
                       </td>
                       <td className="coordinate-cell">
-                        {/* {isLoadingCoordinates ? (
-                        <span className="loading-coordinates">Loading...</span>
-                      ) : (
-                        <span 
-                          className={`coordinate-value ${location.longitude !== '-' ? 'clickable' : ''}`}
-                          onClick={() => location.longitude !== '-' && viewOnMap(location.latitude, location.longitude)}
-                          title={location.longitude !== '-' ? "Click to view on map" : ""}
-                        >
-                          {location.longitude}
-                        </span>
-                      )} */}
                         {location.longitude || ""}
                       </td>
                       <td>{location.id || ""}</td>
@@ -1144,14 +1210,11 @@ function NewLocation() {
     }));
   };
 
-  // Update the handleSubmit function with better validation
+  // Update the handleSubmit function for editing
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Log form data for debugging
-      console.log('Form Data:', formData);
-
-      // Validate required fields with proper field names
+      // Validate required fields
       if (!formData.location_name || !formData.location_id) {
         Toastify({
           text: "Location Name and Location ID are required",
@@ -1162,12 +1225,12 @@ function NewLocation() {
         return;
       }
 
-      // Prepare the data with proper field mapping
       const locationData = {
-        locationName: formData.location_name || "",
-        locationId: formData.location_id || "",
+        locationName: formData.location_name,
+        locationId: formData.location_id,
         locationType: selectedTimeZone === "-- Please select --" ? "" : selectedTimeZone,
         capacity: formData.capacity ? parseInt(formData.capacity) : "",
+        capacityUsed: formData.capacity_used ? parseInt(formData.capacity_used) : "",
         mainPhone: formData.main_phone || "",
         siteOwnership: selectedStatus === "-- Please select --" ? "" : selectedStatus,
         siteManager: selectedSiteManager?._id || "",
@@ -1184,16 +1247,16 @@ function NewLocation() {
         businessEntities: selectedBusinessEntities
           .map((entity) => (typeof entity === "object" ? entity._id : entity))
           .filter(Boolean) || [],
-        parentLocation: selectedParentLocation?._id,
+        parentLocation: selectedParentLocation?._id || "",
         childLocations: selectedChildLocations
           .map((loc) => (typeof loc === "object" ? loc._id : loc))
           .filter(Boolean) || [],
+        latitude: formData.latitude || "",
+        longitude: formData.longitude || "",
       };
 
-      console.log('Submitting location data:', locationData);
-
-      const response = await axios.post(
-        "http://localhost:8000/api/v1/locations/create",
+      const response = await axios.patch(
+        `http://localhost:8000/api/v1/locations/${id}`,
         locationData,
         {
           headers: {
@@ -1205,7 +1268,7 @@ function NewLocation() {
 
       if (response.data) {
         Toastify({
-          text: "Location created successfully!",
+          text: "Location updated successfully!",
           duration: 3000,
           backgroundColor: "#4caf50",
           close: true,
@@ -1213,8 +1276,8 @@ function NewLocation() {
         navigate("/locations");
       }
     } catch (error) {
-      console.error("Error creating location:", error);
-      const errorMessage = error.response?.data?.message || "Failed to create location. Check your all fields.";
+      console.error("Error updating location:", error);
+      const errorMessage = error.response?.data?.message || "Failed to update location.Check your all fields.";
       
       Toastify({
         text: errorMessage,
@@ -1229,6 +1292,11 @@ function NewLocation() {
       }).showToast();
     }
   };
+
+  // Show loading spinner while data is being fetched
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <React.Fragment>
@@ -1399,24 +1467,75 @@ function NewLocation() {
                     )}
                   </div>
                 </div>
-                {["Capacity"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input
-                      type="number"
-                      name="capacity"
-                      value={formData.capacity}
-                      onChange={handleInputChange}
-                      className="form-control"
-                      placeholder="Enter Capacity"
-                    />
-                  </div>
-                ))}
+                {/* Capacity and Capacity Used */}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="capacity"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Capacity
+                  </Label>
+                  <Input
+                    type="number"
+                    name="capacity"
+                    value={formData.capacity}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="Enter Capacity"
+                  />
+                </div>
+
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="capacity_used"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Capacity Used
+                  </Label>
+                  <Input
+                    type="number"
+                    name="capacity_used"
+                    value={formData.capacity_used}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="Enter Capacity Used"
+                  />
+                </div>
+
+                {/* Latitude and Longitude */}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="latitude"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Latitude
+                  </Label>
+                  <Input
+                    type="text"
+                    name="latitude"
+                    value={formData.latitude}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="Enter Latitude"
+                  />
+                </div>
+
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="longitude"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Longitude
+                  </Label>
+                  <Input
+                    type="text"
+                    name="longitude"
+                    value={formData.longitude}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="Enter Longitude"
+                  />
+                </div>
               </div>
               <div className="col-6">
                 {["Main Phone"].map((label, index) => (
@@ -1590,26 +1709,59 @@ function NewLocation() {
           <Form>
             <div className="row pt-4">
               <div className="col-6">
-                {["Street Address 1", "Street Address 2", "City"].map(
-                  (label, index) => (
-                    <div className="mb-3 d-flex align-items-center" key={index}>
-                      <Label
-                        htmlFor={label}
-                        className="form-label me-2 fs-15 w-40"
-                      >
-                        {label}
-                      </Label>
-                      <Input
-                        type="text"
-                        name={label.toLowerCase().replace(" ", "_")}
-                        value={formData[label.toLowerCase().replace(" ", "_")]}
-                        onChange={handleInputChange}
-                        className="form-control"
-                        placeholder={`Enter ${label}`}
-                      />
-                    </div>
-                  )
-                )}
+                {/* Street Address 1 */}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="street_address_1"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Street Address 1
+                  </Label>
+                  <Input
+                    type="text"
+                    name="street_address_1"
+                    value={formData.street_address_1}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="Enter Street Address 1"
+                  />
+                </div>
+
+                {/* Street Address 2 */}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="street_address_2"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Street Address 2
+                  </Label>
+                  <Input
+                    type="text"
+                    name="street_address_2"
+                    value={formData.street_address_2}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="Enter Street Address 2"
+                  />
+                </div>
+
+                {/* City */}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="city"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    City
+                  </Label>
+                  <Input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    className="form-control"
+                    placeholder="Enter City"
+                  />
+                </div>
               </div>
               <div className="col-6">
                 <div className="mb-3 d-flex align-items-center">
@@ -1862,8 +2014,8 @@ function NewLocation() {
                                 className="btn-close ms-2"
                                 style={{ fontSize: "0.5rem" }}
                                 onClick={() => {
-                                  setSelectedBusinessEntities((prev) =>
-                                    prev.filter((e) => e._id !== entity._id)
+                                  setSelectedBusinessEntities(prev =>
+                                    prev.filter(e => e._id !== entity._id)
                                   );
                                 }}
                               />
@@ -2018,4 +2170,4 @@ function NewLocation() {
   );
 }
 
-export default NewLocation;
+export default EditLocation;

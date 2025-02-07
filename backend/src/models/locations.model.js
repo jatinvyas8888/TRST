@@ -3,21 +3,32 @@ import mongoose from "mongoose"
 const locationSchema = new mongoose.Schema({
     locationName: {
         type: String,
-        unique: true,
     },
     locationType: {
         type: String,
     },
     locationId: {
         type: String,
-        unique: true,
     },
     mainPhone: {
         type: String,
     },
     capacity: {
         type: Number,
+        default: 0
     },
+    capacityUsed: {
+        type: Number,
+        default: 0
+    },
+    latitude: {
+        type: String,
+        default: null
+    },
+    longitude: {
+        type: String,
+        default: null
+    }, 
     siteOwnership: {
         type: String,
     },
@@ -27,6 +38,7 @@ const locationSchema = new mongoose.Schema({
     },
     accessSafetySecurityEquipment: {
         type: String,
+        default: ""
     },
     streetAddress1: {
         type: String,
@@ -43,36 +55,21 @@ const locationSchema = new mongoose.Schema({
     zipPostalCode: {
         type: String,
     },
-    city: {
-        type: String,
-    },
     country: {
         type: String,
     },
     parentLocation: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "BusinessEntity"
+        ref: "Location"
     },
     childLocations: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "BusinessEntity"
+        ref: "Location"
     }],
     businessEntities: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "BusinessEntity"
     }],
-    latitude: {
-        type: Number,
-        default: null
-    },
-    longitude: {
-        type: Number,
-        default: null
-    },
-    capacityUsed: {
-        type: Number,
-        default: 0
-    },
 }, {
     timestamps: true
 })
