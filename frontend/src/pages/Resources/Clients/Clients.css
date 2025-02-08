@@ -299,3 +299,32 @@ button:not(:has(span)) > svg,
     background-color: #3850e0;
     color: white;
 }
+
+/* Add styles for action buttons */
+.btn-link {
+  color: inherit;
+  padding: 0;
+  margin: 0 3px;
+}
+
+.btn-link:hover {
+  opacity: 0.8;
+}
+
+/* Selected row style */
+.selected-row {
+  background-color: rgba(67, 95, 255, 0.05);
+}
+
+/* Table styles */
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  background-color: transparent;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: middle;
+}

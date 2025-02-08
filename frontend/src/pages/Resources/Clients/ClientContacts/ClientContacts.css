@@ -211,3 +211,31 @@ border-radius: 2px;
 .fs-20{
     font-size: 20px;
 }
+
+/* Add any missing styles from your Employees.css */
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  background-color: transparent;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: middle;
+}
+
+.pagination-buttons .btn {
+  margin: 0 2px;
+}
+
+.btn-outline-secondary {
+  border-color: #ced4da;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+}
+
+/* Add any additional styles you need */

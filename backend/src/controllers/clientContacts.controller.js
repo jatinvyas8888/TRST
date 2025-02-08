@@ -5,24 +5,11 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import mongoose from 'mongoose';
 
-// Helper function to find clients by ID or name
-const findClients = async (clientIdentifiers) => {
-  const clientPromises = clientIdentifiers.map(async (identifier) => {
-    // Check if identifier is a valid MongoDB ID
-    if (mongoose.Types.ObjectId.isValid(identifier)) {
-      return Client.findById(identifier);
-    }
-    // If not a valid ID, search by company name
-    return Client.findOne({ company: identifier });
-  });
-
-  return Promise.all(clientPromises);
-};
 
 // Create a new client contact
 const createClientContact = asyncHandler(async (req, res) => {
   const {
-    clients, // Array of client IDs or names
+    clients,
     firstName,
     lastName,
     middleName,
@@ -33,25 +20,61 @@ const createClientContact = asyncHandler(async (req, res) => {
     fax
   } = req.body;
 
-//   if (!clients?.length) {
-//     throw new ApiError(400, "At least one client is required");
-//   }
-
-  // Find clients by ID or name
-  const existingClients = await findClients(clients);
-  
-  // Filter out any null results and get their IDs
-  const foundClientIds = existingClients
-    .filter(client => client)
-    .map(client => client._id);
-
-  if (!foundClientIds.length) {
-    throw new ApiError(404, "No valid clients found");
+  // Validate required fields
+  if (!firstName || !lastName) {
+    throw new ApiError(400, "First name and last name are required");
   }
 
-  // Create contact with found client IDs
+  // Process clients if provided
+  let clientIds = [];
+  let clientNames = [];
+  if (clients && Array.isArray(clients)) {
+    try {
+      // First try to find by ID
+      const foundClients = await Client.find({ 
+        _id: { $in: clients }
+      });
+
+      if (foundClients.length === clients.length) {
+        // All found by ID
+        clientIds = foundClients.map(client => client._id);
+        clientNames = foundClients.map(client => client.company);
+      } else {
+        // If not all found by ID, try by company name
+        const clientsByName = await Client.find({ 
+          company: { $in: clients }
+        });
+
+        if (clientsByName.length !== clients.length) {
+          throw new ApiError(404, "One or more clients not found");
+        }
+
+        clientIds = clientsByName.map(client => client._id);
+        clientNames = clientsByName.map(client => client.company);
+      }
+    } catch (error) {
+      if (error instanceof mongoose.Error.CastError) {
+        // If cast error (invalid ObjectId), try finding by name directly
+        const clientsByName = await Client.find({ 
+          company: { $in: clients }
+        });
+
+        if (clientsByName.length !== clients.length) {
+          throw new ApiError(404, "One or more clients not found");
+        }
+
+        clientIds = clientsByName.map(client => client._id);
+        clientNames = clientsByName.map(client => client.company);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  // Create contact with validated client IDs
   const newContact = await ClientContacts.create({
-    clients: foundClientIds,
+    clients: clientIds,
+    clientNames, // Add this field to your schema if you want to store names
     firstName,
     lastName,
     middleName: middleName || "",
@@ -63,9 +86,10 @@ const createClientContact = asyncHandler(async (req, res) => {
     updatedBy: req.user._id
   });
 
+  // Populate and return the new contact
   const populatedContact = await ClientContacts.findById(newContact._id)
-    .populate('clients', 'company')
-    .populate('updatedBy', 'firstName lastName');
+    .populate('clients', 'company website')
+    .populate('updatedBy', 'fullName');
 
   return res.status(201).json(
     new ApiResponse(201, populatedContact, "Client contact created successfully")
@@ -74,24 +98,12 @@ const createClientContact = asyncHandler(async (req, res) => {
 
 // Get all client contacts
 const getAllClientContact = asyncHandler(async (req, res) => {
-  const { clientId } = req.query;
-  let query = {};
-
-  // If clientId is provided, filter by client
-  if (clientId) {
-    if (!mongoose.Types.ObjectId.isValid(clientId)) {
-      throw new ApiError(400, "Invalid client ID");
-    }
-    query.clients = clientId;  // Changed from client to clients
-  }
-
-  const contacts = await ClientContacts.find(query)
-    .populate('clients', 'company')
-    .populate('updatedBy', 'firstName lastName')
-    .sort({ createdAt: -1 });
+  const contacts = await ClientContacts.find()
+    .populate('clients', 'company website')
+    .populate('updatedBy', 'fullName');
 
   return res.status(200).json(
-    new ApiResponse(200, contacts, "Client contacts fetched successfully")
+    new ApiResponse(200, contacts, "Client contacts retrieved successfully")
   );
 });
 
@@ -100,15 +112,15 @@ const getClientContact = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const contact = await ClientContacts.findById(id)
-    .populate('clients', 'company')
-    .populate('updatedBy', 'firstName lastName');
+    .populate('clients', 'company website')
+    .populate('updatedBy', 'fullName');
 
   if (!contact) {
     throw new ApiError(404, "Client contact not found");
   }
 
   return res.status(200).json(
-    new ApiResponse(200, contact, "Client contact fetched successfully")
+    new ApiResponse(200, contact, "Client contact retrieved successfully")
   );
 });
 
@@ -116,7 +128,7 @@ const getClientContact = asyncHandler(async (req, res) => {
 const updateClientContact = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const {
-    clients,  // Array of client IDs or names
+    clients,
     firstName,
     lastName,
     middleName,
@@ -132,23 +144,55 @@ const updateClientContact = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Client contact not found");
   }
 
-  // If clients array is being updated
-  if (clients?.length) {
-    const existingClients = await findClients(clients);
-    
-    // Filter out any null results and get their IDs
-    const foundClientIds = existingClients
-      .filter(client => client)
-      .map(client => client._id);
+  // Process clients if provided
+  let clientIds = contact.clients;
+  let clientNames = contact.clientNames;
+  if (clients && Array.isArray(clients)) {
+    try {
+      // First try to find by ID
+      const foundClients = await Client.find({ 
+        _id: { $in: clients }
+      });
 
-    if (!foundClientIds.length) {
-      throw new ApiError(404, "No valid clients found");
+      if (foundClients.length === clients.length) {
+        // All found by ID
+        clientIds = foundClients.map(client => client._id);
+        clientNames = foundClients.map(client => client.company);
+      } else {
+        // If not all found by ID, try by company name
+        const clientsByName = await Client.find({ 
+          company: { $in: clients }
+        });
+
+        if (clientsByName.length !== clients.length) {
+          throw new ApiError(404, "One or more clients not found");
+        }
+
+        clientIds = clientsByName.map(client => client._id);
+        clientNames = clientsByName.map(client => client.company);
+      }
+    } catch (error) {
+      if (error instanceof mongoose.Error.CastError) {
+        // If cast error (invalid ObjectId), try finding by name directly
+        const clientsByName = await Client.find({ 
+          company: { $in: clients }
+        });
+
+        if (clientsByName.length !== clients.length) {
+          throw new ApiError(404, "One or more clients not found");
+        }
+
+        clientIds = clientsByName.map(client => client._id);
+        clientNames = clientsByName.map(client => client.company);
+      } else {
+        throw error;
+      }
     }
-    
-    contact.clients = foundClientIds;
   }
 
-  // Update other fields
+  // Update fields
+  contact.clients = clientIds;
+  contact.clientNames = clientNames;
   if (firstName) contact.firstName = firstName;
   if (lastName) contact.lastName = lastName;
   contact.middleName = middleName || contact.middleName;
@@ -162,7 +206,7 @@ const updateClientContact = asyncHandler(async (req, res) => {
   const updatedContact = await contact.save();
 
   const populatedContact = await ClientContacts.findById(updatedContact._id)
-    .populate('clients', 'company')
+    .populate('clients', 'company website')
     .populate('updatedBy', 'firstName lastName');
 
   return res.status(200).json(

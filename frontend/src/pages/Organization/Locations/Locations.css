@@ -217,9 +217,15 @@ border-radius: 2px;
 }
 
 .table {
-  margin-bottom: 0;
-  border: 1px solid #c5c3c3;
-  font-family:'Montserrat', sans-serif;
+  width: 100%;
+  margin-bottom: 1rem;
+  background-color: transparent;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: middle;
 }
 
 .table thead th {
@@ -331,4 +337,69 @@ border-radius: 2px;
 
 .w-29{
     width: 26%;
+}
+
+/* Checkbox styles */
+.form-check-input {
+  cursor: pointer;
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  vertical-align: middle;
+}
+
+/* Action button styles */
+.btn-link {
+  color: inherit;
+  padding: 0;
+  margin: 0 3px;
+}
+
+.btn-link:hover {
+  opacity: 0.8;
+}
+
+/* Selected row style */
+.selected-row {
+  background-color: rgba(67, 95, 255, 0.05);
+}
+
+/* Column resize handle */
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  user-select: none;
+}
+
+.resize-handle:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Gap utility */
+.gap-2 {
+  gap: 0.5rem;
+}
+
+/* Update table cell styles */
+.table th:first-child,
+.table td:first-child {
+  width: 50px;
+  min-width: 50px;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+/* Remove any text overflow handling from checkbox cells */
+.table th:first-child,
+.table td:first-child {
+  text-overflow: clip;
+  overflow: visible;
 }

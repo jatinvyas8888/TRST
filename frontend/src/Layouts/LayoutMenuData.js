@@ -200,7 +200,7 @@ const Navdata = () => {
                 },
                 {
                   id: "business-entities",
-                  label: "Business Entities",
+                  label: "Organizational Entities",
                   link: "/admin/business-entities",
                   parentId: "import",
                 },
@@ -508,7 +508,7 @@ const Navdata = () => {
         },
         {
           id: "call-trees",
-          label: "Call-trees",
+          label: "Call Trees",
           link: "/call-trees",
           parentId: "plans",
         },

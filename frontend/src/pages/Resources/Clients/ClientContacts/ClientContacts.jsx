@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link, NavLink } from "react-router-dom";
 import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
@@ -12,23 +12,61 @@ import { TiExport, TiPlus } from "react-icons/ti";
 import { FaRegTrashCan, FaTableColumns } from "react-icons/fa6";
 import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal } from "react-icons/hi";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import { CiEdit } from "react-icons/ci";
+import axios from "axios";
+import LoadingSpinner from "../../../../Components/Common/LoadingSpinner/LoadingSpinner";
 import "./ClientContacts.css";
 
 function ClientContacts() {
   const [isOpen, setIsOpen] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isColumnOpen, setIsColumnOpen] = useState(false);
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
+  // Fetch contacts
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/api/v1/client-contacts/all",{
+          withCredentials:true
+        });
+        setContacts(response.data);
+        setLoading(false);
+      } catch (error) { ``
+        console.error("Error fetching contacts:", error);
+        setLoading(false);
+      }
+    };
 
-  const toggleToolDropDown = () => {
-    setIsToolOpen(!isToolOpen);
-  };
-  const ColumnDropDown = () => {
-    setIsColumnOpen(!isColumnOpen);
-  };
+    fetchContacts();
+  }, []);
+
+  // Get current contacts for pagination
+  const indexOfLastRow = currentPage * itemsPerPage;
+  const indexOfFirstRow = indexOfLastRow - itemsPerPage;
+  const filteredContacts = contacts.filter(contact => 
+    contact.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    contact.emailAddress.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const currentContacts = filteredContacts.slice(indexOfFirstRow, indexOfLastRow);
+
+  // Change page
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+  const handleNextPage = () => setCurrentPage(prev => prev + 1);
+  const handlePrevPage = () => setCurrentPage(prev => prev - 1);
+  const handleFirstPage = () => setCurrentPage(1);
+  const handleLastPage = () => setCurrentPage(Math.ceil(filteredContacts.length / itemsPerPage));
+
+  // Toggle dropdowns
+  const toggleDropdown = () => setIsOpen(!isOpen);
+  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
+  const ColumnDropDown = () => setIsColumnOpen(!isColumnOpen);
 
   return (
     <React.Fragment>
@@ -245,6 +283,100 @@ function ClientContacts() {
             </div>
           </div>
         </div>
+      <div className="border-1 mt-2 mb-2"></div>
+      
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <div className="table-responsive">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Work Phone</th>
+                <th>Mobile Phone</th>
+                <th>Clients</th>
+                <th>Updated By</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentContacts.map((contact) => (
+                <tr key={contact._id}>
+                  <td>{`${contact.firstName} ${contact.middleName || ''} ${contact.lastName}`}</td>
+                  <td>{contact.emailAddress}</td>
+                  <td>{contact.workPhone}</td>
+                  <td>{contact.workMobilePhone}</td>
+                  <td>
+                    {contact.clients.map(client => client.company).join(', ')}
+                  </td>
+                  <td>{contact.updatedBy?.fullName}</td>
+                  <td>
+                    <Link 
+                      to={`/edit-client-contact/${contact._id}`}
+                      className="btn btn-sm btn-outline-primary me-2"
+                    >
+                      <CiEdit />
+                    </Link>
+                    <button 
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleDelete(contact._id)}
+                    >
+                      <RiDeleteBin6Line />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Pagination */}
+          <div className="d-flex justify-content-between align-items-center mt-4">
+            <div className="d-flex align-items-center">
+              <select 
+                className="form-select me-2" 
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+              >
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+              </select>
+              <span>entries per page</span>
+            </div>
+            
+            <div className="d-flex align-items-center">
+              <div className="pagination-buttons">
+                <button 
+                  className="btn btn-sm btn-outline-secondary" 
+                  onClick={handleFirstPage}
+                  disabled={currentPage === 1}
+                >{"<<"}</button>
+                <button 
+                  className="btn btn-sm btn-outline-secondary" 
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                >{"<"}</button>
+                <span className="mx-2">Page {currentPage}</span>
+                <button 
+                  className="btn btn-sm btn-outline-secondary" 
+                  onClick={handleNextPage}
+                  disabled={currentPage === Math.ceil(filteredContacts.length / itemsPerPage)}
+                >{">"}</button>
+                <button 
+                  className="btn btn-sm btn-outline-secondary" 
+                  onClick={handleLastPage}
+                  disabled={currentPage === Math.ceil(filteredContacts.length / itemsPerPage)}
+                >{">>"}</button>
+              </div>
+              <span className="ms-2 fw-bold">
+                {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, filteredContacts.length)} of {filteredContacts.length} items
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </React.Fragment>
   );

@@ -520,7 +520,7 @@ function Clients() {
                     checked={checkedItems.length === clients.length && clients.length > 0}
                   />
                 </th>
-                <th>Actions</th>
+                <th style={{ width: '100px' }}>Actions</th>
                 {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
                   <th
                     key={column.id}

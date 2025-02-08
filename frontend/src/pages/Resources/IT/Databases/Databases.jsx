@@ -251,6 +251,7 @@ function Databases() {
               </button>
             </div>
           </div>
+          <div className="border-1 mt-2 mb-2"></div>
         </div>
       </div>
     </React.Fragment>

@@ -222,7 +222,7 @@ function EditEmployee() {
     "GMT-10 -  Tahiti Time",
     "GMT-11 - Samoa Standard Time",
     "GMT-12 -  Baker Island Time",
-  ];
+  ];
 
   const statusOptions = ["-- Please select --", "Active", "Terminated"];
   const StateOptions = [
@@ -278,7 +278,7 @@ function EditEmployee() {
     "West Virginia",
     "Wisconsin",
     "Wyoming",
-  ];
+  ];
   const CountryOptions = [
     "-- Please select --",
     "Afghanistan",
@@ -464,7 +464,7 @@ function EditEmployee() {
     "Yemen",
     "Zambia",
     "Zimbabwe",
-  ];
+  ];
 
   // Dropdown toggles
   const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
@@ -558,7 +558,7 @@ function EditEmployee() {
       }
 
       const data = await response.json();
-      //   console.log("Fetched employees data:", data); // Log the data
+    //   console.log("Fetched employees data:", data); // Log the data
 
       if (Array.isArray(data.data.employees)) {
         setEmployees(data.data.employees); // Set the employees state
@@ -652,7 +652,7 @@ function EditEmployee() {
   // Update the handleChange function
   const handleChange = (e) => {
     const { name, value } = e.target;
-
+    
     // Map form field names to state field names
     const fieldMap = {
       employeeid: "employeeID",
@@ -677,7 +677,7 @@ function EditEmployee() {
 
     // Update the form data
     setEmployeeData((prevData) => ({
-      ...prevData,
+        ...prevData,
       [fieldName]: value,
     }));
   };
@@ -804,7 +804,7 @@ function EditEmployee() {
 
     try {
       // Create formattedData with all fields, including empty ones
-      const formattedData = {
+        const formattedData = {
         employeeID: employeeData.employeeID || "",
         firstName: employeeData.firstName || "",
         middleName: employeeData.middleName || "",
@@ -815,7 +815,7 @@ function EditEmployee() {
         workPhone: employeeData.workPhone || "",
         workMobilePhone: employeeData.workMobilePhone || "",
         fax: employeeData.fax || "",
-        manager: selectedManager?._id || "",
+            manager: selectedManager?._id || "",
         subordinates: employeeData.subordinates.map((sub) => sub._id) || [],
         department: selectedEntities.map((dept) => dept._id) || [],
         location: selectedLocations.map((loc) => loc._id) || [],
@@ -836,45 +836,45 @@ function EditEmployee() {
           selectedTimeZone === "-- Please select --" ? "" : selectedTimeZone,
       };
 
-      console.log("Submitting formatted data:", formattedData);
+        console.log("Submitting formatted data:", formattedData);
 
       const response = await axios.patch(
         `http://localhost:8000/api/v1/employees/${employeeId}`,
-        formattedData,
-        {
-          headers: {
+            formattedData,
+            {
+                headers: {
             "Content-Type": "application/json",
-          },
+                },
           withCredentials: true,
-        }
-      );
+            }
+        );
 
-      Toastify({
+        Toastify({
         text: "Employee updated successfully!",
-        duration: 3000,
-        gravity: "top",
-        position: "right",
-        style: {
-          background: "#28a745",
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: {
+                background: "#28a745",
         },
-      }).showToast();
-      navigate("/employees");
+        }).showToast();
+        navigate("/employees");
     } catch (error) {
       console.error("Error updating employee:", error);
       const errorMessage =
         error.response?.data?.message ||
-        error.response?.data?.error ||
+                           error.response?.data?.error || 
         "Error updating employee. Please try again.";
-
-      Toastify({
-        text: errorMessage,
-        duration: 3000,
-        gravity: "top",
-        position: "right",
-        style: {
-          background: "#dc3545",
+        
+        Toastify({
+            text: errorMessage,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: {
+                background: "#dc3545",
         },
-      }).showToast();
+        }).showToast();
     }
   };
 
@@ -928,25 +928,25 @@ function EditEmployee() {
   const handleSubordinateSelect = (employeeId, isSelected) => {
     const selectedEmployee = employees.find((emp) => emp._id === employeeId);
     if (isSelected && selectedEmployee) {
-      setEmployeeData((prev) => ({
-        ...prev,
-        subordinates: [
-          ...prev.subordinates,
-          {
-            _id: selectedEmployee._id,
-            employeeID: selectedEmployee.employeeID,
-            firstName: selectedEmployee.firstName,
-            lastName: selectedEmployee.lastName,
+        setEmployeeData((prev) => ({
+            ...prev,
+            subordinates: [
+                ...prev.subordinates,
+                {
+                    _id: selectedEmployee._id,
+                    employeeID: selectedEmployee.employeeID,
+                    firstName: selectedEmployee.firstName,
+                    lastName: selectedEmployee.lastName,
             fullName: `${selectedEmployee.firstName} ${selectedEmployee.lastName}`,
-          },
-        ],
-      }));
-      setShowEmployeesModal(false);
+                },
+            ],
+        }));
+        setShowEmployeesModal(false);
     } else {
-      setEmployeeData((prev) => ({
-        ...prev,
-        subordinates: prev.subordinates.filter((sub) => sub._id !== employeeId),
-      }));
+        setEmployeeData((prev) => ({
+            ...prev,
+            subordinates: prev.subordinates.filter((sub) => sub._id !== employeeId),
+        }));
     }
   };
 
@@ -1566,20 +1566,20 @@ function EditEmployee() {
             <div className="header-text">Employees: Edit Employee</div>
             <div className="d-flex align-items-center justify-content-end">
               <div className="d-flex justify-content-end">
-                <button
+              <button
                   type="button"
-                  className="btn btn-secondary me-2"
-                  onClick={() => navigate("/employees")}
-                >
-                  Cancel
-                </button>
-                <button
+                className="btn btn-secondary me-2"
+                onClick={() => navigate("/employees")}
+              >
+                Cancel
+              </button>
+              <button
                   type="submit"
                   className="btn btn-primary"
-                  onClick={handleSubmit}
-                >
+                onClick={handleSubmit}
+              >
                   Save Employee
-                </button>
+              </button>
               </div>
               <div
                 className="map-action k-widget k-button-group order-1"
@@ -1587,16 +1587,16 @@ function EditEmployee() {
                 role="group"
               >
                 <span className="dropdown">
-                  <button
+                <button
                     className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                    type="button"
+                  type="button"
                     id="TollFropdown"
                     data-bs-toggle="dropdown"
                     aria-expanded={isToolOpen}
                     onClick={toggleToolDropDown}
-                  >
+                >
                     <HiMiniWrench style={{ width: "16px", height: "16px" }} />
-                  </button>
+                </button>
                   <ul
                     className={`right-auto dropdown-menu  ${
                       isToolOpen ? "show" : ""
@@ -1607,28 +1607,28 @@ function EditEmployee() {
                                         <li><a className="dropdown-item" href="#"><FcSettings style={{ width: "15px", height: "15px" }} /> Object Definition</a></li>
                                         <li><a className="dropdown-item" href="#"><LuTableOfContents style={{ width: "15px", height: "15px" }} /> Tab Definition</a></li>
                                         <div className="border-1"></div> */}
-                    <li>
-                      <a className="dropdown-item" href="#">
+                  <li>
+                    <a className="dropdown-item" href="#">
                         <FaPrint style={{ width: "15px", height: "15px" }} />{" "}
-                        Print
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
+                      Print
+                    </a>
+                  </li>
+                  <li>
+                    <a className="dropdown-item" href="#">
                         <FaRegFilePdf
                           style={{ width: "15px", height: "15px" }}
                         />{" "}
-                        PDF
-                      </a>
-                    </li>
+                      PDF
+                    </a>
+                  </li>
                     <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
+                  <li>
+                    <a className="dropdown-item" href="#">
                         <LuClock9 style={{ width: "15px", height: "15px" }} />{" "}
-                        Page Load Time
-                      </a>
-                    </li>
-                  </ul>
+                      Page Load Time
+                    </a>
+                  </li>
+                </ul>
                 </span>
               </div>
             </div>
@@ -2146,77 +2146,77 @@ function EditEmployee() {
                     />
                   </div>
                 ))}
-                    <div className="mb-3 d-flex align-items-center">
-                      <Label
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
                         htmlFor="stateProvince"
                         className="form-label fs-15 w-29 me-4"
-                      >
-                        State/Province
-                      </Label>
+                  >
+                    State/Province
+                  </Label>
                       <div className="dropdown-container position-relative flex-grow-1">
-                        <button
-                          onClick={toggleStateDropdown}
-                          className="form-control text-start d-flex justify-content-between align-items-center"
-                          type="button"
-                        >
-                          <span>{selectedState}</span>
-                          <IoMdArrowDropdown />
-                        </button>
-                        {isStateOpen && (
-                          <div
-                            className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                            style={{ zIndex: 1000 }}
-                          >
-                            {StateOptions.map((option, index) => (
-                              <button
-                                key={index}
-                                onClick={() => handleSelectState(option)}
-                                className="dropdown-item w-100 text-start py-2 px-3"
-                                type="button"
-                              >
-                                {option}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                  </div>
-                  <div className="mb-3 d-flex align-items-center">
-                    <Label
-                      htmlFor="country"
-                      className="form-label fs-15 w-29 me-4"
+                    <button
+                      onClick={toggleStateDropdown}
+                      className="form-control text-start d-flex justify-content-between align-items-center"
+                      type="button"
                     >
-                      Country
-                    </Label>
-                    <div className="dropdown-container position-relative flex-grow-1">
-                      <button
-                        onClick={toggleCountryDropdown}
-                        className="form-control text-start d-flex justify-content-between align-items-center"
-                        type="button"
+                      <span>{selectedState}</span>
+                          <IoMdArrowDropdown />
+                    </button>
+                    {isStateOpen && (
+                      <div
+                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
+                        style={{ zIndex: 1000 }}
                       >
-                        <span>{selectedCountry}</span>
-                        <IoMdArrowDropdown />
-                      </button>
-                      {isCountryOpen && (
-                        <div
-                          className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                          style={{ zIndex: 1000 }}
-                        >
-                          {CountryOptions.map((option, index) => (
-                            <button
-                              key={index}
-                              onClick={() => handleSelectCountry(option)}
-                              className="dropdown-item w-100 text-start py-2 px-3"
-                              type="button"
-                            >
-                              {option}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                        {StateOptions.map((option, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleSelectState(option)}
+                            className="dropdown-item w-100 text-start py-2 px-3"
+                            type="button"
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                      htmlFor="country"
+                      className="form-label fs-15 w-29 me-4"
+                  >
+                    Country
+                  </Label>
+                    <div className="dropdown-container position-relative flex-grow-1">
+                    <button
+                      onClick={toggleCountryDropdown}
+                      className="form-control text-start d-flex justify-content-between align-items-center"
+                      type="button"
+                    >
+                      <span>{selectedCountry}</span>
+                        <IoMdArrowDropdown />
+                    </button>
+                    {isCountryOpen && (
+                      <div
+                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
+                        style={{ zIndex: 1000 }}
+                      >
+                        {CountryOptions.map((option, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleSelectCountry(option)}
+                            className="dropdown-item w-100 text-start py-2 px-3"
+                            type="button"
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
 
               <div className="col-6">
                 {[
@@ -2341,7 +2341,7 @@ function EditEmployee() {
                             </td>
                             <td>{entity._id}</td>
                             <td>{entity.businessEntity}</td>
-                      <td>{entity.businessEntityType}</td>
+                            <td>{entity.businessEntityType}</td>
                       <td>
                         {entity.relatedLocations
                           .map((location) => location.locationName)
@@ -2349,12 +2349,12 @@ function EditEmployee() {
                       </td>
                       <td>
                         {entity.parentBusinessEntity?.businessEntity || "-"}
-                      </td>
-                      <td>
-                        {entity.childBusinessEntities
+                            </td>
+                            <td>
+                              {entity.childBusinessEntities
                           ?.map((c) => c.businessEntity)
                           .join(", ") || "-"}
-                      </td>
+                            </td>
                             <td>
                               {new Date(entity.updatedAt).toLocaleString()}
                             </td>

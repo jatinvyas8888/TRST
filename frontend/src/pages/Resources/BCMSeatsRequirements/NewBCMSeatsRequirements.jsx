@@ -57,8 +57,8 @@ function NewBCMSeatsRequirements() {
               <div>
                 <NavLink
                   className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save"
+                  to="/bcm-seats-requirements"
+                  title="Cancel"
                 >
                   <RxCross2
                     className="me-1"

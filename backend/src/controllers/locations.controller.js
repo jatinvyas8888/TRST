@@ -289,7 +289,7 @@ const deleteLocation = asyncHandler(async (req, res) => {
         const locationId = req.params.id;
         const location = await Location.findById(locationId);
 
-        if (!location) {
+    if (!location) {
             return res.status(404).json({
                 success: false,
                 message: "Location not found"
@@ -337,7 +337,7 @@ const deleteLocation = asyncHandler(async (req, res) => {
 
         // If no references exist, proceed with deletion
         // First remove this location from any parent's childLocations array
-        if (location.parentLocation) {
+    if (location.parentLocation) {
             await Location.updateOne(
                 { _id: location.parentLocation._id },
                 { $pull: { childLocations: { _id: locationId } } }
@@ -345,10 +345,10 @@ const deleteLocation = asyncHandler(async (req, res) => {
         }
 
         // Then remove this location from any child's parentLocation field
-        await Location.updateMany(
+    await Location.updateMany(
             { 'parentLocation._id': locationId },
-            { $unset: { parentLocation: "" } }
-        );
+        { $unset: { parentLocation: "" } }
+    );
 
         // Finally delete the location
         await Location.findByIdAndDelete(locationId);

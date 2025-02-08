@@ -53,21 +53,13 @@ import { createSelector } from 'reselect';
 
 const RightSidebar = (props) => {
     const dispatch = useDispatch();
-
     const [show, setShow] = useState(false);
 
-    function tog_show() {
+    const handleToggleSidebar = () => {
         setShow(!show);
-        dispatch(changeSidebarTheme("gradient"));
-    }
-
-    useEffect(() => {
-        if (show && document.getElementById("sidebar-color-dark") && document.getElementById("sidebar-color-light")) {
-            document.getElementById("sidebar-color-dark").checked = false;
-            document.getElementById("sidebar-color-light").checked = false;
-        }
-    });
-
+        const newVisibility = !show ? 'show' : 'hidden';
+        dispatch(changeSidebarVisibility(newVisibility));
+    };
 
     const selectLayoutState = (state) => state.Layout;
     const selectLayoutProperties = createSelector(
@@ -107,21 +99,6 @@ const RightSidebar = (props) => {
         setOpen(!open);
     };
 
-    // window.onscroll = function () {
-    //     scrollFunction();
-    // };
-
-    // const scrollFunction = () => {
-    //     const element = document.getElementById("back-to-top");
-    //     if (element) {
-    //         if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
-    //             element.style.display = "block";
-    //         } else {
-    //             element.style.display = "none";
-    //         }
-    //     }
-    // };
-
     const toTop = () => {
         document.body.scrollTop = 0;
         document.documentElement.scrollTop = 0;
@@ -159,12 +136,12 @@ const RightSidebar = (props) => {
 
             <div>
                 <div className="customizer-setting d-none d-md-block">
-                    <div onClick={toggleLeftCanvas} className="btn-info rounded-pill shadow-lg btn btn-icon btn-lg p-2 rounded-pill">
+                    <div onClick={handleToggleSidebar} className="btn-info rounded-pill shadow-lg btn btn-icon btn-lg p-2 rounded-pill">
                         <i className='mdi mdi-spin mdi-cog-outline fs-22'></i>
                     </div>
                 </div>
-                <Offcanvas isOpen={open} toggle={toggleLeftCanvas} direction='end'>
-                    <OffcanvasHeader className="d-flex align-items-center bg-primary bg-gradient p-3 offcanvas-header-dark" toggle={toggleLeftCanvas}>
+                <Offcanvas isOpen={show} toggle={handleToggleSidebar} direction='end'>
+                    <OffcanvasHeader className="d-flex align-items-center bg-primary bg-gradient p-3 offcanvas-header-dark" toggle={handleToggleSidebar}>
                         <span className="m-0 me-2 text-white">Theme Customizer</span>
                     </OffcanvasHeader>
                     <OffcanvasBody className="p-0">
@@ -993,7 +970,7 @@ const RightSidebar = (props) => {
                                                         data-bs-target="#collapseBgGradient"
                                                         data-bs-toggle="collapse"
                                                         aria-controls="collapseBgGradient"
-                                                        onClick={tog_show}
+                                                        onClick={handleToggleSidebar}
                                                     >
                                                         <span className="d-flex gap-1 h-100">
                                                             <span className="flex-shrink-0">

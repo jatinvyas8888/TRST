@@ -95,6 +95,9 @@ function Employees() {
     updatedBy: 150
   });
 
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
@@ -346,6 +349,44 @@ function Employees() {
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const handleSelectAll = (e) => {
+    setSelectAll(e.target.checked);
+    if (e.target.checked) {
+      setSelectedEmployees(employees.map(emp => emp._id));
+    } else {
+      setSelectedEmployees([]);
+    }
+  };
+
+  const handleSelect = (employeeId) => {
+    setSelectedEmployees(prev => {
+      if (prev.includes(employeeId)) {
+        return prev.filter(id => id !== employeeId);
+      } else {
+        return [...prev, employeeId];
+      }
+    });
+  };
+
+  const handleDeleteSelected = async () => {
+    if (window.confirm('Are you sure you want to delete selected employees?')) {
+      try {
+        await Promise.all(
+          selectedEmployees.map(id => 
+            axios.delete(`http://localhost:8000/api/v1/employees/${id}`, {
+              withCredentials: true
+            })
+          )
+        );
+        loadEmployees();
+        setSelectedEmployees([]);
+        setSelectAll(false);
+      } catch (error) {
+        console.error('Error deleting employees:', error);
+      }
+    }
   };
 
   return (
@@ -625,11 +666,11 @@ function Employees() {
                 <button
                   className="button border-1 ms-1"
                   style={{
-                    opacity: checkedItems.length > 0 ? 1 : 0.5,
-                    cursor: checkedItems.length > 0 ? "pointer" : "default",
+                    opacity: selectedEmployees.length > 0 ? 1 : 0.5,
+                    cursor: selectedEmployees.length > 0 ? "pointer" : "default",
                   }}
-                  onClick={handleBulkDelete}
-                  disabled={checkedItems.length === 0}
+                  onClick={handleDeleteSelected}
+                  disabled={selectedEmployees.length === 0}
                 >
                   <FaRegTrashCan className="hw-20" />
                 </button>
@@ -694,17 +735,15 @@ function Employees() {
             <table className="table table-hover">
               <thead>
                 <tr>
-                  <th>
+                  <th style={{ width: '40px' }}>
                     <input
                       type="checkbox"
-                      onChange={() => handleCheckboxChange("all")}
-                      checked={
-                        checkedItems.length === employees.length &&
-                        employees.length > 0
-                      }
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                      className="form-check-input"
                     />
                   </th>
-                  <th>Actions</th>
+                  <th style={{ width: '100px' }}>Actions</th>
                   {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
                     <th
                       key={column.id}
@@ -714,7 +753,6 @@ function Employees() {
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, column)}
                       style={{ 
-                        // cursor: 'move',
                         width: `${columnWidths[column.id]}px`,
                         position: 'relative'
                       }}
@@ -730,26 +768,34 @@ function Employees() {
               </thead>
               <tbody>
                 {currentRows.map((employee) => (
-                  <tr key={employee._id}>
+                  <tr 
+                    key={employee._id}
+                    className={selectedEmployees.includes(employee._id) ? 'selected-row' : ''}
+                  >
                     <td>
                       <input
                         type="checkbox"
-                        checked={checkedItems.includes(employee._id)}
-                        onChange={() => handleCheckboxChange(employee._id)}
+                        checked={selectedEmployees.includes(employee._id)}
+                        onChange={() => handleSelect(employee._id)}
+                        className="form-check-input"
                       />
                     </td>
                     <td>
-                      <div style={{gap: "10px" }} className="d-flex align-items-center">
-                        <CiEdit
-                          style={{ cursor: "pointer", color: "green" }}
-                          title="Edit"
+                      <div className="d-flex align-items-center gap-2">
+                        <button
+                          className="btn btn-sm btn-link p-0"
                           onClick={() => handleEdit(employee._id)}
-                        />
-                        <RiDeleteBin6Line
-                          style={{ cursor: "pointer", color: "red" }}
-                          title="Delete"
+                          title="Edit"
+                        >
+                          <CiEdit className="text-primary" size={18} />
+                        </button>
+                        <button
+                          className="btn btn-sm btn-link p-0"
                           onClick={() => handleDelete(employee._id)}
-                        />
+                          title="Delete"
+                        >
+                          <RiDeleteBin6Line className="text-danger" size={18} />
+                        </button>
                       </div>
                     </td>
                     {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (

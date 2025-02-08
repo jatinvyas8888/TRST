@@ -63,22 +63,17 @@ function Locations() {
   ]);
 
   const [columnWidths, setColumnWidths] = useState({
-    checkbox: 40,
+    checkbox: 50,
     actions: 100,
+    id: 150,
     locationName: 200,
     locationType: 150,
-    streetAddress1: 200,
-    streetAddress2: 200,
-    city: 150,
-    stateProvince: 150,
-    zipPostalCode: 120,
-    country: 150,
-    mainPhone: 150,
-    capacity: 100,
-    capacityUsed: 120,
-    latitude: 120,
-    longitude: 120,
-    locationId: 120
+    latitude: 150,
+    longitude: 150,
+    parentLocation: 200,
+    siteManager: 200,
+    updatedAt: 180,
+    updatedBy: 150
   });
 
   const [visibleColumns, setVisibleColumns] = useState({
@@ -181,18 +176,18 @@ function Locations() {
           }
         );
 
-        if (response.data) {
-          // Remove the deleted location from the state
-          setRows(prevRows => 
-            prevRows.filter(loc => loc._id !== locationId)
-          );
-          // Also remove from selected locations if it was selected
-          setSelectedLocations(prev => 
-            prev.filter(id => id !== locationId)
-          );
+        // if (response.data) {
+        //   // Remove the deleted location from the state
+        //   setRows(prevRows => 
+        //     prevRows.filter(loc => loc._id !== locationId)
+        //   );
+        //   // Also remove from selected locations if it was selected
+        //   setSelectedLocations(prev => 
+        //     prev.filter(id => id !== locationId)
+        //   );
           // Show success message
           alert("Location deleted successfully");
-        }
+        // }
       } catch (error) {
         console.error("Error deleting location:", error);
         alert(error.response?.data?.message || "Failed to delete location. Please try again.");
@@ -834,7 +829,11 @@ function Locations() {
           <table className="table table-hover">
             <thead>
               <tr>
-                <th>
+                <th style={{ 
+                  width: '50px',
+                  minWidth: '50px',
+                  padding: '0.75rem 0.5rem'
+                }}>
                   <input
                     type="checkbox"
                     onChange={(e) => {
@@ -845,9 +844,10 @@ function Locations() {
                       }
                     }}
                     checked={selectedLocations.length === rows.length}
+                    className="form-check-input"
                   />
                 </th>
-                <th>Actions</th>
+                <th style={{ width: '100px' }}>Actions</th>
                 {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
                   <th
                     key={column.id}
@@ -857,7 +857,6 @@ function Locations() {
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, column)}
                     style={{ 
-                      // cursor: 'move',
                       width: `${columnWidths[column.id]}px`,
                       position: 'relative'
                     }}
@@ -886,30 +885,44 @@ function Locations() {
                 </tr>
               ) : (
                 currentRows.map(location => (
-                  <tr key={location._id}>
-                    <td>
+                  <tr 
+                    key={location._id}
+                    className={selectedLocations.includes(location._id) ? 'selected-row' : ''}
+                  >
+                    <td style={{ 
+                      width: '50px',
+                      minWidth: '50px',
+                      padding: '0.75rem 0.5rem',
+                      textAlign: 'center'
+                    }}>
                       <input
                         type="checkbox"
                         checked={selectedLocations.includes(location._id)}
                         onChange={() => handleCheckboxChange(location._id)}
+                        className="form-check-input"
                       />
                     </td>
                     <td>
-                      <div style={{gap: "10px" }} className="d-flex align-items-center">
-                        <CiEdit
-                          style={{ cursor: "pointer", color: "green" }}
-                          title="Edit"
+                      <div className="d-flex align-items-center gap-2">
+                        <button
+                          className="btn btn-sm btn-link p-0"
                           onClick={() => handleEdit(location._id)}
-                        />
-                        <RiDeleteBin6Line
-                          style={{ cursor: "pointer", color: "red" }}
-                          title="Delete"
+                          title="Edit"
+                        >
+                          <CiEdit className="text-primary" size={18} />
+                        </button>
+                        <button
+                          className="btn btn-sm btn-link p-0"
                           onClick={() => handleDelete(location._id)}
-                        />
+                          title="Delete"
+                        >
+                          <RiDeleteBin6Line className="text-danger" size={18} />
+                        </button>
                       </div>
                     </td>
                     {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
                       <td key={`${location._id}-${column.id}`}>
+                        {column.id === 'id' && location._id}
                         {column.id === 'locationName' && location.locationName}
                         {column.id === 'locationType' && location.locationType}
                         {column.id === 'streetAddress1' && location.streetAddress1}
@@ -921,9 +934,17 @@ function Locations() {
                         {column.id === 'mainPhone' && location.mainPhone}
                         {column.id === 'capacity' && location.capacity}
                         {column.id === 'capacityUsed' && location.capacityUsed}
-                        {column.id === 'latitude' && location.latitude}
-                        {column.id === 'longitude' && location.longitude}
-                        {column.id === 'locationId' && location.id}
+                        {column.id === 'latitude' && (location.latitude || "-")}
+                        {column.id === 'longitude' && (location.longitude || "-")}
+                        {column.id === 'locationId' && (location.locationId || "-")}
+                        {column.id === 'parentLocation' && (location.parentLocation?.locationName || "-")}
+                        {column.id === 'siteManager' && (location.siteManager || "-")}
+                        {column.id === 'updatedAt' && (
+                          location.updatedAt ? 
+                          new Date(location.updatedAt).toLocaleString() : 
+                          "-"
+                        )}
+                        {column.id === 'updatedBy' && (location.updatedBy || "-")}
                       </td>
                     ))}
                   </tr>
