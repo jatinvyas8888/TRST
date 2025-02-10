@@ -520,7 +520,7 @@ function Clients() {
                     checked={checkedItems.length === clients.length && clients.length > 0}
                   />
                 </th>
-                <th style={{ width: '100px' }}>Actions</th>
+                <th style={{ width: '100px' }} className="text-center">Actions</th>
                 {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
                   <th
                     key={column.id}
@@ -560,18 +560,22 @@ function Clients() {
                       onChange={() => handleCheckboxChange(client._id)}
                     />
                   </td>
-                  <td>
-                    <div style={{gap: "10px" }} className="d-flex align-items-center">
-                      <CiEdit
-                        style={{ cursor: "pointer", color: "green" }}
-                        title="Edit"
+                  <td className="text-center">
+                    <div style={{gap: "10px" }} className="d-flex align-items-center justify-content-center">
+                      <button
+                        className="btn btn-sm btn-link p-0"
                         onClick={() => handleEdit(client._id)}
-                      />
-                      <RiDeleteBin6Line
-                        style={{ cursor: "pointer", color: "red" }}
-                        title="Delete"
+                        title="Edit"
+                      >
+                        <CiEdit style={{ cursor: "pointer", fontSize: "1.2em", color:'green' }} size={18} />
+                      </button>
+                      <button
+                        className="btn btn-sm btn-link p-0"
                         onClick={() => handleDelete(client._id)}
-                      />
+                        title="Delete"
+                      >
+                        <RiDeleteBin6Line className="text-danger" size={18} />
+                      </button>
                     </div>
                   </td>
                   {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (

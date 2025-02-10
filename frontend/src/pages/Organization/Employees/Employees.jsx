@@ -743,7 +743,7 @@ function Employees() {
                       className="form-check-input"
                     />
                   </th>
-                  <th style={{ width: '100px' }}>Actions</th>
+                  <th style={{ width: '100px' }} className="text-center">Actions</th>
                   {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
                     <th
                       key={column.id}
@@ -780,14 +780,14 @@ function Employees() {
                         className="form-check-input"
                       />
                     </td>
-                    <td>
-                      <div className="d-flex align-items-center gap-2">
+                    <td className="text-center">
+                      <div className="d-flex align-items-center gap-2 justify-content-center">
                         <button
                           className="btn btn-sm btn-link p-0"
                           onClick={() => handleEdit(employee._id)}
                           title="Edit"
                         >
-                          <CiEdit className="text-primary" size={18} />
+                          <CiEdit style={{ cursor: "pointer", fontSize: "1.2em", color:'green' }} size={18} />
                         </button>
                         <button
                           className="btn btn-sm btn-link p-0"

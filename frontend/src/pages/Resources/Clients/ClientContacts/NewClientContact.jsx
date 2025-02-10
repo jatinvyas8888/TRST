@@ -8,25 +8,14 @@ import { BiSolidEdit } from "react-icons/bi";
 import { FcSettings } from "react-icons/fc";
 import { LuTableOfContents, LuClock9 } from "react-icons/lu";
 import { FaPrint, FaRegFilePdf } from "react-icons/fa";
-import { IoIosSearch } from "react-icons/io";
-import { FaCircleQuestion } from "react-icons/fa6";
-import "./ClientContacts.css";
 import { TiPlus } from "react-icons/ti";
 import { BiSearchAlt2 } from "react-icons/bi";
 import {
-  Card,
-  CardBody,
-  Col,
-  Container,
   Input,
   Label,
-  Row,
-  Button,
   Form,
-  FormFeedback,
-  Alert,
-  Spinner,
 } from "reactstrap";
+import "./ClientContacts.css";
 
 function NewClientContact() {
   const [isToolOpen, setIsToolOpen] = useState(false);

@@ -14,6 +14,7 @@ import { LuRefreshCw, LuTableOfContents, LuClock9 } from "react-icons/lu";
 import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
 import { BiExport, BiSolidEdit } from "react-icons/bi";
 import { FcSettings } from "react-icons/fc";
+import { CiEdit } from "react-icons/ci";
 import { FaRegTrashCan, FaTableColumns, FaKey, FaEye } from "react-icons/fa6";
 import { TiExport, TiPlus } from "react-icons/ti";
 import { HiDotsHorizontal } from "react-icons/hi";
@@ -70,6 +71,14 @@ const OrganizationalEntitiesPage = () => {
         ? prev.filter((item) => item !== id)
         : [...prev, id];
     });
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setCheckedItems(rows.map(row => row.id));
+    } else {
+      setCheckedItems([]);
+    }
   };
 
   useEffect(() => {
@@ -881,16 +890,15 @@ const OrganizationalEntitiesPage = () => {
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th>
+                    <th style={{ width: '40px' }}>
                       <input
                         type="checkbox"
-                        onChange={() => handleCheckboxChange("all")}
-                        checked={
-                          checkedItems.length === rows.length && rows.length > 0
-                        }
+                        checked={checkedItems.length === rows.length && rows.length > 0}
+                        onChange={handleSelectAll}
+                        className="form-check-input"
                       />
                     </th>
-                    <th>Actions</th>
+                    <th style={{ width: '100px' }} className="text-center">Actions</th>
                     {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
                       <th
                         key={column.id}
@@ -906,10 +914,7 @@ const OrganizationalEntitiesPage = () => {
                         }}
                       >
                         {column.label}
-                        <div
-                          className="resize-handle"
-                          onMouseDown={(e) => handleResizeStart(e, column.id)}
-                        />
+                        <div className="resize-handle" onMouseDown={(e) => handleResizeStart(e, column.id)} />
                       </th>
                     ))}
                   </tr>
@@ -924,18 +929,22 @@ const OrganizationalEntitiesPage = () => {
                           onChange={() => handleCheckboxChange(row.id)}
                         />
                       </td>
-                      <td>
-                        <div className="d-flex align-items-center gap-2">
-                          <RiEdit2Line 
-                            style={{ cursor: "pointer", fontSize: "1.2em", color:'green' }}
-                            title="Edit"
+                      <td className="text-center">
+                        <div className="d-flex align-items-center gap-2 justify-content-center">
+                          <button
+                            className="btn btn-sm btn-link p-0"
                             onClick={() => handleEdit(row.id)}
-                          />
-                          <RiDeleteBin6Line
-                            style={{ cursor: "pointer", fontSize: "1.2em", color:'red' }}
-                            title="Delete"
+                            title="Edit"
+                          >
+                            <CiEdit style={{ cursor: "pointer", fontSize: "1.2em", color:'green' }} size={18} />
+                          </button>
+                          <button
+                            className="btn btn-sm btn-link p-0"
                             onClick={() => handleDelete(row.id)}
-                          />
+                            title="Delete"
+                          >
+                            <RiDeleteBin6Line className="text-danger" size={18} />
+                          </button>
                         </div>
                       </td>
                       {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (

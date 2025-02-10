@@ -682,7 +682,7 @@ function NewLocation() {
                   <thead>
                     <tr>
                       <th>Action</th>
-                      <th>Employee ID</th>
+                      <th >Employee ID</th>
                       <th>First Name</th>
                       <th>Last Name</th>
                       <th>Preferred Name</th>
@@ -1930,16 +1930,16 @@ function NewLocation() {
                     <div className="text-center">Loading...</div>
                   ) : (
                     <div className="table-responsive">
-                      <table className="table">
+                      <table className="table ">
                         <thead>
                           <tr>
-                            <th>Actions</th>
-                            <th>Business Entity</th>
-                            <th>Business Entity Type</th>
-                            <th>Related Locations</th>
-                            <th>Parent Business Entity</th>
-                            <th>Child Business Entities</th>
-                            <th>Updated At</th>
+                            <th className="w-10">Actions</th>
+                            <th className="w-20">Business Entity</th>
+                            <th className="w-20">Business Entity Type</th>
+                            <th className="w-20">Related Locations</th>
+                            <th className="w-20">Parent Business Entity</th>
+                            <th className="w-20">Child Business Entities</th>
+                            <th className="w-20">Updated At</th>
                           </tr>
                         </thead>
                         <tbody>

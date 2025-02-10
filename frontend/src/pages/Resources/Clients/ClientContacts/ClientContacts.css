@@ -239,3 +239,34 @@ border-radius: 2px;
 }
 
 /* Add any additional styles you need */
+
+/* Add these if missing */
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  z-index: 1;
+}
+
+.selected-row {
+  background-color: rgba(67, 95, 255, 0.05);
+}
+
+.table th {
+  position: relative;
+  user-select: none;
+}
+
+.table td {
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pagination-buttons .btn {
+  margin: 0 2px;
+}

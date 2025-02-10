@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
 import { HiMiniWrench } from "react-icons/hi2";
 import { BiSolidEdit } from "react-icons/bi";
@@ -12,8 +12,8 @@ import { TiExport, TiPlus } from "react-icons/ti";
 import { FaRegTrashCan, FaTableColumns } from "react-icons/fa6";
 import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal } from "react-icons/hi";
-import { RiDeleteBin6Line } from "react-icons/ri";
 import { CiEdit } from "react-icons/ci";
+import { RiDeleteBin6Line } from "react-icons/ri";
 import axios from "axios";
 import LoadingSpinner from "../../../../Components/Common/LoadingSpinner/LoadingSpinner";
 import "./ClientContacts.css";
@@ -25,55 +25,186 @@ function ClientContacts() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectedContacts, setSelectedContacts] = useState([]);
+  const [columnWidths, setColumnWidths] = useState({
+    checkbox: 40,
+    actions: 100,
+    name: 200,
+    email: 200,
+    workPhone: 150,
+    mobilePhone: 150,
+    clients: 250,
+    updatedBy: 200
+  });
+  const [draggedColumn, setDraggedColumn] = useState(null);
+  const [columns, setColumns] = useState([
+    { id: 'checkbox', label: '', draggable: false },
+    { id: 'actions', label: 'Actions', draggable: false },
+    { id: 'name', label: 'Name', draggable: true },
+    { id: 'email', label: 'Email', draggable: true },
+    { id: 'workPhone', label: 'Work Phone', draggable: true },
+    { id: 'mobilePhone', label: 'Mobile Phone', draggable: true },
+    { id: 'clients', label: 'Clients', draggable: true },
+    { id: 'updatedBy', label: 'Updated By', draggable: true }
+  ]);
+  const [visibleColumns, setVisibleColumns] = useState({
+    name: true,
+    email: true,
+    workPhone: true,
+    mobilePhone: true,
+    clients: true,
+    updatedBy: true
+  });
+  const navigate = useNavigate();
 
   // Fetch contacts
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/api/v1/client-contacts/all",{
-          withCredentials:true
+        const response = await axios.get("http://localhost:8000/api/v1/client-contacts/all", {
+          withCredentials: true
         });
         setContacts(response.data);
-        setLoading(false);
-      } catch (error) { ``
+      } catch (error) {
         console.error("Error fetching contacts:", error);
+      } finally {
         setLoading(false);
       }
     };
-
     fetchContacts();
   }, []);
 
-  // Get current contacts for pagination
+  // Column handlers
+  const handleColumnToggle = (columnId) => {
+    setVisibleColumns(prev => ({ ...prev, [columnId]: !prev[columnId] }));
+  };
+
+  const resetColumns = () => {
+    setVisibleColumns({
+      name: true,
+      email: true,
+      workPhone: true,
+      mobilePhone: true,
+      clients: true,
+      updatedBy: true
+    });
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e, column) => {
+    if (!column.draggable) return;
+    setDraggedColumn(column);
+    e.target.style.opacity = '0.5';
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedColumn(null);
+  };
+
+  const handleDragOver = (e) => e.preventDefault();
+
+  const handleDrop = (e, targetColumn) => {
+    e.preventDefault();
+    if (!draggedColumn || !targetColumn.draggable) return;
+
+    const newColumns = [...columns];
+    const draggedIdx = columns.findIndex(col => col.id === draggedColumn.id);
+    const targetIdx = columns.findIndex(col => col.id === targetColumn.id);
+
+    newColumns.splice(draggedIdx, 1);
+    newColumns.splice(targetIdx, 0, draggedColumn);
+    setColumns(newColumns);
+  };
+
+  // Resize handlers
+  const handleResizeStart = (e, columnId) => {
+    const startX = e.pageX;
+    const startWidth = columnWidths[columnId];
+    
+    const handleMouseMove = (moveEvent) => {
+      const newWidth = Math.max(50, startWidth + (moveEvent.pageX - startX));
+      setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }));
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  // Selection handlers
+  const handleSelectAll = (e) => {
+    setSelectAll(e.target.checked);
+    setSelectedContacts(e.target.checked ? currentContacts.map(c => c._id) : []);
+  };
+
+  const handleSelect = (contactId) => {
+    setSelectedContacts(prev => 
+      prev.includes(contactId) 
+        ? prev.filter(id => id !== contactId) 
+        : [...prev, contactId]
+    );
+  };
+
+  // Pagination
   const indexOfLastRow = currentPage * itemsPerPage;
   const indexOfFirstRow = indexOfLastRow - itemsPerPage;
-  const filteredContacts = contacts.filter(contact => 
-    contact.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    contact.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const filteredContacts = (contacts || []).filter(contact => 
+    `${contact.firstName} ${contact.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     contact.emailAddress.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const currentContacts = filteredContacts.slice(indexOfFirstRow, indexOfLastRow);
 
-  // Change page
   const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
   const handleNextPage = () => setCurrentPage(prev => prev + 1);
   const handlePrevPage = () => setCurrentPage(prev => prev - 1);
   const handleFirstPage = () => setCurrentPage(1);
   const handleLastPage = () => setCurrentPage(Math.ceil(filteredContacts.length / itemsPerPage));
 
-  // Toggle dropdowns
-  const toggleDropdown = () => setIsOpen(!isOpen);
-  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
-  const ColumnDropDown = () => setIsColumnOpen(!isColumnOpen);
+  // Delete handlers
+  const handleDelete = async (contactId) => {
+    if (!window.confirm("Are you sure you want to delete this contact?")) return;
+    
+    try {
+      await axios.delete(`http://localhost:8000/api/v1/client-contacts/${contactId}`, {
+        withCredentials: true
+      });
+      setContacts(prev => prev.filter(contact => contact._id !== contactId));
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (window.confirm("Are you sure you want to delete selected contacts?")) {
+      try {
+        await Promise.all(
+          selectedContacts.map(id => 
+            axios.delete(`http://localhost:8000/api/v1/client-contacts/${id}`, {
+              withCredentials: true
+            })
+          )
+        );
+        setContacts(prev => prev.filter(contact => !selectedContacts.includes(contact._id)));
+        setSelectedContacts([]);
+        setSelectAll(false);
+      } catch (error) {
+        console.error("Error deleting contacts:", error);
+      }
+    }
+  };
 
   return (
     <React.Fragment>
       <Helmet>
-        <title>Client Contacts Page | TRST</title>
-        <meta name="description" content="This is the home page description" />
-        <meta name="keywords" content="home, react, meta tags" />
+        <title>Client Contacts | TRST</title>
       </Helmet>
       <div className="page-content">
         <div className="main-content1">
@@ -92,7 +223,7 @@ function ClientContacts() {
                   id="TollFropdown"
                   data-bs-toggle="dropdown"
                   aria-expanded={isToolOpen}
-                  onClick={toggleToolDropDown}
+                  onClick={() => setIsToolOpen(!isToolOpen)}
                 >
                   <HiMiniWrench className="wh-16" />
                 </button>
@@ -156,7 +287,7 @@ function ClientContacts() {
                   id="dropdownMenuButton"
                   data-bs-toggle="dropdown"
                   aria-expanded={isOpen}
-                  onClick={toggleDropdown}
+                  onClick={() => setIsOpen(!isOpen)}
                 >
                 All  Client Contacts <IoMdArrowDropdown className="hw-20" />
                 </button>
@@ -208,7 +339,7 @@ function ClientContacts() {
                   id="TollFropdown"
                   data-bs-toggle="dropdown"
                   aria-expanded={isColumnOpen}
-                  onClick={ColumnDropDown}
+                  onClick={() => setIsColumnOpen(!isColumnOpen)}
                 >
                   <FaTableColumns className="hw-14" />
                 </button>
@@ -289,43 +420,76 @@ function ClientContacts() {
         <LoadingSpinner />
       ) : (
         <div className="table-responsive">
-          <table className="table">
+          <table className="table table-hover">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Work Phone</th>
-                <th>Mobile Phone</th>
-                <th>Clients</th>
-                <th>Updated By</th>
-                <th>Actions</th>
+                <th style={{ width: columnWidths.checkbox }}>
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={handleSelectAll}
+                    className="form-check-input"
+                  />
+                </th>
+                <th style={{ width: columnWidths.actions }} className="text-center">Actions</th>
+                {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
+                  <th
+                    key={column.id}
+                    draggable={column.draggable}
+                    onDragStart={(e) => handleDragStart(e, column)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, column)}
+                    style={{ width: columnWidths[column.id], position: 'relative' }}
+                  >
+                    {column.label}
+                    <div
+                      className="resize-handle"
+                      onMouseDown={(e) => handleResizeStart(e, column.id)}
+                    />
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {currentContacts.map((contact) => (
-                <tr key={contact._id}>
-                  <td>{`${contact.firstName} ${contact.middleName || ''} ${contact.lastName}`}</td>
-                  <td>{contact.emailAddress}</td>
-                  <td>{contact.workPhone}</td>
-                  <td>{contact.workMobilePhone}</td>
+                <tr key={contact._id} className={selectedContacts.includes(contact._id) ? 'selected-row' : ''}>
                   <td>
-                    {contact.clients.map(client => client.company).join(', ')}
+                    <input
+                      type="checkbox"
+                      checked={selectedContacts.includes(contact._id)}
+                      onChange={() => handleSelect(contact._id)}
+                      className="form-check-input"
+                    />
                   </td>
-                  <td>{contact.updatedBy?.fullName}</td>
-                  <td>
-                    <Link 
-                      to={`/edit-client-contact/${contact._id}`}
-                      className="btn btn-sm btn-outline-primary me-2"
-                    >
-                      <CiEdit />
-                    </Link>
-                    <button 
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => handleDelete(contact._id)}
-                    >
-                      <RiDeleteBin6Line />
-                    </button>
+                  <td className="text-center">
+                    <div className="d-flex align-items-center gap-2 justify-content-center">
+                      <button
+                        className="btn btn-sm btn-link p-0"
+                        onClick={() => navigate(`/edit-client-contact/${contact._id}`)}
+                        title="Edit"
+                      >
+                        <CiEdit style={{ cursor: "pointer", fontSize: "1.2em", color: 'green' }} />
+                      </button>
+                      <button
+                        className="btn btn-sm btn-link p-0"
+                        onClick={() => handleDelete(contact._id)}
+                        title="Delete"
+                      >
+                        <RiDeleteBin6Line className="text-danger" />
+                      </button>
+                    </div>
                   </td>
+                  {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
+                    <td key={`${contact._id}-${column.id}`}>
+                      {column.id === 'name' && `${contact.firstName} ${contact.lastName}`}
+                      {column.id === 'email' && contact.emailAddress}
+                      {column.id === 'workPhone' && contact.workPhone}
+                      {column.id === 'mobilePhone' && contact.workMobilePhone}
+                      {column.id === 'clients' && contact.clients?.map(c => c.company).join(', ')}
+                      {column.id === 'updatedBy' && contact.updatedBy?.fullName}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
@@ -333,19 +497,6 @@ function ClientContacts() {
 
           {/* Pagination */}
           <div className="d-flex justify-content-between align-items-center mt-4">
-            <div className="d-flex align-items-center">
-              <select 
-                className="form-select me-2" 
-                value={itemsPerPage}
-                onChange={(e) => setItemsPerPage(Number(e.target.value))}
-              >
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-              </select>
-              <span>entries per page</span>
-            </div>
-            
             <div className="d-flex align-items-center">
               <div className="pagination-buttons">
                 <button 
@@ -371,7 +522,7 @@ function ClientContacts() {
                 >{">>"}</button>
               </div>
               <span className="ms-2 fw-bold">
-                {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, filteredContacts.length)} of {filteredContacts.length} items
+                {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, filteredContacts.length)} of {filteredContacts.length}
               </span>
             </div>
           </div>
