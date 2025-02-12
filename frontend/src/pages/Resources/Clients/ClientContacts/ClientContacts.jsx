@@ -7,16 +7,17 @@ import { BiSolidEdit } from "react-icons/bi";
 import { FcSettings } from "react-icons/fc";
 import { LuRefreshCw, LuTableOfContents, LuClock9 } from "react-icons/lu";
 import { FaPrint } from "react-icons/fa6";
-import { FaHome, FaFilter, FaRegFilePdf } from "react-icons/fa";
+import { FaHome, FaFilter, FaRegFilePdf, FaSearch } from "react-icons/fa";
 import { TiExport, TiPlus } from "react-icons/ti";
 import { FaRegTrashCan, FaTableColumns } from "react-icons/fa6";
 import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { CiEdit } from "react-icons/ci";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { RiDeleteBin6Line, RiEdit2Line } from "react-icons/ri";
 import axios from "axios";
 import LoadingSpinner from "../../../../Components/Common/LoadingSpinner/LoadingSpinner";
 import "./ClientContacts.css";
+// import ClientModal from '../../../../Components/modals/Client.jsx';
 
 function ClientContacts() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,36 +30,28 @@ function ClientContacts() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectAll, setSelectAll] = useState(false);
   const [selectedContacts, setSelectedContacts] = useState([]);
-  const [columnWidths, setColumnWidths] = useState({
-    checkbox: 40,
-    actions: 100,
-    name: 200,
-    email: 200,
-    workPhone: 150,
-    mobilePhone: 150,
-    clients: 250,
-    updatedBy: 200
-  });
-  const [draggedColumn, setDraggedColumn] = useState(null);
   const [columns, setColumns] = useState([
-    { id: 'checkbox', label: '', draggable: false },
-    { id: 'actions', label: 'Actions', draggable: false },
-    { id: 'name', label: 'Name', draggable: true },
-    { id: 'email', label: 'Email', draggable: true },
-    { id: 'workPhone', label: 'Work Phone', draggable: true },
-    { id: 'mobilePhone', label: 'Mobile Phone', draggable: true },
-    { id: 'clients', label: 'Clients', draggable: true },
-    { id: 'updatedBy', label: 'Updated By', draggable: true }
+    { id: 'select', label: '', width: 50, draggable: false },
+    { id: 'actions', label: 'Actions', width: 100, draggable: false },
+    { id: 'clientContacts', label: 'Client Contacts', width: 200, draggable: true },
+    { id: 'title', label: 'Title', width: 250, draggable: true },
+    { id: 'emailAddress', label: ' Email Address', width: 200, draggable: true },
+    { id: 'workMobilePhone', label: 'Work Mobile Phone', width: 200, draggable: true },
+    { id: 'workPhone', label: 'Work Phone', width: 150, draggable: true },
+    { id: 'alternatePhone', label: 'Alternate Phone', width: 150, draggable: true },
   ]);
   const [visibleColumns, setVisibleColumns] = useState({
     name: true,
     email: true,
-    workPhone: true,
-    mobilePhone: true,
-    clients: true,
-    updatedBy: true
+    phone: true,
+    client: true,
+    createdAt: true
   });
   const navigate = useNavigate();
+  const [columnWidths, setColumnWidths] = useState({});
+  const [draggedColumn, setDraggedColumn] = useState(null);
+  const [showClientModal, setShowClientModal] = useState(false);
+  const [selectedClients, setSelectedClients] = useState([]);
 
   // Fetch contacts
   useEffect(() => {
@@ -86,10 +79,9 @@ function ClientContacts() {
     setVisibleColumns({
       name: true,
       email: true,
-      workPhone: true,
-      mobilePhone: true,
-      clients: true,
-      updatedBy: true
+      phone: true,
+      client: true,
+      createdAt: true
     });
   };
 
@@ -105,7 +97,9 @@ function ClientContacts() {
     setDraggedColumn(null);
   };
 
-  const handleDragOver = (e) => e.preventDefault();
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
 
   const handleDrop = (e, targetColumn) => {
     e.preventDefault();
@@ -117,17 +111,23 @@ function ClientContacts() {
 
     newColumns.splice(draggedIdx, 1);
     newColumns.splice(targetIdx, 0, draggedColumn);
+
     setColumns(newColumns);
   };
 
   // Resize handlers
   const handleResizeStart = (e, columnId) => {
-    const startX = e.pageX;
-    const startWidth = columnWidths[columnId];
+    e.preventDefault();
     
+    const startX = e.pageX;
+    const startWidth = columnWidths[columnId] || columns.find(col => col.id === columnId).width;
+
     const handleMouseMove = (moveEvent) => {
       const newWidth = Math.max(50, startWidth + (moveEvent.pageX - startX));
-      setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }));
+      setColumnWidths(prev => ({
+        ...prev,
+        [columnId]: newWidth
+      }));
     };
 
     const handleMouseUp = () => {
@@ -199,6 +199,23 @@ function ClientContacts() {
         console.error("Error deleting contacts:", error);
       }
     }
+  };
+
+  const handleClientSelect = (client) => {
+    setSelectedClients(prev => {
+      if (prev.some(c => c._id === client._id)) {
+        return prev.filter(c => c._id !== client._id);
+      }
+      return [...prev, client];
+    });
+  };
+
+  const handleClearAllClients = () => {
+    setSelectedClients([]);
+  };
+
+  const handleEditClick = (contactId) => {
+    navigate(`/client-contacts/edit/${contactId}`);
   };
 
   return (
@@ -420,35 +437,47 @@ function ClientContacts() {
         <LoadingSpinner />
       ) : (
         <div className="table-responsive">
+
           <table className="table table-hover">
             <thead>
               <tr>
-                <th style={{ width: columnWidths.checkbox }}>
+                <th style={{ width: '40px' }}>
                   <input
                     type="checkbox"
-                    checked={selectAll}
+                    checked={selectedContacts.length === currentContacts.length && currentContacts.length > 0}
                     onChange={handleSelectAll}
                     className="form-check-input"
                   />
                 </th>
-                <th style={{ width: columnWidths.actions }} className="text-center">Actions</th>
-                {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
-                  <th
-                    key={column.id}
-                    draggable={column.draggable}
-                    onDragStart={(e) => handleDragStart(e, column)}
-                    onDragEnd={handleDragEnd}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, column)}
-                    style={{ width: columnWidths[column.id], position: 'relative' }}
-                  >
-                    {column.label}
-                    <div
-                      className="resize-handle"
-                      onMouseDown={(e) => handleResizeStart(e, column.id)}
-                    />
-                  </th>
-                ))}
+                <th style={{ width: '100px' }} className="text-center">Actions</th>
+                {columns
+                  .filter(col => col.id !== 'select' && col.id !== 'actions')
+                  .map(column => (
+                    <th 
+                      key={column.id}
+                      style={{ 
+                        width: columnWidths[column.id] || column.width,
+                        position: 'relative'
+                      }}
+                      draggable={column.draggable}
+                      onDragStart={(e) => handleDragStart(e, column)}
+                      onDragOver={(e) => handleDragOver(e)}
+                      onDrop={(e) => handleDrop(e, column)}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <div className="d-flex align-items-center justify-content-between">
+                        <span>{column.label}</span>
+                        {column.id !== 'select' && column.id !== 'actions' && (
+                          <div className="d-flex align-items-center">
+                            <div
+                              className="resize-handle"
+                              onMouseDown={(e) => handleResizeStart(e, column.id)}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </th>
+                  ))}
               </tr>
             </thead>
             <tbody>
@@ -463,31 +492,29 @@ function ClientContacts() {
                     />
                   </td>
                   <td className="text-center">
-                    <div className="d-flex align-items-center gap-2 justify-content-center">
-                      <button
-                        className="btn btn-sm btn-link p-0"
-                        onClick={() => navigate(`/edit-client-contact/${contact._id}`)}
-                        title="Edit"
-                      >
-                        <CiEdit style={{ cursor: "pointer", fontSize: "1.2em", color: 'green' }} />
-                      </button>
-                      <button
-                        className="btn btn-sm btn-link p-0"
-                        onClick={() => handleDelete(contact._id)}
-                        title="Delete"
-                      >
-                        <RiDeleteBin6Line className="text-danger" />
-                      </button>
-                    </div>
-                  </td>
-                  {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
-                    <td key={`${contact._id}-${column.id}`}>
-                      {column.id === 'name' && `${contact.firstName} ${contact.lastName}`}
-                      {column.id === 'email' && contact.emailAddress}
+                      <div className="d-flex align-items-center gap-2 justify-content-center">
+                        <button
+                          className="btn btn-sm btn-link p-0"
+                          onClick={() => handleEditClick(contact._id)}
+                        >
+                          <CiEdit style={{ cursor: "pointer", fontSize: "1.2em", color:'green' }} size={18} />
+                        </button>
+                        <button
+                          className="btn btn-sm btn-link p-0"
+                          title="Delete"
+                        >
+                          <RiDeleteBin6Line className="text-danger" size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  {columns.filter(col => col.id !== 'select' && col.id !== 'actions').map(column => (
+                    <td key={column.id}>
+                      {column.id === 'clientContacts' && `${contact.firstName} ${contact.lastName}`}
+                      {column.id === 'title' && contact.title}
+                      {column.id === 'emailAddress' && contact.emailAddress}
+                      {column.id === 'workMobilePhone' && contact.workMobilePhone}
                       {column.id === 'workPhone' && contact.workPhone}
-                      {column.id === 'mobilePhone' && contact.workMobilePhone}
-                      {column.id === 'clients' && contact.clients?.map(c => c.company).join(', ')}
-                      {column.id === 'updatedBy' && contact.updatedBy?.fullName}
+                      {column.id === 'alternatePhone' && contact.alternatePhone}
                     </td>
                   ))}
                 </tr>
@@ -496,36 +523,57 @@ function ClientContacts() {
           </table>
 
           {/* Pagination */}
-          <div className="d-flex justify-content-between align-items-center mt-4">
-            <div className="d-flex align-items-center">
-              <div className="pagination-buttons">
-                <button 
-                  className="btn btn-sm btn-outline-secondary" 
-                  onClick={handleFirstPage}
-                  disabled={currentPage === 1}
-                >{"<<"}</button>
-                <button 
-                  className="btn btn-sm btn-outline-secondary" 
-                  onClick={handlePrevPage}
-                  disabled={currentPage === 1}
-                >{"<"}</button>
-                <span className="mx-2">Page {currentPage}</span>
-                <button 
-                  className="btn btn-sm btn-outline-secondary" 
-                  onClick={handleNextPage}
-                  disabled={currentPage === Math.ceil(filteredContacts.length / itemsPerPage)}
-                >{">"}</button>
-                <button 
-                  className="btn btn-sm btn-outline-secondary" 
-                  onClick={handleLastPage}
-                  disabled={currentPage === Math.ceil(filteredContacts.length / itemsPerPage)}
-                >{">>"}</button>
+          {filteredContacts.length > 10 && (
+            <div className="pagination-wrapper">
+              <div className="d-flex align-items-center gap-3 p-2 justify-content-between">
+                <div className="d-flex align-items-center">
+                  <button 
+                    className="btn btn-sm btn-outline-secondary" 
+                    onClick={handleFirstPage}
+                    disabled={currentPage === 1}
+                  >{"<<"}</button>
+                  <button 
+                    className="btn btn-sm btn-outline-secondary" 
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 1}
+                  >{"<"}</button>
+                  <span className="mx-2">Page</span>
+                  <input
+                    type="text"
+                    className="form-control page-input"
+                    value={currentPage}
+                    onChange={(e) => handlePageChange(Number(e.target.value))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handlePageChange(Number(e.target.value));
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const page = Number(e.target.value);
+                      if (page > 0 && page <= Math.ceil(filteredContacts.length / itemsPerPage)) {
+                        handlePageChange(page);
+                      }
+                    }}
+                  />
+                  <span className="mx-2">of {Math.ceil(filteredContacts.length / itemsPerPage)}</span>
+                  <button 
+                    className="btn btn-sm btn-outline-secondary" 
+                    onClick={handleNextPage}
+                    disabled={currentPage === Math.ceil(filteredContacts.length / itemsPerPage)}
+                  >{">"}</button>
+                  <button 
+                    className="btn btn-sm btn-outline-secondary" 
+                    onClick={handleLastPage}
+                    disabled={currentPage === Math.ceil(filteredContacts.length / itemsPerPage)}
+                  >{">>"}</button>
+                </div>
+                <span className="ms-2 fw-bold">
+                  {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, filteredContacts.length)} of {filteredContacts.length} items
+                </span>
               </div>
-              <span className="ms-2 fw-bold">
-                {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, filteredContacts.length)} of {filteredContacts.length}
-              </span>
             </div>
-          </div>
+          )}
         </div>
       )}
       </div>

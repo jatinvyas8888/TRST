@@ -29,7 +29,8 @@ import employeesRouter from './routes/employees.routes.js';
 import locationsRoutes from './routes/locations.routes.js';
 import clientsRoutes from './routes/clients.routes.js';
 import clientContactsRoutes from './routes/clientContacts.routes.js';
-
+import bcmSeatsRequirementsRoutes from './routes/bcmSeatsRequirements.routes.js';
+import serviceTypeRoutes from './routes/serviceType.routes.js';
 
 //Routes declaration
 app.use('/api/v1/users', userRouter);
@@ -38,4 +39,7 @@ app.use('/api/v1/employees', employeesRouter);
 app.use('/api/v1/locations', locationsRoutes);
 app.use('/api/v1/clients', clientsRoutes);
 app.use('/api/v1/client-contacts', clientContactsRoutes);
+app.use('/api/v1/bcm-seats-requirements', bcmSeatsRequirementsRoutes);
+app.use('/api/v1/service-types', serviceTypeRoutes);
+
 export { app };

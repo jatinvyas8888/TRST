@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
 import { HiMiniWrench } from "react-icons/hi2";
 import { BiSolidEdit } from "react-icons/bi";
@@ -13,11 +13,32 @@ import { FaRegTrashCan, FaTableColumns } from "react-icons/fa6";
 import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal } from "react-icons/hi";
 import "./ServiceType.css";
+import { CiEdit } from "react-icons/ci";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import axios from "axios";
+import LoadingSpinner from "../../../../Components/Common/LoadingSpinner/LoadingSpinner";
 
 function ServiceType() {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isColumnOpen, setIsColumnOpen] = useState(false);
+  const [serviceTypes, setServiceTypes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [checkedItems, setCheckedItems] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const [pageInput, setPageInput] = useState(1);
+
+  useEffect(() => {
+    const fetchServiceTypes = async () => {
+      const response = await axios.get(
+        "http://localhost:8000/api/v1/service-types/all"
+      );
+      setServiceTypes(response.data);
+    };
+    fetchServiceTypes();
+  }, []);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -29,6 +50,38 @@ function ServiceType() {
   const ColumnDropDown = () => {
     setIsColumnOpen(!isColumnOpen);
   };
+
+  const handlePageChange = (pageNumber) => setCurrentPage(pageNumber);
+  const handlePageInputChange = (e) => {
+    const value = e.target.value;
+    setPageInput(value);
+    if (e.key === 'Enter' || e.type === 'blur') {
+      const numValue = parseInt(value);
+      const maxPage = Math.ceil(serviceTypes.length / itemsPerPage);
+      setCurrentPage(Math.min(Math.max(1, numValue), maxPage));
+    }
+  };
+
+  const handleEdit = (id) => {
+    navigate(`/service-types/edit/${id}`);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this service type?")) {
+      try {
+        await axios.delete(`http://localhost:8000/api/v1/service-types/${id}`);
+        setServiceTypes(prev => prev.filter(st => st._id !== id));
+      } catch (error) {
+        console.error("Error deleting service type:", error);
+      }
+    }
+  };
+
+  const currentRows = serviceTypes.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <React.Fragment>
       <Helmet>
@@ -217,6 +270,94 @@ function ServiceType() {
             </div>
           </div>
           <div className="border-1 mt-2 mb-2"></div>
+        </div>
+        <div className="table-container">
+          {loading && <LoadingSpinner />}
+          
+          {serviceTypes.length > itemsPerPage && (
+            <div className="pagination-wrapper">
+              <div className="d-flex align-items-center gap-3 p-2 justify-content-between">
+                <div className="d-flex align-items-center">
+                  <button className="btn btn-sm btn-outline-secondary" 
+                    onClick={() => handlePageChange(1)} disabled={currentPage === 1}>
+                    {"<<"}
+                  </button>
+                  <button className="btn btn-sm btn-outline-secondary" 
+                    onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+                    {"<"}
+                  </button>
+                  <span className="mx-2">Page</span>
+                  <input
+                    type="text"
+                    className="form-control page-input"
+                    value={pageInput}
+                    onChange={handlePageInputChange}
+                    onKeyDown={handlePageInputChange}
+                    onBlur={handlePageInputChange}
+                  />
+                  <span className="mx-2">of {Math.ceil(serviceTypes.length / itemsPerPage)}</span>
+                  <button className="btn btn-sm btn-outline-secondary" 
+                    onClick={() => handlePageChange(currentPage + 1)} 
+                    disabled={currentPage === Math.ceil(serviceTypes.length / itemsPerPage)}>
+                    {">"}
+                  </button>
+                  <button className="btn btn-sm btn-outline-secondary" 
+                    onClick={() => handlePageChange(Math.ceil(serviceTypes.length / itemsPerPage))} 
+                    disabled={currentPage === Math.ceil(serviceTypes.length / itemsPerPage)}>
+                    {">>"}
+                  </button>
+                </div>
+                <span className="ms-2 fw-bold">
+                  {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, serviceTypes.length)} of {serviceTypes.length} items
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div className="table-responsive">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th style={{ width: '100px' }} className="text-center">Actions</th>
+                  <th>Service Type</th>
+                  <th>Created At</th>
+                  <th>Updated At</th>
+                  <th>Updated By</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentRows.map((serviceType) => (
+                  <tr key={serviceType._id}>
+                    <td className="text-center">
+                      <div className="d-flex align-items-center gap-2 justify-content-center">
+                        <button
+                          className="btn btn-sm btn-link p-0"
+                          onClick={() => handleEdit(serviceType._id)}
+                          title="Edit"
+                        >
+                          <CiEdit style={{ cursor: "pointer", fontSize: "1.2em", color: "green" }} size={18} />
+                        </button>
+                        <button
+                          className="btn btn-sm btn-link p-0"
+                          onClick={() => handleDelete(serviceType._id)}
+                          title="Delete"
+                        >
+                          <RiDeleteBin6Line className="text-danger" size={18} />
+                        </button>
+                      </div>
+                    </td>
+                    <td>{serviceType.serviceType}</td>
+                    <td>{new Date(serviceType.createdAt).toLocaleString()}</td>
+                    <td>{new Date(serviceType.updatedAt).toLocaleString()}</td>
+                    <td>{serviceType.updatedBy?.username || ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                
+              </tfoot>
+            </table>
+          </div>
         </div>
       </div>
     </React.Fragment>

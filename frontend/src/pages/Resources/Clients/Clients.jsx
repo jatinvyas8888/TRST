@@ -16,7 +16,7 @@ import { CiEdit } from "react-icons/ci";
 import LoadingSpinner from "../../../Components/Common/LoadingSpinner/LoadingSpinner";
 import { useSelector } from "react-redux";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import "./Clients.css";
+// import "./Clients.css";
 import axios from "axios";
 import Toastify from "toastify-js";
 

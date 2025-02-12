@@ -1,28 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
-import { NavLink, useNavigate } from "react-router-dom";
-import { FaCheck } from "react-icons/fa";
-import { RxCross2 } from "react-icons/rx";
+import { useNavigate } from "react-router-dom";
 import { HiMiniWrench } from "react-icons/hi2";
-import { BiSolidEdit } from "react-icons/bi";
-import { FcSettings } from "react-icons/fc";
-import { LuTableOfContents, LuClock9 } from "react-icons/lu";
+import { LuClock9 } from "react-icons/lu";
 import { FaPrint, FaRegFilePdf } from "react-icons/fa";
-import { IoIosSearch } from "react-icons/io";
 import { BiRefresh } from "react-icons/bi";
+import { RxCross2 } from "react-icons/rx";
 import {
-  Card,
-  CardBody,
-  Col,
-  Container,
   Input,
   Label,
-  Row,
-  Button,
   Form,
-  FormFeedback,
-  Alert,
-  Spinner,
 } from "reactstrap";
 import "./Employees.css";
 import axios from "axios";
@@ -62,6 +49,7 @@ function NewEmployee() {
   const [locations, setLocations] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [locationLoading, setLocationLoading] = useState(false);
+  const [showEntityModal, setShowEntityModal] = useState(false);
 
   // State for form inputs
   const [employeeData, setEmployeeData] = useState({
@@ -232,8 +220,8 @@ function NewEmployee() {
     "GMT-10 - Hawaii-Aleutian Standard Time",
     "GMT-10 -  Tahiti Time",
     "GMT-11 - Samoa Standard Time",
-    "GMT-12 -  Baker Island Time",
-  ];
+    "GMT-12 -  Baker Island Time",
+  ];
 
   const statusOptions = ["-- Please select --", "Active", "Terminated"];
   const StateOptions = [
@@ -288,8 +276,8 @@ function NewEmployee() {
     "Washington",
     "West Virginia",
     "Wisconsin",
-    "Wyoming",
-  ];
+    "Wyoming",
+  ];
   const CountryOptions = [
     "-- Please select --",
     "Afghanistan",
@@ -475,7 +463,7 @@ function NewEmployee() {
     "Yemen",
     "Zambia",
     "Zimbabwe",
-  ];
+  ];
 
   // Dropdown toggles
   const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
@@ -612,6 +600,7 @@ function NewEmployee() {
       }
     });
   };
+
   // Calculate the current items to display
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -1054,13 +1043,6 @@ function NewEmployee() {
     loadEmployees(); // Refresh employees list when opening modal
   };
 
-  // Add this function to handle clearing all subordinates
-  const handleClearAllSubordinates = () => {
-    setEmployeeData((prev) => ({
-      ...prev,
-      subordinates: [],
-    }));
-  };
 
   // Add this function to handle clearing all entities
   const handleClearAllEntities = () => {
@@ -1447,6 +1429,21 @@ function NewEmployee() {
     console.log("Selected Employees updated:", selectedEmployees);
   }, [selectedEmployees]);
 
+  // Add these handler functions
+  const handleClearAllSubordinates = () => {
+    setEmployeeData(prev => ({
+      ...prev,
+      subordinates: []
+    }));
+  };
+
+  const handleClearAllDepartments = () => {
+    setEmployeeData(prev => ({
+      ...prev,
+      department: []
+    }));
+  };
+
   return (
     <React.Fragment>
       <Helmet>
@@ -1692,14 +1689,12 @@ function NewEmployee() {
                     <BiSearchAlt2 />
                   </button>
                 </div>
-                <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="subordinates"
-                    className="form-label fs-15 w-29 me-4"
-                  >
+
+                <div className="mb-3 d-flex align-items-center position-relative">
+                  <Label htmlFor="subordinates" className="form-label fs-15 w-29 me-4">
                     Subordinates
                   </Label>
-                  <div className="position-relative flex-grow-1">
+                  <div className="flex-grow-1">
                     <div
                       className="form-control1 d-flex flex-wrap gap-2"
                       style={{
@@ -1708,67 +1703,54 @@ function NewEmployee() {
                         borderRadius: "4px",
                         padding: "6px 12px",
                         backgroundColor: "#fff",
+                        position: "relative"
                       }}
                     >
-                      {employeeData.subordinates.length > 0 ? (
-                        <>
-                          {employeeData.subordinates.map(
-                            (subordinate, index) => (
-                              <span
-                                key={index}
-                                className="badge bg-light text-dark d-flex align-items-center"
-                                style={{
-                                  padding: "5px 10px",
-                                  margin: "2px",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "3px",
-                                  backgroundColor: "#f8f9fa",
-                                }}
-                              >
-                                {`${subordinate.firstName} ${subordinate.lastName}`}
-                                <button
-                                  type="button"
-                                  className="btn-close ms-2"
-                                  style={{
-                                    fontSize: "0.5rem",
-                                    padding: "0.25rem",
-                                    opacity: "0.5",
-                                  }}
-                                  onClick={() => {
-                                    setEmployeeData((prev) => ({
-                                      ...prev,
-                                      subordinates: prev.subordinates.filter(
-                                        (s) => s._id !== subordinate._id
-                                      ),
-                                    }));
-                                  }}
-                                  title="Remove"
-                                ></button>
-                              </span>
-                            )
-                          )}
+                      {employeeData.subordinates.map((subordinate, index) => (
+                        <span
+                          key={index}
+                          className="badge bg-light text-dark d-flex align-items-center"
+                          style={{
+                            padding: "5px 10px",
+                            margin: "2px",
+                            border: "1px solid #ddd",
+                            borderRadius: "3px",
+                          }}
+                        >
+                          {`${subordinate.firstName} ${subordinate.lastName}`}
                           <button
                             type="button"
-                            className="badge bg-light text-danger border-0"
-                            onClick={handleClearAllSubordinates}
-                            style={{
-                              padding: "5px 10px",
-                              margin: "2px",
-                              cursor: "pointer",
-                              fontSize: "0.75rem",
+                            className="btn-close ms-2"
+                            style={{ fontSize: "0.5rem" }}
+                            onClick={() => {
+                              setEmployeeData(prev => ({
+                                ...prev,
+                                subordinates: prev.subordinates.filter(
+                                  (sub) => sub._id !== subordinate._id
+                                )
+                              }));
                             }}
-                            title="Clear All"
-                          >
-                            Clear All
-                          </button>
-                        </>
-                      ) : (
-                        <span
-                          className="text-muted"
-                          style={{ fontSize: "0.875rem" }}
-                        >
-                          No subordinates selected
+                          />
                         </span>
+                      ))}
+                      {employeeData.subordinates.length === 0 && (
+                        <span className="text-muted">No subordinates selected</span>
+                      )}
+                      {employeeData.subordinates.length > 0 && (
+                        <button
+                          type="button"
+                          className="btn btn-link text-danger position-absolute"
+                          onClick={handleClearAllSubordinates}
+                          style={{ 
+                            right: "8px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            padding: "0",
+                            fontSize: "0.8rem"
+                          }}
+                        >
+                          <RxCross2 />
+                        </button>
                       )}
                     </div>
                   </div>
@@ -1783,6 +1765,7 @@ function NewEmployee() {
                     <BiSearchAlt2 />
                   </button>
                 </div>
+
                 <div className="mb-3 d-flex align-items-center">
                   <Label
                     htmlFor="employeeStatus"
@@ -1842,11 +1825,11 @@ function NewEmployee() {
           <Form>
             <div className="row pt-4">
               <div className="col-6">
-                <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="location" className="form-label fs-18 w-29 me-4">
-                    Location
+                <div className="mb-3 d-flex align-items-center position-relative">
+                  <Label htmlFor="locations" className="form-label fs-15 w-29 me-4">
+                    Locations
                   </Label>
-                  <div className="position-relative flex-grow-1">
+                  <div className="flex-grow-1">
                     <div
                       className="form-control1 d-flex flex-wrap gap-2"
                       style={{
@@ -1855,78 +1838,65 @@ function NewEmployee() {
                         borderRadius: "4px",
                         padding: "6px 12px",
                         backgroundColor: "#fff",
+                        position: "relative"
                       }}
                     >
-                      {selectedLocations.length > 0 ? (
-                        <>
-                          {selectedLocations.map((location, index) => (
-                            <span
-                              key={index}
-                              className="badge bg-light text-dark d-flex align-items-center"
-                              style={{
-                                padding: "5px 10px",
-                                margin: "2px",
-                                border: "1px solid #ddd",
-                                borderRadius: "3px",
-                                backgroundColor: "#f8f9fa",
-                              }}
-                            >
-                              {location.locationName}
-                              <button
-                                type="button"
-                                className="btn-close ms-2"
-                                style={{
-                                  fontSize: "0.5rem",
-                                  padding: "0.25rem",
-                                  opacity: "0.5",
-                                }}
-                                onClick={() => {
-                                  setSelectedLocations((prev) =>
-                                    prev.filter(
-                                      (loc) => loc._id !== location._id
-                                    )
-                                  );
-                                }}
-                                title="Remove"
-                              ></button>
-                            </span>
-                          ))}
+                      {selectedLocations.map((location, index) => (
+                        <span
+                          key={index}
+                          className="badge bg-light text-dark d-flex align-items-center"
+                          style={{
+                            padding: "5px 10px",
+                            margin: "2px",
+                            border: "1px solid #ddd",
+                            borderRadius: "3px",
+                          }}
+                        >
+                          {location.locationName}
                           <button
                             type="button"
-                            className="badge bg-light text-danger border-0"
-                            onClick={handleClearAllLocations}
-                            style={{
-                              padding: "5px 10px",
-                              margin: "2px",
-                              cursor: "pointer",
-                              fontSize: "0.75rem",
+                            className="btn-close ms-2"
+                            style={{ fontSize: "0.5rem" }}
+                            onClick={() => {
+                              setSelectedLocations(prev => 
+                                prev.filter(loc => loc._id !== location._id)
+                              );
                             }}
-                            title="Clear All"
-                          >
-                            Clear All
-                          </button>
-                        </>
-                      ) : (
-                        <span
-                          className="text-muted"
-                          style={{ fontSize: "0.875rem" }}
-                        >
-                          No locations selected
+                          />
                         </span>
+                      ))}
+                      {selectedLocations.length === 0 && (
+                        <span className="text-muted">No locations selected</span>
+                      )}
+                      {selectedLocations.length > 0 && (
+                        <button
+                          type="button"
+                          className="btn btn-link text-danger position-absolute"
+                          onClick={() => setSelectedLocations([])}
+                          style={{ 
+                            right: "8px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            padding: "0",
+                            fontSize: "0.8rem"
+                          }}
+                        >
+                          <RxCross2 />
+                        </button>
                       )}
                     </div>
                   </div>
                   <button
                     type="button"
-                    className="btn btn-secondary border-radius-2 ms-2"
-                    onClick={handleLocationSearch}
+                    className="btn btn-secondary ms-2"
+                    onClick={() => setShowLocationModal(true)}
                   >
                     <BiSearchAlt2 />
                   </button>
                 </div>
               </div>
               <div className="col-6">
-                <div className="mb-3 d-flex align-items-center">
+              <div className="mb-3 d-flex align-items-center position-relative">
                   <Label htmlFor="department" className="form-label fs-15 w-29 me-4">
                     Department
                   </Label>
@@ -1939,6 +1909,9 @@ function NewEmployee() {
                         borderRadius: "4px",
                         padding: "6px 12px",
                         backgroundColor: "#fff",
+                        position: "relative",
+                        flex: 1,
+                        marginRight: "8px" // Add margin to separate from search button
                       }}
                     >
                       {selectedEntities.length > 0 ? (
@@ -1965,28 +1938,30 @@ function NewEmployee() {
                                   opacity: "0.5",
                                 }}
                                 onClick={() => {
-                                  setSelectedEntities((prev) =>
-                                    prev.filter((e) => e._id !== entity._id)
+                                  setSelectedEntities(prev =>
+                                    prev.filter(e => e._id !== entity._id)
                                   );
                                 }}
                                 title="Remove"
-                              ></button>
+                              />
                             </span>
                           ))}
-                          <button
-                            type="button"
-                            className="badge bg-light text-danger border-0"
-                            onClick={handleClearAllEntities}
-                            style={{
-                              padding: "5px 10px",
-                              margin: "2px",
-                              cursor: "pointer",
-                              fontSize: "0.75rem",
-                            }}
-                            title="Clear All"
-                          >
-                            Clear All
-                          </button>
+                          {selectedEntities.length > 0 && (
+                            <button
+                              type="button"
+                              className="btn btn-link text-danger position-absolute"
+                              onClick={handleClearAllEntities}
+                              style={{ 
+                                right: "8px",
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                padding: "0",
+                                fontSize: "0.8rem"
+                              }}
+                            >
+                              <RxCross2 />
+                            </button>
+                          )}
                         </>
                       ) : (
                         <span
@@ -1999,13 +1974,14 @@ function NewEmployee() {
                     </div>
                     <button
                       type="button"
-                      className="btn btn-secondary border-radius-2 ms-2"
+                      className="btn btn-secondary border-radius-2"
                       onClick={handleDepartmentSearch}
+                      style={{ minWidth: "38px" }} // Ensure consistent button width
                     >
                       <BiSearchAlt2 />
                     </button>
                   </div>
-                </div>
+              </div>
               </div>
             </div>
           </Form>
@@ -2519,6 +2495,12 @@ function NewEmployee() {
             </div>
           </div>
         </div>
+      )}
+      {showEntityModal && (
+        <EntityModal
+          onClose={() => setShowEntityModal(false)}
+          onSelect={handleEntitySelect}
+        />
       )}
     </React.Fragment>
   );

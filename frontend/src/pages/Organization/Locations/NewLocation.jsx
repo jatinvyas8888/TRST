@@ -61,7 +61,7 @@ function NewLocation() {
     "Sprinklers",
     "Temperature Station",
     "X-Ray Scanners",
-  ];
+  ];
 
   const toggleAccessSafetySecurityEquipmentDropdown = () =>
     setIsAccessSafetySecurityEquipmentOpen(
@@ -96,7 +96,7 @@ function NewLocation() {
     "Terminal",
     "Warehouse",
     "Warm Site",
-  ];
+  ];
 
   const statusOptions = ["-- Please select --", "Leased", "Owned"];
   const StateOptions = [
@@ -151,8 +151,8 @@ function NewLocation() {
     "Washington",
     "West Virginia",
     "Wisconsin",
-    "Wyoming",
-  ];
+    "Wyoming",
+  ];
   const CountryOptions = [
     "-- Please select --",
     "Afghanistan",
@@ -338,7 +338,7 @@ function NewLocation() {
     "Yemen",
     "Zambia",
     "Zimbabwe",
-  ];
+  ];
 
   // Dropdown toggles
   const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
@@ -371,30 +371,6 @@ function NewLocation() {
   const [currentField, setCurrentField] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
-
-  // Remove or comment out the original fetchBusinessEntities function
-  // const fetchBusinessEntities = async () => {
-  //   try {
-  //     setLoading(true);
-  //     const response = await axios.get(
-  //       "http://localhost:8000/api/v1/organizational-entities/all",
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         withCredentials: true,
-  //       }
-  //     );
-  //     setSearchResults((response.data || []).map(entity => ({
-  //       ...entity,
-  //       selected: false
-  //     })));
-  //   } catch (error) {
-  //     console.error("Error fetching business entities:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const openEntityModal = (fieldName) => {
     setCurrentField(fieldName);
@@ -678,30 +654,30 @@ function NewLocation() {
               <div className="text-center">No employees found</div>
             ) : (
               <div className="table-responsive">
-                <table className="table">
+                <table className="table" style={{ tableLayout: 'auto' }}>
                   <thead>
                     <tr>
-                      <th>Action</th>
-                      <th >Employee ID</th>
-                      <th>First Name</th>
-                      <th>Last Name</th>
-                      <th>Preferred Name</th>
-                      <th>Title</th>
-                      <th>Work Email</th>
-                      <th>Work Phone</th>
-                      <th>Work Mobile</th>
-                      <th>Fax</th>
-                      <th>Manager</th>
-                      <th>Street Address 1</th>
-                      <th>Street Address 2</th>
-                      <th>City</th>
-                      <th>State/Province</th>
-                      <th>ZIP/Postal Code</th>
-                      <th>Country</th>
-                      <th>Home Phone</th>
-                      <th>Personal Mobile</th>
-                      <th>Personal Email</th>
-                      <th>Status</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Action</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Employee ID</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>First Name</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Last Name</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Preferred Name</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Title</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Work Email</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Work Phone</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Work Mobile</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Fax</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Manager</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Street Address 1</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Street Address 2</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>City</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>State/Province</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>ZIP/Postal Code</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Country</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Home Phone</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Personal Mobile</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Personal Email</th>
+                      <th style={{ whiteSpace: 'nowrap' }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -715,30 +691,30 @@ function NewLocation() {
                             Select
                           </button>
                         </td>
-                        <td>{employee.employeeID || ""}</td>
-                        <td>{employee.firstName || ""}</td>
-                        <td>{employee.lastName || ""}</td>
-                        <td>{employee.preferredName || ""}</td>
-                        <td>{employee.title || ""}</td>
-                        <td>{employee.workEmailAddress || ""}</td>
-                        <td>{employee.workPhone || ""}</td>
-                        <td>{employee.workMobilePhone || ""}</td>
-                        <td>{employee.fax || ""}</td>
-                        <td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.employeeID || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.firstName || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.lastName || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.preferredName || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.title || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.workEmailAddress || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.workPhone || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.workMobilePhone || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.fax || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
                           {employee.manager
                             ? `${employee.manager.firstName} ${employee.manager.lastName}`
                             : ""}
                         </td>
-                        <td>{employee.streetAddress1 || ""}</td>
-                        <td>{employee.streetAddress2 || ""}</td>
-                        <td>{employee.city || ""}</td>
-                        <td>{employee.stateProvince || ""}</td>
-                        <td>{employee.zipPostalCode || ""}</td>
-                        <td>{employee.country || ""}</td>
-                        <td>{employee.homePhoneNumber || ""}</td>
-                        <td>{employee.personalMobilePhone || ""}</td>
-                        <td>{employee.personalEmailAddress || ""}</td>
-                        <td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.streetAddress1 || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.streetAddress2 || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.city || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.stateProvince || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.zipPostalCode || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.country || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.homePhoneNumber || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.personalMobilePhone || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{employee.personalEmailAddress || ""}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
                           <span
                             className={`badge ${
                               employee.employeeStatus === "Active"
@@ -790,24 +766,24 @@ function NewLocation() {
             ) : locations.length === 0 ? (
               <div className="text-center">No locations found</div>
             ) : (
-              <table className="table">
+              <table className="table" style={{ tableLayout: 'auto' }}>
                 <thead>
                   <tr>
-                    <th>Action</th>
-                    <th>Location Name</th>
-                    <th>Location Type</th>
-                    <th>Street Address 1</th>
-                    <th>Street Address 2</th>
-                    <th>City</th>
-                    <th>State/Province</th>
-                    <th>Zip/Postal Code</th>
-                    <th>Country</th>
-                    <th>Main Phone</th>
-                    <th>Capacity</th>
-                    <th>Capacity Used(%)</th>
-                    <th>Latitude</th>
-                    <th>Longitude</th>
-                    <th>ID</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Action</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Location Name</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Location Type</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Street Address 1</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Street Address 2</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>City</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>State/Province</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Zip/Postal Code</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Country</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Main Phone</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Capacity</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Capacity Used(%)</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Latitude</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Longitude</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>ID</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -821,17 +797,17 @@ function NewLocation() {
                           Select
                         </button>
                       </td>
-                      <td>{location.locationName || ""}</td>
-                      <td>{location.locationType || ""}</td>
-                      <td>{location.streetAddress1 || ""}</td>
-                      <td>{location.streetAddress2 || ""}</td>
-                      <td>{location.city || ""}</td>
-                      <td>{location.stateProvince || ""}</td>
-                      <td>{location.zipPostalCode || ""}</td>
-                      <td>{location.country || ""}</td>
-                      <td>{location.mainPhone || ""}</td>
-                      <td>{location.capacity || ""}</td>
-                      <td>{location.capacityUsed || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.locationName || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.locationType || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.streetAddress1 || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.streetAddress2 || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.city || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.stateProvince || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.zipPostalCode || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.country || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.mainPhone || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.capacity || ""}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{location.capacityUsed || ""}</td>
                       <td className="coordinate-cell">
                         {/* {isLoadingCoordinates ? (
                         <span className="loading-coordinates">Loading...</span>
@@ -899,7 +875,7 @@ function NewLocation() {
             {loadingEntities ? (
               <div className="text-center">Loading...</div>
             ) : (
-              <table className="table">
+              <table className="table" style={{ tableLayout: 'auto' }}>
                 <thead>
                   <tr>
                     <th>
@@ -1014,7 +990,7 @@ function NewLocation() {
               ) : availableChildLocations.length === 0 ? (
                 <div className="text-center">No locations available</div>
               ) : (
-                <table className="table">
+                <table className="table" style={{ tableLayout: 'auto' }}>
                   <thead>
                     <tr>
                       <th>
@@ -1930,16 +1906,16 @@ function NewLocation() {
                     <div className="text-center">Loading...</div>
                   ) : (
                     <div className="table-responsive">
-                      <table className="table ">
+                      <table className="table" style={{ tableLayout: 'auto' }}>
                         <thead>
                           <tr>
-                            <th className="w-10">Actions</th>
-                            <th className="w-20">Business Entity</th>
-                            <th className="w-20">Business Entity Type</th>
-                            <th className="w-20">Related Locations</th>
-                            <th className="w-20">Parent Business Entity</th>
-                            <th className="w-20">Child Business Entities</th>
-                            <th className="w-20">Updated At</th>
+                            <th style={{ whiteSpace: 'nowrap' }}>Actions</th>
+                            <th style={{ whiteSpace: 'nowrap' }}>Business Entity</th>
+                            <th style={{ whiteSpace: 'nowrap' }}>Business Entity Type</th>
+                            <th style={{ whiteSpace: 'nowrap' }}>Related Locations</th>
+                            <th style={{ whiteSpace: 'nowrap' }}>Parent Business Entity</th>
+                            <th style={{ whiteSpace: 'nowrap' }}>Child Business Entities</th>
+                            <th style={{ whiteSpace: 'nowrap' }}>Updated At</th>
                           </tr>
                         </thead>
                         <tbody>

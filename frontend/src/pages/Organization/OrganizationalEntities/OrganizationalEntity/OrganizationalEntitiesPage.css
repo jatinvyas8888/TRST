@@ -598,3 +598,57 @@ input[type="checkbox"]:checked {
     background-color: #404040;
     color: #ffffff;
 }
+
+.filter-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-popup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: white;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 250px;
+  margin-top: 0.5rem;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filter-body {
+  margin-bottom: 1rem;
+}
+
+.filter-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* Dark mode styles */
+[data-bs-theme='dark'] .filter-popup {
+  background-color: #2a2a2a;
+  border-color: #404040;
+  color: #e4e4e4;
+}
+
+/* Add this to ensure table doesn't overlap */
+.table-responsive {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure table cells don't overlap */
+.table td, .table th {
+  position: static;
+}

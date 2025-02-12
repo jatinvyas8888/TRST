@@ -36,13 +36,16 @@ import UserProfile from "../pages/Authentication/user-profile";
 import OrganizationalEntitiesPage from "../pages/Organization/OrganizationalEntities/OrganizationalEntity/OrganizationalEntitiesPage.jsx";
 import OrganizationalEntityForm from "../pages/Organization/OrganizationalEntities/OrganizationalEntityForm/OrganizationalEntityForm.jsx";
 import EditOrganizationalEntity from "../pages/Organization/OrganizationalEntities/OrganizationalEntityForm/EditOrganizationEntity.jsx";
+import ViewOrganizationalEntitiesPage from "../pages/Organization/OrganizationalEntities/OrganizationalEntity/ViewOrganizationalEntitiesPage.jsx";
 import Employees from "../pages/Organization/Employees/Employees";
 import NewEmployee from "../pages/Organization/Employees/NewEmployee.jsx";
 import EditEmployee from "../pages/Organization/Employees/EditEmployee.jsx";
+import ViewEmployee from "../pages/Organization/Employees/ViewEmployee.jsx";
 import Locations from "../pages/Organization/Locations/Locations.jsx";
 import NewLocation from "../pages/Organization/Locations/NewLocation.jsx";
 import EditLocation from "../pages/Organization/Locations/EditLocation.jsx";
 import LocationMap from "../pages/Organization/LocationMap/LocationMap.jsx";
+import ViewLocation from "../pages/Organization/Locations/ViewLocation.jsx";
 
 //Resources Routes
 import Resources from "../pages/Resources/Resources.jsx";
@@ -83,6 +86,62 @@ import Activities from "../pages/BIA/Activities/Activities.jsx";
 import NewActivities from "../pages/BIA/Activities/NewActivities.jsx";
 import ApprovalGroups from "../pages/BIA/ApprovalGroups/ApprovalGroups.jsx";
 import NewApprovalGroups from "../pages/BIA/ApprovalGroups/NewApprovalGroups.jsx";
+import EditClientContact from "../pages/Resources/Clients/ClientContacts/EditClientConatct.jsx";
+
+//Plans Routes
+import Plan from "../pages/Plans/Plan.jsx";
+import NewPlan from "../pages/Plans/NewPlan.jsx";
+import ApprovalGroup from "../pages/Plans/ApprovalGroups/ApprovalGroups.jsx";
+import NewApprovalGroup from "../pages/Plans/ApprovalGroups/NewApprovalGroups.jsx";
+import Attachments from "../pages/Plans/Attachments/Attachments.jsx";
+import NewAttachments from "../pages/Plans/Attachments/NewAttachment.jsx";
+import CallTrees from "../pages/Plans/CallTrees/CallTrees.jsx";
+import NewCallTrees from "../pages/Plans/CallTrees/NewCallTrees.jsx";
+import Plans from "../pages/Plans/Plans/Plan.jsx";
+import NewPlans from "../pages/Plans/Plans/NewPlan.jsx";
+import Sections from "../pages/Plans/Sections/Sections.jsx";
+import Teams from "../pages/Plans/Teams/Teams.jsx";
+import NewTeam from "../pages/Plans/Teams/NewTeams.jsx";
+
+//Risks Routes
+import Risk from "../pages/Risks/Risk.jsx";
+import NewRisk from "../pages/Risks/NewRisk.jsx";
+import RiskAssessments from "../pages/Risks/RiskAssessments/RiskAssessments.jsx";
+import NewRiskAssessments from "../pages/Risks/RiskAssessments/NewRiskAssessments.jsx";
+import RiskRegister from "../pages/Risks/RiskRegister/RiskRegister.jsx";
+import NewRiskRegister from "../pages/Risks/RiskRegister/NewRiskRegister.jsx";
+import Threat from "../pages/Risks/Threat/Threat.jsx";
+import NewThreat from "../pages/Risks/Threat/NewThreat.jsx";
+
+//Exercises Routes
+import Exercises from "../pages/Exercises/Exercises.jsx";
+import NewExercises from "../pages/Exercises/NewExercises.jsx";
+import ExerciseIssues from "../pages/Exercises/ExerciseIssues/ExerciseIssues.jsx";
+import NewExerciseIssues from "../pages/Exercises/ExerciseIssues/NewExerciseIssues.jsx";
+
+//Incidents Routes
+import Incidents from "../pages/Incidents/Incidents.jsx";
+import NewIncidents from "../pages/Incidents/NewIncidents.jsx";
+import ActiveIncidents from "../pages/Incidents/ActiveIncidents/ActiveIncidents.jsx";
+import NewActiveIncidents from "../pages/Incidents/ActiveIncidents/NewActiveIncidents.jsx";
+import IncidentMap from "../pages/Incidents/IncidentMap/IncidentMap.jsx";
+import NewIncidentMap from "../pages/Incidents/IncidentMap/NewIncidentMap.jsx";
+
+//Business Routes
+import Processes from "../pages/Business/Processes/Processes.jsx";
+import NewProcesses from "../pages/Business/Processes/NewProcesses.jsx";
+import ActionItem from "../pages/Business/ActionItem/ActionItem.jsx";
+import BPlans from "../pages/Business/Plans/Plans.jsx";
+import BBIA from "../pages/Business/BIA/BIA.jsx";
+import BNewBIA from "../pages/Business/BIA/NewBIA.jsx";
+
+//Vendor Dependency
+import VendorDependency from "../pages/VendorDependency/VendorDependency.jsx";
+import NewVendorDependency from "../pages/VendorDependency/NewVendorDependency.jsx";
+
+//Service Type
+import EditServiceType from "../pages/Resources/Vendors/ServiceType/EditServiceType.jsx";
+
 
 const authProtectedRoutes = [
   // Home Routes
@@ -105,6 +164,10 @@ const authProtectedRoutes = [
     component: <OrganizationalEntitiesPage />,
   },
   {
+    path: "/organizational-entities/view/:id",
+    component: <ViewOrganizationalEntitiesPage />,
+  },
+  {
     path: "/new-organizational-entity",
     component: <OrganizationalEntityForm />,
   },
@@ -115,10 +178,18 @@ const authProtectedRoutes = [
   { path: "/employees", component: <Employees /> },
   { path: "/new-employee", component: <NewEmployee /> },
   { path: "/employees/edit/:id", component: <EditEmployee /> },
+  {
+    path: "/employees/view/:id",
+    component: <ViewEmployee />,
+  },
 
   { path: "/locations", component: <Locations /> },
   { path: "/new-location", component: <NewLocation /> },
   { path: "/locations/edit/:id", component: <EditLocation /> },
+  {
+    path: "/locations/view/:id",
+    component: <ViewLocation />,
+  },
   { path: "/location-map", component: <LocationMap /> },
 
   // Resources Routes
@@ -127,9 +198,10 @@ const authProtectedRoutes = [
   // Client Routes
   { path: "/clients", component: <Clients /> },
   { path: "/new-clients", component: <NewClients /> },
+  { path: "/clients/edit/:id", component: <EditClient /> },
   { path: "/client-contacts", component: <ClientContacts /> },
   { path: "/new-client-contact", component: <NewClientContact /> },
-  { path: "/clients/edit/:id", component: <EditClient /> },
+  { path: "/client-contacts/edit/:id", component: <EditClientContact /> },
 
   // BCM Routes
   { path: "/bcm-seats-requirements", component: <BCMSeatsRequirements /> },
@@ -163,6 +235,7 @@ const authProtectedRoutes = [
   { path: "/new-vendor-contact", component: <NewVendorContract /> },
   { path: "/service-types", component: <ServiceType /> },
   { path: "/new-service-type", component: <NewServiceType /> },
+  { path: "/service-types/edit/:id", component: <EditServiceType /> },
 
   // Vital Records Routes
   { path: "/vital-records", component: <VitalRecords /> },
@@ -176,7 +249,58 @@ const authProtectedRoutes = [
   { path: "/activities", component: <Activities /> },
   { path: "/new-activities", component: <NewActivities /> },
   { path: "/approval-groups", component: <ApprovalGroups /> },
-  { path: "/new-approval-groups", component: <NewApprovalGroups /> },
+  { path: "/new-approval-groups", component: <NewApprovalGroups /> },
+
+  //Plans Routes
+  { path: "/plan", component: <Plan /> },
+  { path: "/new-plan", component: <NewPlan /> },
+  { path: "/approval-group", component: <ApprovalGroup /> },
+  { path: "/new-approval-group", component: <NewApprovalGroup /> },
+  { path: "/attachments", component: <Attachments /> },
+  { path: "/new-attachments", component: <NewAttachments /> },
+  { path: "/call-trees", component: <CallTrees /> },
+  { path: "/new-call-trees", component: <NewCallTrees /> },
+  { path: "/plans", component: <Plans /> },
+  { path: "/new-plans", component: <NewPlans /> },
+  { path: "/sections", component: <Sections /> },
+  { path: "/teams", component: <Teams /> },
+  { path: "/new-teams", component: <NewTeam /> },
+
+  //Risks Routes
+  { path: "/risks", component: <Risk /> },
+  { path: "/new-risk", component: <NewRisk /> },
+  { path: "/risk-assessments", component: <RiskAssessments /> },
+  { path: "/new-risk-assessments", component: <NewRiskAssessments /> },
+  { path: "/risk-register", component: <RiskRegister /> },
+  { path: "/new-risk-register", component: <NewRiskRegister /> },
+  { path: "/threat", component: <Threat /> },
+  { path: "/new-threat", component: <NewThreat /> },
+
+  //Exercises Routes
+  { path: "/exercises", component: <Exercises /> },
+  { path: "/new-exercises", component: <NewExercises /> },
+  { path: "/exercise-issues", component: <ExerciseIssues /> },
+  { path: "/new-exercise-issues", component: <NewExerciseIssues /> },
+
+  //Incidents Routes
+  { path: "/incidents", component: <Incidents /> },
+  { path: "/new-incident", component: <NewIncidents /> },
+  { path: "/active-incidents", component: <ActiveIncidents /> },
+  { path: "/new-active-incidents", component: <NewActiveIncidents /> },
+  { path: "/incident-map", component: <IncidentMap /> },
+  { path: "/new-incident-map", component: <NewIncidentMap /> },
+
+  //Business Routes
+  { path: "/bias", component: <BBIA /> },
+  { path: "/new-bia", component: <BNewBIA /> },
+  { path: "/business-plans", component: <BPlans /> },
+  { path: "/business-processes", component: <Processes /> },
+
+  { path: "/new-business-processes", component: <NewProcesses /> },
+  { path: "/business-action-items", component: <ActionItem /> },
+
+  { path: "/vendor-dependency", component: <VendorDependency /> },
+  { path: "/new-vendor-dependency", component: <NewVendorDependency /> },
 
   // User Profile
   { path: "/profile", component: <UserProfile /> },

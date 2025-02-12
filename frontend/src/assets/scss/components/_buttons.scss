@@ -49,10 +49,10 @@ a {
     .btn-#{$state} {
         --#{$prefix}btn-bg: #8C52FF ;
         --#{$prefix}btn-border-color: var(--#{$prefix}#{$state});
-        --#{$prefix}btn-hover-bg: #FF914D;
+        --#{$prefix}btn-hover-bg: #8C52FF;
         --#{$prefix}btn-hover-border-color: var(--#{$prefix}#{$state}-text-emphasis);
         --#{$prefix}btn-focus-shadow-rgb: var(--#{$prefix}#{$state}-rgb);
-        --#{$prefix}btn-active-bg: var(--#{$prefix}#{$state}-text-emphasis);
+        --#{$prefix}btn-active-bg: #FF914D;
         --#{$prefix}btn-active-border-color: var(--#{$prefix}#{$state}-text-emphasis);
     }
 

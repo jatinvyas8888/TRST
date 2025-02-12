@@ -14,11 +14,10 @@ import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { CiEdit } from "react-icons/ci";
-import { FaSync } from "react-icons/fa";
-import "./Employees.css";
-import axios from "axios";
 import LoadingSpinner from "../../../Components/Common/LoadingSpinner/LoadingSpinner";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import "./Employees.css";
 
 function Employees() {
   const [isOpen, setIsOpen] = useState(false);
@@ -84,10 +83,10 @@ function Employees() {
     lastName: 150,
     employeeID: 120,
     workEmailAddress: 200,
-    homePhoneNumber: 150,
-    workMobilePhone: 150,
+    homePhoneNumber: 200,
+    workMobilePhone: 200,
     workPhone: 150,
-    personalMobilePhone: 150,
+    personalMobilePhone: 200,
     department: 200,
     portalUser: 120,
     portalLoginName: 150,
@@ -735,7 +734,7 @@ function Employees() {
             <table className="table table-hover">
               <thead>
                 <tr>
-                  <th style={{ width: '40px' }}>
+                  <th>
                     <input
                       type="checkbox"
                       checked={selectAll}

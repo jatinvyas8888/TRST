@@ -17,7 +17,8 @@ const createClientContact = asyncHandler(async (req, res) => {
     workPhone,
     workMobilePhone,
     alternatePhone,
-    fax
+    fax,
+    title
   } = req.body;
 
   // Validate required fields
@@ -83,6 +84,7 @@ const createClientContact = asyncHandler(async (req, res) => {
     workMobilePhone: workMobilePhone || "",
     alternatePhone: alternatePhone || "",
     fax: fax || "",
+    title: title || "",
     updatedBy: req.user._id
   });
 
@@ -136,7 +138,8 @@ const updateClientContact = asyncHandler(async (req, res) => {
     workPhone,
     workMobilePhone,
     alternatePhone,
-    fax
+    fax,
+    title
   } = req.body;
 
   const contact = await ClientContacts.findById(id);
@@ -190,17 +193,18 @@ const updateClientContact = asyncHandler(async (req, res) => {
     }
   }
 
-  // Update fields
+  // Update fields - set to empty string if provided as empty
   contact.clients = clientIds;
   contact.clientNames = clientNames;
-  if (firstName) contact.firstName = firstName;
-  if (lastName) contact.lastName = lastName;
-  contact.middleName = middleName || contact.middleName;
-  contact.emailAddress = emailAddress || contact.emailAddress;
-  contact.workPhone = workPhone || contact.workPhone;
-  contact.workMobilePhone = workMobilePhone || contact.workMobilePhone;
-  contact.alternatePhone = alternatePhone || contact.alternatePhone;
-  contact.fax = fax || contact.fax;
+  contact.firstName = firstName !== undefined ? firstName : contact.firstName;
+  contact.lastName = lastName !== undefined ? lastName : contact.lastName;
+  contact.middleName = middleName !== undefined ? middleName : contact.middleName;
+  contact.emailAddress = emailAddress !== undefined ? emailAddress : contact.emailAddress;
+  contact.workPhone = workPhone !== undefined ? workPhone : contact.workPhone;
+  contact.workMobilePhone = workMobilePhone !== undefined ? workMobilePhone : contact.workMobilePhone;
+  contact.alternatePhone = alternatePhone !== undefined ? alternatePhone : contact.alternatePhone;
+  contact.fax = fax !== undefined ? fax : contact.fax;
+  contact.title = title !== undefined ? title : contact.title;
   contact.updatedBy = req.user._id;
 
   const updatedContact = await contact.save();

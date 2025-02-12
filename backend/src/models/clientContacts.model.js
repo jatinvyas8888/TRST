@@ -15,6 +15,9 @@ const clientContactsSchema = new mongoose.Schema(
     middleName: {
       type: String,
     },
+    title:{
+      type: String,
+    },
     emailAddress: {
       type: String,
     },
@@ -38,4 +41,6 @@ const clientContactsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model('ClientContacts', clientContactsSchema);
+const ClientContacts = mongoose.model('ClientContacts', clientContactsSchema);
+
+export default ClientContacts;

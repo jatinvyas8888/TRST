@@ -65,15 +65,20 @@ function Locations() {
   const [columnWidths, setColumnWidths] = useState({
     checkbox: 50,
     actions: 100,
-    id: 150,
     locationName: 200,
     locationType: 150,
+    streetAddress1: 200,
+    streetAddress2: 200,
+    city: 150,
+    stateProvince: 150,
+    zipPostalCode: 150,
+    country: 150,
+    mainPhone: 150,
+    capacity: 100,
+    capacityUsed: 150,
     latitude: 150,
     longitude: 150,
-    parentLocation: 200,
-    siteManager: 200,
-    updatedAt: 180,
-    updatedBy: 150
+    locationId: 150
   });
 
   const [visibleColumns, setVisibleColumns] = useState({

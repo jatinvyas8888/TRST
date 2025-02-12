@@ -450,14 +450,31 @@ const EditOrganizationalEntity = () => {
       <div className="d-flex align-items-center justify-content-between mb-4">
         <h1 className="header-text">Organizational Entity: New Entity</h1>
         <div className="d-flex align-items-center">
-          <NavLink
-            className="btn btn-outline-secondary me-2"
-            to="/organizational-entities"
-            title="Cancel"
-          >
-            <RxCross2 className="me-1" />
-            Cancel
-          </NavLink>
+        <div className="d-flex justify-content-end me-2">
+            <button
+              className="btn btn-secondary me-2"
+              onClick={() => navigate("/organizational-entities")}
+              title="Cancel"
+            >
+              <RxCross2
+                className="me-1"
+                style={{ width: "15px", height: "15px" }}
+              />
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              onClick={handleSubmit}
+              title="Update Organizational Entity"
+            >
+              <FaCheck
+                className="me-1"
+                style={{ width: "15px", height: "15px" }}
+              />
+              Save
+            </button>
+          </div>
           {/* Tool Dropdown */}
           <div className="dropdown">
             <button
@@ -580,9 +597,9 @@ const EditOrganizationalEntity = () => {
                   className="form-control1"
                 />
               </div>
-              <div className="mb-3 d-flex">
+              <div className="mb-3 d-flex position-relative">
                 <label htmlFor="editors" className="form-label label w-20">
-                  Editor(s)
+                  Editors
                 </label>
                 <div
                   className="form-control1 d-flex flex-wrap gap-2"
@@ -592,6 +609,8 @@ const EditOrganizationalEntity = () => {
                     borderRadius: "4px",
                     padding: "6px 12px",
                     backgroundColor: "#fff",
+                    position: "relative",
+                    flex: 1
                   }}
                 >
                   {formData.editors.map((editor, index) => (
@@ -623,6 +642,30 @@ const EditOrganizationalEntity = () => {
                       ></button>
                     </span>
                   ))}
+                  {formData.editors.length === 0 && (
+                    <span className="text-muted">No editors selected</span>
+                  )}
+                  {formData.editors.length > 0 && (
+                    <button
+                      type="button"
+                      className="btn btn-link text-danger position-absolute"
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          editors: [],
+                        });
+                      }}
+                      style={{ 
+                        right: "8px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        padding: "0",
+                        fontSize: "0.8rem"
+                      }}
+                    >
+                      <RxCross2 />
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -652,10 +695,9 @@ const EditOrganizationalEntity = () => {
 
               {/* Relationships */}
               <h2 className="mt-4 mb-3">Relationships</h2>
-              <div className="mb-3 d-flex">
+              <div className="mb-3 d-flex position-relative">
                 <label htmlFor="parentEntity" className="form-label label w-20">
-                  Parent Organizational Entity{" "}
-                  <span className="text-danger">*</span>
+                  Parent Organizational Entity <span className="text-danger">*</span>
                 </label>
                 <div
                   className="form-control1 d-flex flex-wrap gap-2"
@@ -665,6 +707,8 @@ const EditOrganizationalEntity = () => {
                     borderRadius: "4px",
                     padding: "6px 12px",
                     backgroundColor: "#fff",
+                    position: "relative",
+                    flex: 1
                   }}
                 >
                   {formData.parentEntity.map((entity, index) => (
@@ -695,6 +739,30 @@ const EditOrganizationalEntity = () => {
                       ></button>
                     </span>
                   ))}
+                  {formData.parentEntity.length === 0 && (
+                    <span className="text-muted">No parent entity selected</span>
+                  )}
+                  {formData.parentEntity.length > 0 && (
+                    <button
+                      type="button"
+                      className="btn btn-link text-danger position-absolute"
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          parentEntity: [],
+                        });
+                      }}
+                      style={{ 
+                        right: "8px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        padding: "0",
+                        fontSize: "0.8rem"
+                      }}
+                    >
+                      <RxCross2 />
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -702,16 +770,14 @@ const EditOrganizationalEntity = () => {
                   onClick={() => {
                     setCurrentSelectionType("parent");
                     setShowModal(true);
+                    fetchBusinessEntities();
                   }}
                 >
                   <BiSearchAlt2 />
                 </button>
               </div>
-              <div className="mb-3 d-flex">
-                <label
-                  htmlFor="childEntities"
-                  className="form-label label w-20"
-                >
+              <div className="mb-3 d-flex position-relative">
+                <label htmlFor="childEntities" className="form-label label w-20">
                   Child Organizational Entities
                 </label>
                 <div
@@ -722,6 +788,8 @@ const EditOrganizationalEntity = () => {
                     borderRadius: "4px",
                     padding: "6px 12px",
                     backgroundColor: "#fff",
+                    position: "relative",
+                    flex: 1
                   }}
                 >
                   {formData.childEntities.map((entity, index) => (
@@ -741,8 +809,9 @@ const EditOrganizationalEntity = () => {
                         className="btn-close ms-2"
                         style={{ fontSize: "0.5rem" }}
                         onClick={() => {
-                          const newChildEntities =
-                            formData.childEntities.filter((e) => e !== entity);
+                          const newChildEntities = formData.childEntities.filter(
+                            (e) => e !== entity
+                          );
                           setFormData({
                             ...formData,
                             childEntities: newChildEntities,
@@ -751,6 +820,30 @@ const EditOrganizationalEntity = () => {
                       ></button>
                     </span>
                   ))}
+                  {formData.childEntities.length === 0 && (
+                    <span className="text-muted">No child entities selected</span>
+                  )}
+                  {formData.childEntities.length > 0 && (
+                    <button
+                      type="button"
+                      className="btn btn-link text-danger position-absolute"
+                      onClick={() => {
+                        setFormData({
+                          ...formData,
+                          childEntities: [],
+                        });
+                      }}
+                      style={{ 
+                        right: "8px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        padding: "0",
+                        fontSize: "0.8rem"
+                      }}
+                    >
+                      <RxCross2 />
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -758,93 +851,84 @@ const EditOrganizationalEntity = () => {
                   onClick={() => {
                     setCurrentSelectionType("child");
                     setShowModal(true);
+                    fetchBusinessEntities();
                   }}
                 >
                   <BiSearchAlt2 />
                 </button>
               </div>
-              <div className="mb-3 d-flex">
-                <label
-                  htmlFor="relatedLocations"
-                  className="form-label label w-20"
-                >
+              <div className="mb-3 d-flex position-relative">
+                <label htmlFor="relatedLocations" className="form-label label w-20">
                   Related Locations
                 </label>
-                <div className="position-relative flex-grow-1">
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  >
-                    {selectedLocations.length > 0 ? (
-                      <>
-                        {selectedLocations.map((location, index) => (
-                          <span
-                            key={index}
-                            className="badge bg-light text-dark d-flex align-items-center"
-                            style={{
-                              padding: "5px 10px",
-                              margin: "2px",
-                              border: "1px solid #ddd",
-                              borderRadius: "3px",
-                            }}
-                          >
-                            {location.locationName}
-                            <button
-                              type="button"
-                              className="btn-close ms-2"
-                              style={{ fontSize: "0.5rem" }}
-                              onClick={() => {
-                                setSelectedLocations((prev) =>
-                                  prev.filter((loc) => loc._id !== location._id)
-                                );
-                              }}
-                            />
-                          </span>
-                        ))}
-                        <button
-                          type="button"
-                          className="badge bg-light text-danger border-0"
-                          onClick={handleClearAllLocations}
-                          style={{
-                            padding: "5px 10px",
-                            margin: "2px",
-                            cursor: "pointer",
-                            fontSize: "0.75rem",
-                          }}
-                        >
-                          Clear All
-                        </button>
-                      </>
-                    ) : (
-                      <span className="text-muted">No locations selected</span>
-                    )}
-                  </div>
+                <div
+                  className="form-control1 d-flex flex-wrap gap-2"
+                  style={{
+                    minHeight: "38px",
+                    border: "1px solid #ced4da",
+                    borderRadius: "4px",
+                    padding: "6px 12px",
+                    backgroundColor: "#fff",
+                    position: "relative",
+                    flex: 1
+                  }}
+                >
+                  {selectedLocations.map((location, index) => (
+                    <span
+                      key={index}
+                      className="badge bg-light text-dark d-flex align-items-center"
+                      style={{
+                        padding: "5px 10px !important",
+                        margin: "2px !important",
+                        border: "1px solid #ddd !important",
+                        borderRadius: "3px !important",
+                      }}
+                    >
+                      {location.locationName}
+                      <button
+                        type="button"
+                        className="btn-close ms-2"
+                        style={{ fontSize: "0.5rem" }}
+                        onClick={() => {
+                          const newLocations = selectedLocations.filter(
+                            (l) => l._id !== location._id
+                          );
+                          setSelectedLocations(newLocations);
+                        }}
+                      ></button>
+                    </span>
+                  ))}
+                  {selectedLocations.length === 0 && (
+                    <span className="text-muted">No locations selected</span>
+                  )}
+                  {selectedLocations.length > 0 && (
+                    <button
+                      type="button"
+                      className="btn btn-link text-danger position-absolute"
+                      onClick={() => setSelectedLocations([])}
+                      style={{ 
+                        right: "8px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        padding: "0",
+                        fontSize: "0.8rem"
+                      }}
+                    >
+                      <RxCross2 />
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
-                  className="btn btn-secondary ms-2"
-                  onClick={() => setShowLocationModal(true)}
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setShowLocationModal(true);
+                    fetchLocations();
+                  }}
                 >
                   <BiSearchAlt2 />
                 </button>
-              </div>
-              <div className="d-flex justify-content-end mt-4">
-                <button
-                  type="submit"
-                  className="btn btn-outline-success"
-                  disabled={
-                    !formData.businessEntityType || !formData.businessEntity
-                  }
-                >
-                  {loading ? "Saving..." : "Save"}
-                </button>
-              </div>
+              </div>  
             </form>
           </div>
         </div>
@@ -864,7 +948,7 @@ const EditOrganizationalEntity = () => {
                 <div className="d-flex gap-2">
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-secondary mb-2"
                     onClick={fetchBusinessEntities}
                     title="Refresh"
                   >
@@ -872,8 +956,9 @@ const EditOrganizationalEntity = () => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-secondary mb-2"
                     onClick={() => setShowModal(false)}
+                    title="Close"
                   >
                     <RxCross2 />
                   </button>
@@ -997,7 +1082,7 @@ const EditOrganizationalEntity = () => {
                 <div className="d-flex gap-2">
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-secondary mb-2"
                     onClick={() => fetchUsers()}
                     title="Refresh"
                   >
@@ -1005,7 +1090,7 @@ const EditOrganizationalEntity = () => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-secondary mb-2"
                     onClick={() => setShowUserModal(false)}
                     title="Close"
                   >
@@ -1133,7 +1218,7 @@ const EditOrganizationalEntity = () => {
                 <div className="d-flex gap-2 align-items-center">
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-secondary mb-2"
                     onClick={fetchLocations}
                     title="Refresh"
                   >
@@ -1141,7 +1226,7 @@ const EditOrganizationalEntity = () => {
                   </button>
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="btn btn-outline-secondary mb-2"
                     onClick={() => setShowLocationModal(false)}
                     title="Close"
                   >
@@ -1246,6 +1331,7 @@ const EditOrganizationalEntity = () => {
                   </div>
                 )}
               </div>
+              
               <div className="modal-footer">
                 <button
                   type="button"

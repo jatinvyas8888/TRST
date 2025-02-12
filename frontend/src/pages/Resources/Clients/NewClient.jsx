@@ -7,7 +7,7 @@ import { HiMiniWrench } from "react-icons/hi2";
 import { BiSolidEdit } from "react-icons/bi";
 import { FcSettings } from "react-icons/fc";
 import { LuTableOfContents, LuClock9 } from "react-icons/lu";
-import "./Clients.css";
+// import "./Clients.css";
 import {
   Input,
   Label,

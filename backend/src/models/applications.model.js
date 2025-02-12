@@ -70,4 +70,6 @@ const applicationSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-export const Application = mongoose.model('Application', applicationSchema);
+const Application = mongoose.model('Application', applicationSchema);
+
+export default Application;

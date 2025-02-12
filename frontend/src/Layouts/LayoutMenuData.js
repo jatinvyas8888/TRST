@@ -23,6 +23,11 @@ const Navdata = () => {
   const [isResources, setIsResources] = useState(false);
   const [isClients, setIsClients] = useState(false);
   const [isIt, setIsIt] = useState(false);
+  const [isRisks, setIsRisks] = useState(false);
+  const [isExercises, setIsExercises] = useState(false);
+  const [isIncidents, setIsIncidents] = useState(false);
+  const [isBusiness, setIsBusiness] = useState(false);
+  const [isBias, setIsBias] = useState(false);
 
   // Apps
   const [isEmail, setEmail] = useState(false);
@@ -532,6 +537,140 @@ const Navdata = () => {
         },
       ],
     },
+    {
+      id: "risks",
+      label: "Risks",
+      icon: "ri-alert-line",
+      link: "/risks",
+      stateVariables: isRisks,
+      click: function (e) {
+        if (e.target.getAttribute("data-bs-toggle")) {
+          e.preventDefault();
+        }
+        setIsRisks(!isRisks);
+        setIscurrentState("Risks");
+        updateIconSidebar(e);
+      },
+      subItems: [
+        {
+          id: "risk-assessments",
+          label: "Risk Assessments",
+          link: "/risk-assessments",
+          parentId: "risks",
+        },
+        {
+          id: "risk-register",
+          label: "Risk Register",
+          link: "/risk-register",
+          parentId: "risks",
+        },
+        {
+          id: "threat",
+          label: "Threat",
+          link: "/threat",
+          parentId: "risks",
+        },
+      ],
+    },
+    {
+      id: "exercises",
+      label: "Exercises",
+      icon: "ri-checkbox-fill",
+      link: "/exercises",
+      stateVariables: isExercises,
+      click: function (e) {
+        if (e.target.getAttribute("data-bs-toggle")) {
+          e.preventDefault();
+        }
+        setIsExercises(!isExercises);
+        setIscurrentState("Exercises");
+        updateIconSidebar(e);
+      },
+      subItems: [
+        {
+          id: "exercise-issues",
+          label: "Exercise Issues",
+          link: "/exercise-issues",
+          parentId: "exercises",
+        },
+      ],
+    },
+    {
+      id: "Incidents",
+      label: "Incidents",
+      icon: "ri-supabase-fill",
+      link: "/incidents",
+      stateVariables: isIncidents,
+      click: function (e) {
+        if (e.target.getAttribute("data-bs-toggle")) {
+          e.preventDefault();
+        }
+        setIsIncidents(!isIncidents);
+        setIscurrentState("Incidents");
+        updateIconSidebar(e);
+      },
+      subItems: [
+        {
+          id: "active-incidents",
+          label: "Active Incidents",
+          link: "/active-incidents",
+          parentId: "incidents",
+        },
+        {
+          id: "incident-map",
+          label: "Incident Map",
+          link: "/incident-map",
+          parentId: "incidents",
+        },
+      ],
+    },
+    {
+      id: "business",
+      label: "Business",
+      icon: "ri-briefcase-4-fill",
+      link: "/business",
+      stateVariables: isBusiness,
+      click: function (e) {
+        if (e.target.getAttribute("data-bs-toggle")) {
+          e.preventDefault();
+        }
+        setIsBusiness(!isBusiness);
+        setIscurrentState("Business");
+        updateIconSidebar(e);
+      },
+      subItems: [
+        {
+          id: "action-items",
+          label: "Action Items",
+          link: "/business-action-items",
+          parentId: "business",
+        },
+        {
+          id: "bia",
+          label: "BIA",
+          link: "/bias",
+          parentId: "business",
+        },
+        {
+          id: "plans",
+          label: "Plans",
+          link: "/business-plans",
+          parentId: "business",
+        },
+        {
+          id: "processes",
+          label: "Processes",
+          link: "/business-processes",
+          parentId: "business",
+        },
+      ],
+    },
+    {
+      id: "vendor-dependency",
+      label: "Vendor Dependency",
+      icon: "ri-contacts-book-fill",
+      link: "/vendor-dependency",
+    },
   ];
   return <React.Fragment>{menuItems}</React.Fragment>;
 };

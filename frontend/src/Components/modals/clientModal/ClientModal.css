@@ -1,0 +1,52 @@
+.client-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.client-modal.show {
+  display: block;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  /* max-width: 800px; */
+  z-index: 10000;
+}
+
+.client-modal .modal-dialog {
+  margin: 0;
+  max-width: none;
+  position: relative;
+}
+
+.client-modal-body{
+    background-color: white;
+}
+
+.client-modal-footer{
+    background-color: white;
+}
+
+/* Add any other specific styles for the Client modal here */
+
+/* Add checkbox styling */
+.client-modal input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.client-modal .table th:first-child,
+.client-modal .table td:first-child {
+  width: 40px;
+} 

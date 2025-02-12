@@ -6,11 +6,7 @@ import { HiMiniWrench } from "react-icons/hi2";
 import { LuTableOfContents, LuClock9 } from "react-icons/lu";
 import { FaPrint, FaRegFilePdf } from "react-icons/fa";
 import { BiRefresh } from "react-icons/bi";
-import {
-  Input,
-  Label,
-  Form,
-} from "reactstrap";
+import { Input, Label, Form } from "reactstrap";
 import "./Employees.css";
 import axios from "axios";
 import { BiSearchAlt2 } from "react-icons/bi";
@@ -277,7 +273,7 @@ function EditEmployee() {
     "Washington",
     "West Virginia",
     "Wisconsin",
-    "Wyoming",
+    "Wyoming",
   ];
   const CountryOptions = [
     "-- Please select --",
@@ -492,28 +488,6 @@ function EditEmployee() {
     setIsCountryOpen(false);
   };
 
-  const Pagination = ({ currentPage, totalPages, onPageChange }) => {
-    return (
-      <div className="pagination d-flex justify-content-center align-items-center">
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-        >
-          &lt; {/* Previous */}
-        </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-        >
-          &gt; {/* Next */}
-        </button>
-      </div>
-    );
-  };
-
   const fetchBusinessEntities = async () => {
     try {
       setLoading(true);
@@ -558,7 +532,7 @@ function EditEmployee() {
       }
 
       const data = await response.json();
-    //   console.log("Fetched employees data:", data); // Log the data
+      //   console.log("Fetched employees data:", data); // Log the data
 
       if (Array.isArray(data.data.employees)) {
         setEmployees(data.data.employees); // Set the employees state
@@ -652,7 +626,7 @@ function EditEmployee() {
   // Update the handleChange function
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Map form field names to state field names
     const fieldMap = {
       employeeid: "employeeID",
@@ -677,7 +651,7 @@ function EditEmployee() {
 
     // Update the form data
     setEmployeeData((prevData) => ({
-        ...prevData,
+      ...prevData,
       [fieldName]: value,
     }));
   };
@@ -804,7 +778,7 @@ function EditEmployee() {
 
     try {
       // Create formattedData with all fields, including empty ones
-        const formattedData = {
+      const formattedData = {
         employeeID: employeeData.employeeID || "",
         firstName: employeeData.firstName || "",
         middleName: employeeData.middleName || "",
@@ -815,7 +789,7 @@ function EditEmployee() {
         workPhone: employeeData.workPhone || "",
         workMobilePhone: employeeData.workMobilePhone || "",
         fax: employeeData.fax || "",
-            manager: selectedManager?._id || "",
+        manager: selectedManager?._id || "",
         subordinates: employeeData.subordinates.map((sub) => sub._id) || [],
         department: selectedEntities.map((dept) => dept._id) || [],
         location: selectedLocations.map((loc) => loc._id) || [],
@@ -836,45 +810,45 @@ function EditEmployee() {
           selectedTimeZone === "-- Please select --" ? "" : selectedTimeZone,
       };
 
-        console.log("Submitting formatted data:", formattedData);
+      console.log("Submitting formatted data:", formattedData);
 
       const response = await axios.patch(
         `http://localhost:8000/api/v1/employees/${employeeId}`,
-            formattedData,
-            {
-                headers: {
+        formattedData,
+        {
+          headers: {
             "Content-Type": "application/json",
-                },
+          },
           withCredentials: true,
-            }
-        );
+        }
+      );
 
-        Toastify({
+      Toastify({
         text: "Employee updated successfully!",
-            duration: 3000,
-            gravity: "top",
-            position: "right",
-            style: {
-                background: "#28a745",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+          background: "#28a745",
         },
-        }).showToast();
-        navigate("/employees");
+      }).showToast();
+      navigate("/employees");
     } catch (error) {
       console.error("Error updating employee:", error);
       const errorMessage =
         error.response?.data?.message ||
-                           error.response?.data?.error || 
+        error.response?.data?.error ||
         "Error updating employee. Please try again.";
-        
-        Toastify({
-            text: errorMessage,
-            duration: 3000,
-            gravity: "top",
-            position: "right",
-            style: {
-                background: "#dc3545",
+
+      Toastify({
+        text: errorMessage,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+          background: "#dc3545",
         },
-        }).showToast();
+      }).showToast();
     }
   };
 
@@ -928,25 +902,25 @@ function EditEmployee() {
   const handleSubordinateSelect = (employeeId, isSelected) => {
     const selectedEmployee = employees.find((emp) => emp._id === employeeId);
     if (isSelected && selectedEmployee) {
-        setEmployeeData((prev) => ({
-            ...prev,
-            subordinates: [
-                ...prev.subordinates,
-                {
-                    _id: selectedEmployee._id,
-                    employeeID: selectedEmployee.employeeID,
-                    firstName: selectedEmployee.firstName,
-                    lastName: selectedEmployee.lastName,
+      setEmployeeData((prev) => ({
+        ...prev,
+        subordinates: [
+          ...prev.subordinates,
+          {
+            _id: selectedEmployee._id,
+            employeeID: selectedEmployee.employeeID,
+            firstName: selectedEmployee.firstName,
+            lastName: selectedEmployee.lastName,
             fullName: `${selectedEmployee.firstName} ${selectedEmployee.lastName}`,
-                },
-            ],
-        }));
-        setShowEmployeesModal(false);
+          },
+        ],
+      }));
+      setShowEmployeesModal(false);
     } else {
-        setEmployeeData((prev) => ({
-            ...prev,
-            subordinates: prev.subordinates.filter((sub) => sub._id !== employeeId),
-        }));
+      setEmployeeData((prev) => ({
+        ...prev,
+        subordinates: prev.subordinates.filter((sub) => sub._id !== employeeId),
+      }));
     }
   };
 
@@ -1566,20 +1540,20 @@ function EditEmployee() {
             <div className="header-text">Employees: Edit Employee</div>
             <div className="d-flex align-items-center justify-content-end">
               <div className="d-flex justify-content-end">
-              <button
+                <button
                   type="button"
-                className="btn btn-secondary me-2"
-                onClick={() => navigate("/employees")}
-              >
-                Cancel
-              </button>
-              <button
+                  className="btn btn-secondary me-2"
+                  onClick={() => navigate("/employees")}
+                >
+                  Cancel
+                </button>
+                <button
                   type="submit"
                   className="btn btn-primary"
-                onClick={handleSubmit}
-              >
+                  onClick={handleSubmit}
+                >
                   Save Employee
-              </button>
+                </button>
               </div>
               <div
                 className="map-action k-widget k-button-group order-1"
@@ -1587,16 +1561,16 @@ function EditEmployee() {
                 role="group"
               >
                 <span className="dropdown">
-                <button
+                  <button
                     className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                  type="button"
+                    type="button"
                     id="TollFropdown"
                     data-bs-toggle="dropdown"
                     aria-expanded={isToolOpen}
                     onClick={toggleToolDropDown}
-                >
+                  >
                     <HiMiniWrench style={{ width: "16px", height: "16px" }} />
-                </button>
+                  </button>
                   <ul
                     className={`right-auto dropdown-menu  ${
                       isToolOpen ? "show" : ""
@@ -1607,28 +1581,28 @@ function EditEmployee() {
                                         <li><a className="dropdown-item" href="#"><FcSettings style={{ width: "15px", height: "15px" }} /> Object Definition</a></li>
                                         <li><a className="dropdown-item" href="#"><LuTableOfContents style={{ width: "15px", height: "15px" }} /> Tab Definition</a></li>
                                         <div className="border-1"></div> */}
-                  <li>
-                    <a className="dropdown-item" href="#">
+                    <li>
+                      <a className="dropdown-item" href="#">
                         <FaPrint style={{ width: "15px", height: "15px" }} />{" "}
-                      Print
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
+                        Print
+                      </a>
+                    </li>
+                    <li>
+                      <a className="dropdown-item" href="#">
                         <FaRegFilePdf
                           style={{ width: "15px", height: "15px" }}
                         />{" "}
-                      PDF
-                    </a>
-                  </li>
+                        PDF
+                      </a>
+                    </li>
                     <div className="border-1"></div>
-                  <li>
-                    <a className="dropdown-item" href="#">
+                    <li>
+                      <a className="dropdown-item" href="#">
                         <LuClock9 style={{ width: "15px", height: "15px" }} />{" "}
-                      Page Load Time
-                    </a>
-                  </li>
-                </ul>
+                        Page Load Time
+                      </a>
+                    </li>
+                  </ul>
                 </span>
               </div>
             </div>
@@ -1734,7 +1708,10 @@ function EditEmployee() {
                   </div>
                 ))}
                 <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="manager" className="form-label fs-15 w-29 me-4">
+                  <Label
+                    htmlFor="manager"
+                    className="form-label fs-15 w-29 me-4"
+                  >
                     Manager
                   </Label>
                   <div className="position-relative flex-grow-1">
@@ -1798,14 +1775,15 @@ function EditEmployee() {
                     <BiSearchAlt2 />
                   </button>
                 </div>
-                <div className="mb-3 d-flex align-items-center">
+
+                <div className="mb-3 d-flex align-items-center position-relative">
                   <Label
                     htmlFor="subordinates"
                     className="form-label fs-15 w-29 me-4"
                   >
                     Subordinates
                   </Label>
-                  <div className="position-relative flex-grow-1">
+                  <div className="flex-grow-1">
                     <div
                       className="form-control1 d-flex flex-wrap gap-2"
                       style={{
@@ -1814,67 +1792,56 @@ function EditEmployee() {
                         borderRadius: "4px",
                         padding: "6px 12px",
                         backgroundColor: "#fff",
+                        position: "relative",
                       }}
                     >
-                      {employeeData.subordinates.length > 0 ? (
-                        <>
-                          {employeeData.subordinates.map(
-                            (subordinate, index) => (
-                              <span
-                                key={index}
-                                className="badge bg-light text-dark d-flex align-items-center"
-                                style={{
-                                  padding: "5px 10px",
-                                  margin: "2px",
-                                  border: "1px solid #ddd",
-                                  borderRadius: "3px",
-                                  backgroundColor: "#f8f9fa",
-                                }}
-                              >
-                                {`${subordinate.firstName} ${subordinate.lastName}`}
-                                <button
-                                  type="button"
-                                  className="btn-close ms-2"
-                                  style={{
-                                    fontSize: "0.5rem",
-                                    padding: "0.25rem",
-                                    opacity: "0.5",
-                                  }}
-                                  onClick={() => {
-                                    setEmployeeData((prev) => ({
-                                      ...prev,
-                                      subordinates: prev.subordinates.filter(
-                                        (s) => s._id !== subordinate._id
-                                      ),
-                                    }));
-                                  }}
-                                  title="Remove"
-                                ></button>
-                              </span>
-                            )
-                          )}
+                      {employeeData.subordinates.map((subordinate, index) => (
+                        <span
+                          key={index}
+                          className="badge bg-light text-dark d-flex align-items-center"
+                          style={{
+                            padding: "5px 10px",
+                            margin: "2px",
+                            border: "1px solid #ddd",
+                            borderRadius: "3px",
+                          }}
+                        >
+                          {`${subordinate.firstName} ${subordinate.lastName}`}
                           <button
                             type="button"
-                            className="badge bg-light text-danger border-0"
-                            onClick={handleClearAllSubordinates}
-                            style={{
-                              padding: "5px 10px",
-                              margin: "2px",
-                              cursor: "pointer",
-                              fontSize: "0.75rem",
+                            className="btn-close ms-2"
+                            style={{ fontSize: "0.5rem" }}
+                            onClick={() => {
+                              setEmployeeData((prev) => ({
+                                ...prev,
+                                subordinates: prev.subordinates.filter(
+                                  (sub) => sub._id !== subordinate._id
+                                ),
+                              }));
                             }}
-                            title="Clear All"
-                          >
-                            Clear All
-                          </button>
-                        </>
-                      ) : (
-                        <span
-                          className="text-muted"
-                          style={{ fontSize: "0.875rem" }}
-                        >
+                          />
+                        </span>
+                      ))}
+                      {employeeData.subordinates.length === 0 && (
+                        <span className="text-muted">
                           No subordinates selected
                         </span>
+                      )}
+                      {employeeData.subordinates.length > 0 && (
+                        <button
+                          type="button"
+                          className="btn btn-link text-danger position-absolute"
+                          onClick={handleClearAllSubordinates}
+                          style={{
+                            right: "8px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            padding: "0",
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          <RxCross2 />
+                        </button>
                       )}
                     </div>
                   </div>
@@ -1889,6 +1856,7 @@ function EditEmployee() {
                     <BiSearchAlt2 />
                   </button>
                 </div>
+
                 <div className="mb-3 d-flex align-items-center">
                   <Label
                     htmlFor="employeeStatus"
@@ -1948,11 +1916,14 @@ function EditEmployee() {
           <Form>
             <div className="row pt-4">
               <div className="col-6">
-                <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="location" className="form-label fs-18 w-29 me-4">
-                    Location
+                <div className="mb-3 d-flex align-items-center position-relative">
+                  <Label
+                    htmlFor="locations"
+                    className="form-label fs-15 w-29 me-4"
+                  >
+                    Locations
                   </Label>
-                  <div className="position-relative flex-grow-1">
+                  <div className="flex-grow-1">
                     <div
                       className="form-control1 d-flex flex-wrap gap-2"
                       style={{
@@ -1961,79 +1932,71 @@ function EditEmployee() {
                         borderRadius: "4px",
                         padding: "6px 12px",
                         backgroundColor: "#fff",
+                        position: "relative",
                       }}
                     >
-                      {selectedLocations.length > 0 ? (
-                        <>
-                          {selectedLocations.map((location, index) => (
-                            <span
-                              key={index}
-                              className="badge bg-light text-dark d-flex align-items-center"
-                              style={{
-                                padding: "5px 10px",
-                                margin: "2px",
-                                border: "1px solid #ddd",
-                                borderRadius: "3px",
-                                backgroundColor: "#f8f9fa",
-                              }}
-                            >
-                              {location.locationName}
-                              <button
-                                type="button"
-                                className="btn-close ms-2"
-                                style={{
-                                  fontSize: "0.5rem",
-                                  padding: "0.25rem",
-                                  opacity: "0.5",
-                                }}
-                                onClick={() => {
-                                  setSelectedLocations((prev) =>
-                                    prev.filter(
-                                      (loc) => loc._id !== location._id
-                                    )
-                                  );
-                                }}
-                                title="Remove"
-                              ></button>
-                            </span>
-                          ))}
+                      {selectedLocations.map((location, index) => (
+                        <span
+                          key={index}
+                          className="badge bg-light text-dark d-flex align-items-center"
+                          style={{
+                            padding: "5px 10px",
+                            margin: "2px",
+                            border: "1px solid #ddd",
+                            borderRadius: "3px",
+                          }}
+                        >
+                          {location.locationName}
                           <button
                             type="button"
-                            className="badge bg-light text-danger border-0"
-                            onClick={handleClearAllLocations}
-                            style={{
-                              padding: "5px 10px",
-                              margin: "2px",
-                              cursor: "pointer",
-                              fontSize: "0.75rem",
+                            className="btn-close ms-2"
+                            style={{ fontSize: "0.5rem" }}
+                            onClick={() => {
+                              setSelectedLocations((prev) =>
+                                prev.filter((loc) => loc._id !== location._id)
+                              );
                             }}
-                            title="Clear All"
-                          >
-                            Clear All
-                          </button>
-                        </>
-                      ) : (
-                        <span
-                          className="text-muted"
-                          style={{ fontSize: "0.875rem" }}
-                        >
+                          />
+                        </span>
+                      ))}
+                      {selectedLocations.length === 0 && (
+                        <span className="text-muted">
                           No locations selected
                         </span>
+                      )}
+                      {selectedLocations.length > 0 && (
+                        <button
+                          type="button"
+                          className="btn btn-link text-danger position-absolute"
+                          onClick={() => setSelectedLocations([])}
+                          style={{
+                            right: "8px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            padding: "0",
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          <RxCross2 />
+                        </button>
                       )}
                     </div>
                   </div>
                   <button
                     type="button"
-                    className="btn btn-secondary border-radius-2 ms-2"
-                    onClick={handleLocationSearch}
+                    className="btn btn-secondary ms-2"
+                    onClick={() => setShowLocationModal(true)}
                   >
                     <BiSearchAlt2 />
                   </button>
                 </div>
               </div>
               <div className="col-6">
-                <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="department" className="form-label fs-15 w-29 me-4">
+                <div className="mb-3 d-flex align-items-center position-relative">
+                  <Label
+                    htmlFor="department"
+                    className="form-label fs-15 w-29 me-4"
+                  >
                     Department
                   </Label>
                   <div className="d-flex position-relative flex-grow-1">
@@ -2045,6 +2008,9 @@ function EditEmployee() {
                         borderRadius: "4px",
                         padding: "6px 12px",
                         backgroundColor: "#fff",
+                        position: "relative",
+                        flex: 1,
+                        marginRight: "8px", // Add margin to separate from search button
                       }}
                     >
                       {selectedEntities.length > 0 ? (
@@ -2076,23 +2042,25 @@ function EditEmployee() {
                                   );
                                 }}
                                 title="Remove"
-                              ></button>
+                              />
                             </span>
                           ))}
-                          <button
-                            type="button"
-                            className="badge bg-light text-danger border-0"
-                            onClick={handleClearAllEntities}
-                            style={{
-                              padding: "5px 10px",
-                              margin: "2px",
-                              cursor: "pointer",
-                              fontSize: "0.75rem",
-                            }}
-                            title="Clear All"
-                          >
-                            Clear All
-                          </button>
+                          {selectedEntities.length > 0 && (
+                            <button
+                              type="button"
+                              className="btn btn-link text-danger position-absolute"
+                              onClick={handleClearAllEntities}
+                              style={{
+                                right: "8px",
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                padding: "0",
+                                fontSize: "0.8rem",
+                              }}
+                            >
+                              <RxCross2 />
+                            </button>
+                          )}
                         </>
                       ) : (
                         <span
@@ -2105,8 +2073,9 @@ function EditEmployee() {
                     </div>
                     <button
                       type="button"
-                      className="btn btn-secondary border-radius-2 ms-2"
+                      className="btn btn-secondary border-radius-2"
                       onClick={handleDepartmentSearch}
+                      style={{ minWidth: "38px" }} // Ensure consistent button width
                     >
                       <BiSearchAlt2 />
                     </button>
@@ -2148,19 +2117,19 @@ function EditEmployee() {
                 ))}
                 <div className="mb-3 d-flex align-items-center">
                   <Label
-                        htmlFor="stateProvince"
-                        className="form-label fs-15 w-29 me-4"
+                    htmlFor="stateProvince"
+                    className="form-label fs-15 w-29 me-4"
                   >
                     State/Province
                   </Label>
-                      <div className="dropdown-container position-relative flex-grow-1">
+                  <div className="dropdown-container position-relative flex-grow-1">
                     <button
                       onClick={toggleStateDropdown}
                       className="form-control text-start d-flex justify-content-between align-items-center"
                       type="button"
                     >
                       <span>{selectedState}</span>
-                          <IoMdArrowDropdown />
+                      <IoMdArrowDropdown />
                     </button>
                     {isStateOpen && (
                       <div
@@ -2183,19 +2152,19 @@ function EditEmployee() {
                 </div>
                 <div className="mb-3 d-flex align-items-center">
                   <Label
-                      htmlFor="country"
-                      className="form-label fs-15 w-29 me-4"
+                    htmlFor="country"
+                    className="form-label fs-15 w-29 me-4"
                   >
                     Country
                   </Label>
-                    <div className="dropdown-container position-relative flex-grow-1">
+                  <div className="dropdown-container position-relative flex-grow-1">
                     <button
                       onClick={toggleCountryDropdown}
                       className="form-control text-start d-flex justify-content-between align-items-center"
                       type="button"
                     >
                       <span>{selectedCountry}</span>
-                        <IoMdArrowDropdown />
+                      <IoMdArrowDropdown />
                     </button>
                     {isCountryOpen && (
                       <div
@@ -2342,18 +2311,19 @@ function EditEmployee() {
                             <td>{entity._id}</td>
                             <td>{entity.businessEntity}</td>
                             <td>{entity.businessEntityType}</td>
-                      <td>
-                        {entity.relatedLocations
-                          .map((location) => location.locationName)
-                          .join(", ") || ""}
-                      </td>
-                      <td>
-                        {entity.parentBusinessEntity?.businessEntity || "-"}
+                            <td>
+                              {entity.relatedLocations
+                                .map((location) => location.locationName)
+                                .join(", ") || ""}
+                            </td>
+                            <td>
+                              {entity.parentBusinessEntity?.businessEntity ||
+                                "-"}
                             </td>
                             <td>
                               {entity.childBusinessEntities
-                          ?.map((c) => c.businessEntity)
-                          .join(", ") || "-"}
+                                ?.map((c) => c.businessEntity)
+                                .join(", ") || "-"}
                             </td>
                             <td>
                               {new Date(entity.updatedAt).toLocaleString()}
@@ -2412,7 +2382,8 @@ function EditEmployee() {
                   <strong>Employee ID:</strong> {selectedEmployee.employeeID}
                 </p>
                 <p>
-                  <strong>Name:</strong> {selectedEmployee.firstName} {selectedEmployee.lastName}
+                  <strong>Name:</strong> {selectedEmployee.firstName}{" "}
+                  {selectedEmployee.lastName}
                 </p>
                 <p>
                   <strong>Email:</strong> {selectedEmployee.workEmailAddress}

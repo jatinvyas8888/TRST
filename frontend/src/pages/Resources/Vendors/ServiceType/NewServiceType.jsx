@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { HiMiniWrench } from "react-icons/hi2";
@@ -8,28 +8,13 @@ import { BiSolidEdit } from "react-icons/bi";
 import { FcSettings } from "react-icons/fc";
 import { LuTableOfContents, LuClock9 } from "react-icons/lu";
 import { FaPrint, FaRegFilePdf } from "react-icons/fa";
-import { IoIosSearch } from "react-icons/io";
-import { FaCircleQuestion } from "react-icons/fa6";
 import "./ServiceType.css";
-import { BiSearchAlt2 } from "react-icons/bi";
-import { SlCalender } from "react-icons/sl";
-import {
-  Card,
-  CardBody,
-  Col,
-  Container,
-  Input,
-  Label,
-  Row,
-  Button,
-  Form,
-  FormFeedback,
-  Alert,
-  Spinner,
-} from "reactstrap";
-import { TiPlus } from "react-icons/ti";
+import { Input, Label, Form } from "reactstrap";
+import  Toastify  from "toastify-js";
+import axios from "axios";
 
 function NewServiceType() {
+  const navigate = useNavigate();
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isTimeZoneOpen, setIsTimeZoneOpen] = useState(false); // Time Zone dropdown
   const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
@@ -43,6 +28,35 @@ function NewServiceType() {
   const hostelOptions = ["-- Please select --", "No", "No"];
   const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
   const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
+
+  const [formData, setFormData] = useState({
+    serviceType: "",
+  });
+
+  const handleSubmit = async (e) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/service-types/create",
+        formData,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log(response);
+      Toastify({
+        text: "Service Type created successfully!",
+        duration: 3000,
+        backgroundColor: "#4caf50",
+        close: true,
+      }).showToast();
+      navigate("/service-types");
+      setFormData({
+        serviceType: "",
+      });
+    } catch (error) {
+      console.error("Error saving:", error);
+    }
+  };
 
   const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
   const handleSelectStatus = (option) => {
@@ -66,9 +80,9 @@ function NewServiceType() {
             <div className="header-text">Service Type: New Service Type </div>
             <div className="d-flex align-items-center justify-content-end">
               <div>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="/service-type"
+                <button
+                  className="btn btn-secondary me-2"
+                  onClick={() => navigate("/service-types")}
                   title="Cancel"
                 >
                   <RxCross2
@@ -76,21 +90,19 @@ function NewServiceType() {
                     style={{ width: "15px", height: "15px" }}
                   />
                   Cancel
-                </NavLink>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save"
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  onClick={handleSubmit}
+                  title="Update Organizational Entity"
                 >
-                  Save & New
-                </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
                   <FaCheck
                     className="me-1"
                     style={{ width: "15px", height: "15px" }}
                   />
                   Save
-                </NavLink>
+                </button>
               </div>
               <div
                 className="map-action k-widget k-button-group order-1"
@@ -155,7 +167,7 @@ function NewServiceType() {
         <div className="form-content">
           <div className="form-heading">Service Type Information </div>
           <div className="border-1"></div>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <div className="row pt-4">
               <div className="col-6">
                 {["Service Type"].map((label, index) => (
@@ -166,7 +178,18 @@ function NewServiceType() {
                     >
                       {label}
                     </Label>
-                    <Input name="text" className="form-control" type="text" />
+                    <Input
+                      name="serviceType"
+                      className="form-control"
+                      type="text"
+                      value={formData.serviceType}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          serviceType: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                 ))}
               </div>
