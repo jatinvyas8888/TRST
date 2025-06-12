@@ -6,19 +6,19 @@ import {
     updateEmployee, 
     deleteEmployee 
 } from '../controllers/employees.controller.js';
-import { verifyJWT } from '../middlewares/auth.middleware.js';
 
 const router = Router();
 
 // Create new employee
-router.route("/create").post( createEmployee)
+router.route("/create").post(createEmployee);
 
-router.route("/all").get(verifyJWT, getAllEmployees); // Get all employees with filtering and pagination
+// Get all employees without JWT verification
+router.route("/all").get(getAllEmployees);
 
-// Handle operations on specific employee by ID
+// Handle operations on specific employee by ID without JWT verification
 router.route("/:id")
-    .get(verifyJWT, getEmployee)      // Get single employee
-    .patch(verifyJWT, updateEmployee) // Update employee
-    .delete(verifyJWT, deleteEmployee); // Delete employee
+    .get(getEmployee)      // Get single employee
+    .patch(updateEmployee) // Update employee
+    .delete(deleteEmployee); // Delete employee
 
 export default router;

@@ -14,8 +14,15 @@ import { BiSolidEdit, BiSearchAlt2, BiRefresh } from "react-icons/bi";
 import { FcSettings } from "react-icons/fc";
 import { FaPrint } from "react-icons/fa6";
 
+import EmployeeModal from './EmployeeModal';
+import Employees from './Employees';
+import LocationSection from "./LocationSection";
+
 import "./OrganizationalEntityForm.css";
 import LoadingSpinner from "../../../../Components/Common/LoadingSpinner/LoadingSpinner";
+import ApplicationSection from "./ApplicationSection";
+
+
 
 // Add this constant at the top of the file after imports
 const BUSINESS_ENTITY_TYPES = [
@@ -204,33 +211,72 @@ const EditOrganizationalEntityForm = () => {
     }));
   };
 
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await axios.patch(
+  //       `http://localhost:8000/api/v1/organizational-entities/${id}`,
+  //       initialValues
+  //     );
+  //     Toastify({
+  //       text: "Business Entity updated successfully!",
+  //       duration: 3000,
+  //       backgroundColor: "#4caf50",
+  //       close: true,
+  //     }).showToast();
+  //     navigate(`/organizational-entities`);
+  //   } catch (error) {
+  //     console.error("Failed to update entity", error);
+  //     Toastify({
+  //       text:
+  //         error.response?.data?.message ||
+  //         "Failed to update Business Entity.Check your all fields.",
+  //       duration: 3000,
+  //       backgroundColor: "#f44336",
+  //       close: true,
+  //     }).showToast();
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Add selected employees and locations to initialValues
+    const updatedValues = {
+      ...initialValues,
+      employees: selectedEmployeeIds, // Include selected employee IDs
+      locations: selectedLocationIds, // Include selected location IDs
+      applications: selectedApplicationIds, // Include selected application IDs
+    };
+  
     try {
       const response = await axios.patch(
         `http://localhost:8000/api/v1/organizational-entities/${id}`,
-        initialValues
+        updatedValues
       );
+  
+      // Show success message
       Toastify({
         text: "Business Entity updated successfully!",
         duration: 3000,
         backgroundColor: "#4caf50",
         close: true,
       }).showToast();
+  
       navigate(`/organizational-entities`);
     } catch (error) {
+      // Show error message
       console.error("Failed to update entity", error);
       Toastify({
         text:
           error.response?.data?.message ||
-          "Failed to update Business Entity.Check your all fields.",
+          "Failed to update Business Entity. Check your fields.",
         duration: 3000,
         backgroundColor: "#f44336",
         close: true,
       }).showToast();
     }
   };
-
+  
   const toggleToolDropDown = () => {
     setIsToolOpen(!isToolOpen);
   };
@@ -485,6 +531,23 @@ const EditOrganizationalEntityForm = () => {
     }));
   };
 
+//employess
+
+const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
+
+
+//location
+  const [locationData, setlocationData] = useState([]); // Selected Employee IDs
+  const [locationDataNames, setlocationDataNames] = useState(""); // Selected Employee Names
+  const [selectedLocationIds, setSelectedLocationIds] = useState([]); // Store selected location IDs
+  const [selectedApplicationIds, setSelectedApplicationIds] = useState([]);
+  
+  const handleSelectedApplications = (ids) => {
+    console.log("Selected IDs from ApplicationSection:", ids);
+    setSelectedApplicationIds(ids);
+  };
+
+
   return (
     <div className="page-content">
       {/* Header Section */}
@@ -578,6 +641,31 @@ const EditOrganizationalEntityForm = () => {
 
       {/* Form Section */}
       <div className="form-content">
+      <div className="d-flex justify-content-end me-2">
+            <button
+              className="btn btn-secondary me-2"
+              onClick={() => navigate("/organizational-entities")}
+              title="Cancel"
+            >
+              <RxCross2
+                className="me-1"
+                style={{ width: "15px", height: "15px" }}
+              />
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              onClick={handleSubmit}
+              title="Update Organizational Entity"
+            >
+              <FaCheck
+                className="me-1"
+                style={{ width: "15px", height: "15px" }}
+              />
+              Save
+            </button>
+          </div>
         <div className="form-heading">Organizational Entity Information</div>
         <div className="border-1 mb-3"></div>
         <div className="row">
@@ -974,8 +1062,18 @@ const EditOrganizationalEntityForm = () => {
                   <BiSearchAlt2 />
                 </button>
               </div>
+
+
+           
+      
             </form>
           </div>
+              {/* employess */}
+      <Employees setSelectedEmployeeIds={setSelectedEmployeeIds} />
+ 
+     
+ <LocationSection setSelectedLocationIds={setSelectedLocationIds} />
+ <ApplicationSection setSelectedApplicationIds={handleSelectedApplications} />
         </div>
       </div>
 

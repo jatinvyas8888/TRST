@@ -32,68 +32,80 @@ import { FaCalendarAlt } from "react-icons/fa";
 
 function NewExercises() {
   const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
-  const [isHostelOpen, setIsHostelOpen] = useState(false); // Employee Status dropdown
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "No", "Yes"];
+  const [exerciseData, setExerciseData] = useState({
+    exerciseSubject: "",
+    coordinator: "",
+    exerciseType: "",
+    startDateTime: "",
+    businessEntity: "",
+    endDateTime: "",
+    description: "",
+    successCriteria: "",
+    participants: "",
+    teams: "",
+    processes: "",
+    locations: "",
+    applications: "",
+    vendors: "",
+    plans: "",
+  });
 
-  const [selectedHostel, setSelectedHostel] = useState("-- Please select --");
-  const hostelOptions = ["-- Please select --", "No", "No"];
-  const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
-  const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
-
-  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
-  const handleSelectStatus = (option) => {
-    setSelectedStatus(option);
-    setIsStatusOpen(false);
+  // **Handle Input Change**
+  const handleChange = (e) => {
+    setExerciseData({ ...exerciseData, [e.target.name]: e.target.value });
   };
-  const handleSelecthostel = (option) => {
-    setSelectedHostel(option);
-    setIsHostelOpen(false);
-  };
-  // State variables for new dropdowns
-  const [isRTOpen, setIsRTOpen] = useState(false);
-  const [isDROpen, setIsDROpen] = useState(false);
-  const [isRPOpen, setIsRPOpen] = useState(false);
 
-  const [selectedRTO, setSelectedRTO] = useState("-- Please select --");
-  const [selectedDR, setSelectedDR] = useState("-- Please select --");
-  const [selectedRPO, setSelectedRPO] = useState("-- Please select --");
+  // **API Call to Create Exercise**
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
 
-  const RTOOptions = ["-- Please select --", "1 Hour", "4 Hours", "24 Hours"];
-  const DROptions = [
-    "-- Please select --",
-    "Cloud-Based",
-    "On-Premise",
-    "Hybrid",
-  ];
-  const RPOOptions = [
-    "-- Please select --",
-    "0 Minutes",
-    "1 Hour",
-    "4 Hours",
-    "24 Hours",
-  ];
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/exercises/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(exerciseData),
+      });
 
-  // Toggle functions
-  const toggleRTODropdown = () => setIsRTOpen((prev) => !prev);
-  const toggleDRDropdown = () => setIsDROpen((prev) => !prev);
-  const toggleRPODropdown = () => setIsRPOpen((prev) => !prev);
+      const result = await response.json();
 
-  // Selection handlers
-  const handleSelectRTO = (option) => {
-    setSelectedRTO(option);
-    setIsRTOpen(false);
+      if (response.ok) {
+        setSuccessMessage("Exercise created successfully!");
+        setExerciseData({
+          exerciseSubject: "",
+          coordinator: "",
+          exerciseType: "",
+          startDateTime: "",
+          businessEntity: "",
+          endDateTime: "",
+          description: "",
+          successCriteria: "",
+          participants: "",
+          teams: "",
+          processes: "",
+          locations: "",
+          applications: "",
+          vendors: "",
+          plans: "",
+        });
+      } else {
+        setErrorMessage(result.message || "Error creating exercise!");
+      }
+    } catch (error) {
+      setErrorMessage("Network error! Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleSelectDR = (option) => {
-    setSelectedDR(option);
-    setIsDROpen(false);
-  };
-  const handleSelectRPO = (option) => {
-    setSelectedRPO(option);
-    setIsRPOpen(false);
-  };
+
+  const statusOptions = ["-- Please select --", "Full Scale", "Functional", "Location", "Notification", "Plan", "Tabletop", "Third Party"];
+
   return (
     <React.Fragment>
       <Helmet>
@@ -145,7 +157,7 @@ function NewExercises() {
                     id="TollFropdown"
                     data-bs-toggle="dropdown"
                     aria-expanded={isToolOpen}
-                    onClick={toggleToolDropDown}
+                    onClick={() => setIsToolOpen(!isToolOpen)}
                   >
                     <HiMiniWrench className="hw-16" />
                   </button>
@@ -196,404 +208,183 @@ function NewExercises() {
         <div className="form-content">
           <div className="form-heading">Exercise Information</div>
           <div className="border-1"></div>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <div className="row pt-4">
-              <div className="col-6">
-                {["Exercise Subject"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                      <span className="text-danger">*</span>
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}{" "}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="applicationType"
-                    className="form-label me-2 fs-15 w-40"
+              <Row>
+                <Col md={6}>
+                  <Label>Exercise Subject</Label>
+                  <Input
+                    type="text"
+                    name="exerciseSubject"
+                    value={exerciseData.exerciseSubject}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+                <Col md={6}>
+                  <Label>Coordinator</Label>
+                  <Input
+                    type="text"
+                    name="coordinator"
+                    value={exerciseData.coordinator}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Label>Exercise Type</Label>
+                  <Input
+                    type="select"
+                    name="exerciseType"
+                    value={exerciseData.exerciseType}
+                    onChange={handleChange}
+                    required
                   >
-                    Exercise Type<span className="text-danger">*</span>
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleStatusDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedStatus}</span>
-                      <svg
-                        className={`ms-2 ${isStatusOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isStatusOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {statusOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectStatus(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>{" "}
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Business Entity
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                {["Description"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <textarea
-                      name="text"
-                      className="form-control"
-                      type="text"
-                    />
-                  </div>
-                ))}{" "}
-              </div>
-              <div className="col-6">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Coordinator
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2 d-flex align-items-center justify-content-between"
-                  >
-                    Start Date/Time
-                    <FaCircleQuestion className="fs-15" />
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2 me-1"
-                  >
-                    <FaCalendarAlt className="fs-15" />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <MdOutlineWatchLater className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    End Date/Time
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2 me-1"
-                  >
-                    <FaCalendarAlt className="fs-15" />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <MdOutlineWatchLater className="fs-15" />
-                  </button>
-                </div>
-                {["Success Criteria"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <textarea
-                      name="text"
-                      className="form-control"
-                      type="text"
-                    />
-                  </div>
-                ))}{" "}
-              </div>
-            </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Staffing
-          </div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-8">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                  Participants
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                   Teams
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Tested Components
-
-          </div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-6">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                  Processes
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                   Applications
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                Plans
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-              </div>
-              <div className="col-6">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                  Locations
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                   Vendors
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-              </div>
+                    {statusOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </Input>
+                </Col>
+                <Col md={6}>
+                  <Label>Start Date/Time</Label>
+                  <Input
+                    type="datetime-local"
+                    name="startDateTime"
+                    value={exerciseData.startDateTime}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Label>Business Entity</Label>
+                  <Input
+                    type="text"
+                    name="businessEntity"
+                    value={exerciseData.businessEntity}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+                <Col md={6}>
+                  <Label>End Date/Time</Label>
+                  <Input
+                    type="datetime-local"
+                    name="endDateTime"
+                    value={exerciseData.endDateTime}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Label>Description</Label>
+                  <Input
+                    type="textarea"
+                    name="description"
+                    value={exerciseData.description}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+                <Col md={6}>
+                  <Label>Success Criteria</Label>
+                  <Input
+                    type="textarea"
+                    name="successCriteria"
+                    value={exerciseData.successCriteria}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Label>Participants</Label>
+                  <Input
+                    type="text"
+                    name="participants"
+                    value={exerciseData.participants}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+                <Col md={6}>
+                  <Label>Teams</Label>
+                  <Input
+                    type="text"
+                    name="teams"
+                    value={exerciseData.teams}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Label>Processes</Label>
+                  <Input
+                    type="text"
+                    name="processes"
+                    value={exerciseData.processes}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+                <Col md={6}>
+                  <Label>Locations</Label>
+                  <Input
+                    type="text"
+                    name="locations"
+                    value={exerciseData.locations}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Label>Applications</Label>
+                  <Input
+                    type="text"
+                    name="applications"
+                    value={exerciseData.applications}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+                <Col md={6}>
+                  <Label>Vendors</Label>
+                  <Input
+                    type="text"
+                    name="vendors"
+                    value={exerciseData.vendors}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+              </Row>
+              <Row>
+                <Col md={6}>
+                  <Label>Plans</Label>
+                  <Input
+                    type="text"
+                    name="plans"
+                    value={exerciseData.plans}
+                    onChange={handleChange}
+                    required
+                  />
+                </Col>
+              </Row>
+              <Button type="submit" color="primary" disabled={loading}>
+                {loading ? <Spinner size="sm" /> : "Create Exercise"}
+              </Button>
             </div>
           </Form>
         </div>

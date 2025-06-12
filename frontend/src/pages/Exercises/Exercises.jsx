@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
-import { Link, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
 import { HiMiniWrench } from "react-icons/hi2";
 import { BiSolidEdit } from "react-icons/bi";
@@ -12,10 +12,82 @@ import { TiExport, TiPlus } from "react-icons/ti";
 import { FaRegTrashCan, FaTableColumns } from "react-icons/fa6";
 import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal } from "react-icons/hi";
+import { CiEdit } from "react-icons/ci"; 
+import { RiDeleteBin6Line } from "react-icons/ri";
+import Toastify from "toastify-js";
 function Exercises() {
   const [isOpen, setIsOpen] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isColumnOpen, setIsColumnOpen] = useState(false);
+  const [exercises, setExercises] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectAll, setSelectAll] = useState(false); // State for select all checkbox
+const [draggedColumn, setDraggedColumn] = useState(null);
+const [currentPage, setCurrentPage] = useState(1);
+  const [pageInput, setPageInput] = useState(1);
+  const itemsPerPage = 10;
+
+  const [columns, setColumns] = useState([
+    { id: 'select', label: '', width: 50, draggable: false },
+    { id: 'actions', label: 'Actions', width: 100, draggable: false },
+    { id: 'exerciseSubject', label: 'Exercise Subject', width: 200, draggable: true },
+    { id: 'coordinator', label: 'Coordinator', width: 200, draggable: true },
+    { id: 'exerciseType', label: 'Exercise Type', width: 200, draggable: true },
+    { id: 'startDateTime', label: 'Start Date/Time', width: 200, draggable: true },
+    { id: 'endDateTime', label: 'End Date/Time', width: 200, draggable: true },
+    { id: 'businessEntity', label: 'Business Entity', width: 200, draggable: true },
+    { id: 'description', label: 'Description', width: 200, draggable: true },
+    { id: 'successCriteria', label: 'Success Criteria', width: 200, draggable: true },
+    { id: 'participants', label: 'Participants', width: 200, draggable: true },
+    { id: 'teams', label: 'Teams', width: 200, draggable: true },
+    { id: 'processes', label: 'Processes', width: 200, draggable: true },
+    { id: 'locations', label: 'Locations', width: 200, draggable: true },
+    { id: 'applications', label: 'Applications', width: 200, draggable: true },
+    { id: 'vendors', label: 'Vendors', width: 200, draggable: true },
+    { id: 'plans', label: 'Plans', width: 200, draggable: true }
+  ]);
+  const [visibleColumns, setVisibleColumns] = useState({
+    exerciseSubject: true,
+    coordinator: true,
+    exerciseType: true,
+    startDateTime: true,
+    endDateTime: true,
+    businessEntity: true,
+    description: true,
+    successCriteria: true,
+    participants: true,
+    teams: true,
+    processes: true,
+    locations: true,
+    applications: true,
+    vendors: true,
+    plans: true
+  });
+
+  const handlePageInputKeyDown = (e) => {
+    if (e.key === 'Enter' || e.type === 'blur') {
+      const value = e.target.value;
+      const numValue = parseInt(value);
+      const maxPage = Math.ceil(exercises.length / itemsPerPage);
+
+      if (value === '' || isNaN(numValue) || numValue < 1) {
+        setCurrentPage(1);
+        setPageInput(1);
+      } else if (numValue > maxPage) {
+        setCurrentPage(maxPage);
+        setPageInput(maxPage);
+      } else {
+        setCurrentPage(numValue);
+        setPageInput(numValue);
+      }
+    }
+  };
+
+  const handlePageInputChange = (e) => {
+    const value = e.target.value;
+    setPageInput(value);
+  };
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -24,8 +96,113 @@ function Exercises() {
   const toggleToolDropDown = () => {
     setIsToolOpen(!isToolOpen);
   };
+
   const ColumnDropDown = () => {
     setIsColumnOpen(!isColumnOpen);
+  };
+   //pagination
+const indexOfLastItem = currentPage * itemsPerPage;
+const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+const currentItems = exercises.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Fetch Exercises Data from API
+  useEffect(() => {
+    const fetchExercises = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch("http://localhost:8000/api/v1/exercises");
+        const result = await response.json();
+
+        if (response.ok) {
+          setExercises(result);
+        } else {
+          setError(result.message || "Error fetching exercises");
+        }
+      } catch (error) {
+        setError("Network error! Please try again.");
+      }
+      setLoading(false);
+    };
+
+    fetchExercises();
+  }, []);
+
+  // Handle select all checkbox change
+  const handleSelectAllChange = () => {
+    setSelectAll(!selectAll);
+    setExercises(exercises.map(exercise => ({ ...exercise, isSelected: !selectAll })));
+  };
+
+  // Handle individual checkbox change
+  const handleCheckboxChange = (id) => {
+    setExercises(exercises.map(exercise => exercise._id === id ? { ...exercise, isSelected: !exercise.isSelected } : exercise));
+  };
+ //pagination start
+
+const handleFirstPage = () => {
+  setCurrentPage(1);
+  setPageInput(1);
+};
+
+const handlePrevPage = () => {
+  setCurrentPage(prev => {
+    const newPage = prev - 1;
+    setPageInput(newPage);
+    return newPage;
+  });
+};
+
+const handleNextPage = () => {
+  setCurrentPage(prev => {
+    const newPage = prev + 1;
+    setPageInput(newPage);
+    return newPage;
+  });
+};
+
+const handleLastPage = () => {
+  const lastPage = Math.ceil(exercises.length / itemsPerPage);
+  setCurrentPage(lastPage);
+  setPageInput(lastPage);
+};
+
+const indexOfLastRow = currentPage * itemsPerPage;
+const indexOfFirstRow = indexOfLastRow - itemsPerPage;
+const currentRows = exercises.slice(indexOfFirstRow, indexOfLastRow);
+const handleRefresh = async () => {
+    try {
+      const button = document.querySelector('.refresh-button');
+      if (button) {
+        button.style.transform = 'rotate(360deg)';
+      }
+      const response = await fetch("http://localhost:8000/api/v1/exercises");
+      if (!response.ok) {
+        throw new Error("Failed to fetch data");
+      }
+      const data = await response.json();
+      setExercises(data);
+      Toastify({
+        text: "Data refreshed successfully!",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+          background: "#28a745",
+        },
+      }).showToast();
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      Toastify({
+        text: "Error refreshing data",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+          background: "#dc3545",
+        },
+      }).showToast();
+    }
   };
   return (
     <React.Fragment>
@@ -56,9 +233,7 @@ function Exercises() {
                   <HiMiniWrench className="wh-16" />
                 </button>
                 <ul
-                  className={`right-auto dropdown-menu ${
-                    isToolOpen ? "show" : ""
-                  }`}
+                  className={`right-auto dropdown-menu ${isToolOpen ? "show" : ""}`}
                   aria-labelledby="TollFropdown"
                 >
                   <li>
@@ -76,7 +251,7 @@ function Exercises() {
                   <li>
                     <a className="dropdown-item" href="#">
                       <LuTableOfContents className="hw-15 mr-5px" />
-                      tab Definition
+                      Tab Definition
                     </a>
                   </li>
                   <div className="border-1"></div>
@@ -164,9 +339,9 @@ function Exercises() {
               <button className="button border-1 ms-1">
                 <FaHome className="hw-15" />
               </button>
-              <button className="button border-1 ms-1">
-                <LuRefreshCw className="hw-18" />
-              </button>
+               <button className="button border-1 ms-1 refresh-button" onClick={handleRefresh} title="Refresh data">
+                               <LuRefreshCw className="hw-18" />
+                             </button>
               <span className="dropdown">
                 <button
                   className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
@@ -190,43 +365,43 @@ function Exercises() {
                     <span className="fw-bold">Columns</span>{" "}
                     <a className="blue">Reset</a>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Exercise Name
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Status
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Start Date/Time
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       End Date/Time
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Updated At
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Updated By
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Created At
@@ -255,6 +430,140 @@ function Exercises() {
             </div>
           </div>
           <div className="border-1 mt-2 mb-2"></div>
+
+          {/* Show loading and error messages */}
+          {loading && <p>Loading data...</p>}
+          {error && <p style={{ color: "red" }}>{error}</p>}
+
+          {/* Display data in a table */}
+          <div style={{ width: "100%", overflowX: "auto" }}>
+            <div style={{ maxHeight: "560px", overflowY: "auto", border: "1px solid #ccc" }}>
+              {/*  //pagination start div */}
+              <div className="pagination-wrapper">
+  <div className="d-flex align-items-center gap-3 p-2 justify-content-between">
+    <div className="d-flex align-items-center">
+      <button 
+        className="btn btn-sm btn-outline-secondary" 
+        onClick={handleFirstPage}
+        disabled={currentPage === 1}
+      >{"<<"}</button>
+      
+      <button 
+        className="btn btn-sm btn-outline-secondary" 
+        onClick={handlePrevPage}
+        disabled={currentPage === 1}
+      >{"<"}</button>
+      
+      <span className="mx-2">Page</span>
+      <input
+        type="text"
+        className="form-control page-input"
+        value={pageInput}
+        onChange={handlePageInputChange}
+        onKeyDown={handlePageInputKeyDown}
+        onBlur={handlePageInputKeyDown}
+      />
+      <span className="mx-2">of {Math.ceil(exercises.length / itemsPerPage)}</span>
+      
+      <button 
+        className="btn btn-sm btn-outline-secondary" 
+        onClick={handleNextPage}
+        disabled={currentPage === Math.ceil(exercises.length / itemsPerPage)}
+      >{">"}</button>
+      
+      <button 
+        className="btn btn-sm btn-outline-secondary" 
+        onClick={handleLastPage}
+        disabled={currentPage === Math.ceil(exercises.length / itemsPerPage)}
+      >{">>"}</button>
+    </div>
+
+    <span className="ms-2 fw-bold">
+      {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, exercises.length)} of {exercises.length} items
+    </span>
+  </div>
+</div>
+
+              {/*  //pagination end div */}
+              <table className="table table-bordered mt-3" style={{ minWidth: "2800px" }}>
+                <thead>
+                  <tr>
+                    <th className="sticky-col">
+                      <input
+                        type="checkbox"
+                        checked={exercises.length > 0 && exercises.every((exercise) => exercise.isSelected)}
+                        onChange={handleSelectAllChange}
+                      />
+                    </th>
+                    <th className="sticky-col">Action</th>
+                    <th>Exercise Subject</th>
+                    <th>Coordinator</th>
+                    <th>Exercise Type</th>
+                    <th>Start Date/Time</th>
+                    <th>End Date/Time</th>
+                    <th>Business Entity</th>
+                    <th>Description</th>
+                    <th>Success Criteria</th>
+                    <th>Participants</th>
+                    <th>Teams</th>
+                    <th>Processes</th>
+                    <th>Locations</th>
+                    <th>Applications</th>
+                    <th>Vendors</th>
+                    <th>Plans</th>
+                  </tr>
+                </thead>
+                <tbody>
+  {currentRows.length > 0 ? (
+    currentRows.map((exercise) => (
+      <tr key={exercise._id}>
+        <td className="sticky-col">
+          <input
+            type="checkbox"
+            className="form-check-input"
+            checked={exercise.isSelected || false}
+            onChange={() => handleCheckboxChange(exercise._id)}
+          />
+        </td>
+        <td className="text-center">
+          <div className="d-flex align-items-center gap-2 justify-content-center">
+            <button className="btn btn-sm btn-link p-0" title="Edit">
+              <CiEdit style={{ cursor: "pointer", fontSize: "1.2em", color: "green" }} size={18} />
+            </button>
+            <button className="btn btn-sm btn-link p-0" title="Delete">
+              <RiDeleteBin6Line className="text-danger" size={18} />
+            </button>
+          </div>
+        </td>
+        <td>{exercise.exerciseSubject}</td>
+        <td>{exercise.coordinator}</td>
+        <td>{exercise.exerciseType}</td>
+        <td>{new Date(exercise.startDateTime).toLocaleString()}</td>
+        <td>{new Date(exercise.endDateTime).toLocaleString()}</td>
+        <td>{exercise.businessEntity}</td>
+        <td>{exercise.description}</td>
+        <td>{exercise.successCriteria}</td>
+        <td>{exercise.participants}</td>
+        <td>{exercise.teams}</td>
+        <td>{exercise.processes}</td>
+        <td>{exercise.locations}</td>
+        <td>{exercise.applications}</td>
+        <td>{exercise.vendors}</td>
+        <td>{exercise.plans}</td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="17" className="text-center">
+        No data available
+      </td>
+    </tr>
+  )}
+</tbody>
+
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </React.Fragment>

@@ -1,84 +1,53 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { FaCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
-import { HiMiniWrench } from "react-icons/hi2";
-import { BiSolidEdit } from "react-icons/bi";
-import { FcSettings } from "react-icons/fc";
-import { LuTableOfContents, LuClock9 } from "react-icons/lu";
-import { FaPrint, FaRegFilePdf } from "react-icons/fa";
-import { FaSearch, FaPlus } from "react-icons/fa";
-import { Input, Label, Form } from "reactstrap";
+import { Button, Form, Input, Label, Spinner } from "reactstrap";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function NewExerciseIssues() {
-  const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
-  const [isHostelOpen, setIsHostelOpen] = useState(false); // Employee Status dropdown
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    exerciseIssue: "",
+    owners: "",
+    description: "",
+  });
 
-  const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "No", "Yes"];
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [selectedHostel, setSelectedHostel] = useState("-- Please select --");
-  const hostelOptions = ["-- Please select --", "No", "No"];
-  const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
-  const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
-
-  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
-  const handleSelectStatus = (option) => {
-    setSelectedStatus(option);
-    setIsStatusOpen(false);
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  const handleSelecthostel = (option) => {
-    setSelectedHostel(option);
-    setIsHostelOpen(false);
-  };
-  // State variables for new dropdowns
-  const [isRTOpen, setIsRTOpen] = useState(false);
-  const [isDROpen, setIsDROpen] = useState(false);
-  const [isRPOpen, setIsRPOpen] = useState(false);
 
-  const [selectedRTO, setSelectedRTO] = useState("-- Please select --");
-  const [selectedDR, setSelectedDR] = useState("-- Please select --");
-  const [selectedRPO, setSelectedRPO] = useState("-- Please select --");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-  const RTOOptions = ["-- Please select --", "1 Hour", "4 Hours", "24 Hours"];
-  const DROptions = [
-    "-- Please select --",
-    "Cloud-Based",
-    "On-Premise",
-    "Hybrid",
-  ];
-  const RPOOptions = [
-    "-- Please select --",
-    "0 Minutes",
-    "1 Hour",
-    "4 Hours",
-    "24 Hours",
-  ];
+    try {
+      console.log("Submitting form..."); // Debugging
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/exercise-issues/create",
+        formData
+      );
+      console.log("API Response:", response.data); // Debugging
 
-  // Toggle functions
-  const toggleRTODropdown = () => setIsRTOpen((prev) => !prev);
-  const toggleDRDropdown = () => setIsDROpen((prev) => !prev);
-  const toggleRPODropdown = () => setIsRPOpen((prev) => !prev);
+      toast.success("✅ Exercise Issue created successfully!", { theme: "colored" });
+      navigate("/exercise-issues");
+    } catch (error) {
+      console.error("Error:", error); // Debugging
+      toast.error("❌ Error creating Exercise Issue. Please try again.", { theme: "colored" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-  // Selection handlers
-  const handleSelectRTO = (option) => {
-    setSelectedRTO(option);
-    setIsRTOpen(false);
-  };
-  const handleSelectDR = (option) => {
-    setSelectedDR(option);
-    setIsDROpen(false);
-  };
-  const handleSelectRPO = (option) => {
-    setSelectedRPO(option);
-    setIsRPOpen(false);
-  };
   return (
     <React.Fragment>
       <Helmet>
-        <title>New Issue Page | TRST</title>
+        <title>New Exercise Issue Page | TRST</title>
         <meta name="description" content="This is the home page description" />
         <meta name="keywords" content="home, react, meta tags" />
       </Helmet>
@@ -88,9 +57,9 @@ function NewExerciseIssues() {
             <div className="header-text">Issue : New Issue </div>
             <div className="d-flex align-items-center justify-content-end">
               <div>
-                <NavLink
+                <Button
                   className="button3 border-1 button3-changes me-1"
-                  to="#"
+                  onClick={() => navigate("/exercise-issues")}
                   title="Cancel"
                 >
                   <RxCross2
@@ -98,78 +67,19 @@ function NewExerciseIssues() {
                     style={{ width: "15px", height: "15px" }}
                   />
                   Cancel
-                </NavLink>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save & New"
+                </Button>
+                <Button
+                  className="button3 border-1 me-3"
+                  type="submit"
+                  form="exerciseIssueForm"
+                  title="Save"
                 >
-                  Save & New
-                </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
                   <FaCheck
                     className="me-1"
                     style={{ width: "15px", height: "15px" }}
                   />
                   Save
-                </NavLink>
-              </div>
-              <div
-                className="map-action k-widget k-button-group order-1"
-                id="map-action-toggle"
-                role="group"
-              >
-                <span className="dropdown">
-                  <button
-                    className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                    type="button"
-                    id="TollFropdown"
-                    data-bs-toggle="dropdown"
-                    aria-expanded={isToolOpen}
-                    onClick={toggleToolDropDown}
-                  >
-                    <HiMiniWrench className="hw-16" />
-                  </button>
-                  <ul
-                    className={`right-auto dropdown-menu  ${
-                      isToolOpen ? "show" : ""
-                    }`}
-                    aria-labelledby="TollFropdown"
-                  >
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <BiSolidEdit className="hw-15" /> Design this page
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FcSettings className="hw-15" /> Object Definition
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <LuTableOfContents className="hw-15" /> Tab Definition
-                      </a>
-                    </li>
-                    <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FaPrint className="hw-15" /> Print
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FaRegFilePdf className="hw-15" /> PDF
-                      </a>
-                    </li>
-                    <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <LuClock9 className="hw-15" /> Page Load Time
-                      </a>
-                    </li>
-                  </ul>
-                </span>
+                </Button>
               </div>
             </div>
           </div>
@@ -177,70 +87,79 @@ function NewExerciseIssues() {
         <div className="form-content">
           <div className="form-heading">Recovery Issue Information</div>
           <div className="border-1"></div>
-          <Form>
+          <Form id="exerciseIssueForm" onSubmit={handleSubmit}>
             <div className="row pt-4">
               <div className="col-8">
-                {["Exercise Issue"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label} <span className="text-danger">*</span>
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}{" "}
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="exerciseIssue"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Exercise Issue <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="exerciseIssue"
+                    className="form-control"
+                    type="text"
+                    value={formData.exerciseIssue}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="owners"
+                    className="form-label me-2 fs-15 w-40"
                   >
                     Owners
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2 me-1"
-                  >
-                    <FaSearch className="fs-15" />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <FaPlus className="fs-15" />
-                  </button>
+                  </Label>
+                  <Input
+                    name="owners"
+                    className="form-control"
+                    type="text"
+                    value={formData.owners}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
-                {["Description"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label} <span className="text-danger">*</span>
-                    </Label>
-                    <textarea
-                      name="text"
-                      className="form-control"
-                      type="text"
-                    />
-                  </div>
-                ))}{" "}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="description"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Description <span className="text-danger">*</span>
+                  </Label>
+                  <textarea
+                    name="description"
+                    className="form-control"
+                    value={formData.description}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
+            </div>
+            <div className="d-flex justify-content-end">
+              <Button type="submit" color="primary" disabled={isSubmitting}>
+                {isSubmitting ? <Spinner size="sm" /> : "Submit"}
+              </Button>
             </div>
           </Form>
         </div>
       </div>
+
+      {/* ✅ ToastContainer with Better Config */}
+      <ToastContainer 
+        position="top-right" 
+        autoClose={3000} 
+        hideProgressBar={false} 
+        newestOnTop={false} 
+        closeOnClick 
+        rtl={false} 
+        pauseOnFocusLoss 
+        draggable 
+        pauseOnHover 
+      />
     </React.Fragment>
   );
 }

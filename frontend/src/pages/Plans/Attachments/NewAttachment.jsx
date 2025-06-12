@@ -1,244 +1,161 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
-import { HiMiniWrench } from "react-icons/hi2";
-import { BiSolidEdit } from "react-icons/bi";
-import { FcSettings } from "react-icons/fc";
-import { LuTableOfContents, LuClock9 } from "react-icons/lu";
-import { FaPrint, FaRegFilePdf } from "react-icons/fa";
 import { Input, Label, Form } from "reactstrap";
-import { FaCircleQuestion } from "react-icons/fa6";
+import axios from "axios";
 
 function NewAttachment() {
-  const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isTimeZoneOpen, setIsTimeZoneOpen] = useState(false); // Time Zone dropdown
-  const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
+  const navigate = useNavigate(); // For navigation after saving
 
-  const [isHostelOpen, setIsHostelOpen] = useState(false); // Employee Status dropdown
+  // State variables for form fields
+  const [order, setOrder] = useState("");
+  const [attachmentName, setAttachmentName] = useState("");
+  const [includeInPlan, setIncludeInPlan] = useState(false);
+  const [isFromTemplate, setIsFromTemplate] = useState(false);
+  const [documentFile, setDocumentFile] = useState(null);
+  const [description, setDescription] = useState("");
 
-  const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "No", "Yes"];
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const [selectedHostel, setSelectedHostel] = useState("-- Please select --");
-  const hostelOptions = ["-- Please select --", "No", "No"];
-  const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
-  const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
+    // Create form data object
+    const formData = new FormData();
+    formData.append("order", order);
+    formData.append("attachmentName", attachmentName);
+    formData.append("includeInPlan", includeInPlan);
+    formData.append("isFromTemplate", isFromTemplate);
+    formData.append("documentFile", documentFile);
+    formData.append("description", description);
 
-  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
-  const handleSelectStatus = (option) => {
-    setSelectedStatus(option);
-    setIsStatusOpen(false);
+    try {
+      // Send POST request to the backend
+      await axios.post("http://localhost:8000/api/v1/attachments/create", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      alert("Attachment created successfully!");
+      navigate("/attachments"); // Navigate to the attachments list page
+    } catch (error) {
+      console.error("Error creating attachment:", error.message);
+      alert("Failed to create attachment.");
+    }
   };
-  const handleSelecthostel = (option) => {
-    setSelectedHostel(option);
-    setIsHostelOpen(false);
-  };
+
   return (
     <React.Fragment>
       <Helmet>
         <title>New Attachment Page | TRST</title>
-        <meta name="description" content="This is the home page description" />
-        <meta name="keywords" content="home, react, meta tags" />
       </Helmet>
       <div className="page-content">
         <div className="main-content1">
           <div className="d-flex align-items-center justify-content-between">
             <div className="header-text">Attachment: New Attachment</div>
             <div className="d-flex align-items-center justify-content-end">
-              <div>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Cancel"
-                >
-                  <RxCross2
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                  />
-                  Cancel
-                </NavLink>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save & New"
-                >
-                  Save & New
-                </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
-                  <FaCheck
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                    title="Save"
-                  />
-                  Save
-                </NavLink>
-              </div>
-              <div
-                className="map-action k-widget k-button-group order-1"
-                id="map-action-toggle"
-                role="group"
-              >
-                <span className="dropdown">
-                  <button
-                    className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                    type="button"
-                    id="TollFropdown"
-                    data-bs-toggle="dropdown"
-                    aria-expanded={isToolOpen}
-                    onClick={toggleToolDropDown}
-                  >
-                    <HiMiniWrench className="hw-16" />
-                  </button>
-                  <ul
-                    className={`right-auto dropdown-menu  ${
-                      isToolOpen ? "show" : ""
-                    }`}
-                    aria-labelledby="TollFropdown"
-                  >
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <BiSolidEdit className="hw-15" /> Design this page
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FcSettings className="hw-15" /> Object Definition
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <LuTableOfContents className="hw-15" /> Tab Definition
-                      </a>
-                    </li>
-                    <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FaPrint className="hw-15" /> Print
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FaRegFilePdf className="hw-15" /> PDF
-                      </a>
-                    </li>
-                    <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <LuClock9 className="hw-15" /> Page Load Time
-                      </a>
-                    </li>
-                  </ul>
-                </span>
-              </div>
+              <NavLink className="button3 border-1 button3-changes me-1" to="/attachments" title="Cancel">
+                <RxCross2 className="me-1" style={{ width: "15px", height: "15px" }} />
+                Cancel
+              </NavLink>
+              <button className="button3 border-1 me-3" onClick={handleSubmit} title="Save">
+                <FaCheck className="me-1" style={{ width: "15px", height: "15px" }} />
+                Save
+              </button>
             </div>
           </div>
         </div>
         <div className="form-content">
           <div className="form-heading">Attachment Information</div>
           <div className="border-1"></div>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <div className="row pt-4">
               <div className="col-8">
-                {["Order"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input
-                      name="number"
-                      className="form-control"
-                      type="number"
-                    />
-                  </div>
-                ))}
-                {["Attachment Name"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                      <span class="text-danger">*</span>
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
-                {["Include in Plan"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center " key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-5 fs-15 w-29 d-flex align-items-center justify-content-between"
-                    >
-                      {label} <FaCircleQuestion className="me-2 hw-20" />
-                    </Label>
-                    <Input
-                      name="checkbox"
-                      className="form-control"
-                      type="checkbox"
-                    />
-                  </div>
-                ))}
-                {["Is from Template?"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-5 fs-15 w-29"
-                    >
-                      {label}
-                    </Label>
-                    <Input
-                      name="checkbox"
-                      className="form-control"
-                      type="checkbox"
-                    />
-                  </div>
-                ))}
+                <div className="mb-3 d-flex  flex-column">
+                  <Label htmlFor="order" className="form-label me-2 fs-15 w-40">
+                    Order
+                  </Label>
+                  <Input
+                    name="order"
+                    className="form-control"
+                    type="number"
+                    value={order}
+                    onChange={(e) => setOrder(e.target.value)}
+                    required
+                  />
+                  {/* Validation Message - Shows only when input is empty or non-numeric */}
+  {!order || isNaN(order) ? (
+    <span className="text-danger mt-1">Please enter a numeric value</span>
+  ) : null}
+                </div>
+                
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="attachmentName" className="form-label me-2 fs-15 w-40">
+                    Attachment Name <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="attachmentName"
+                    className="form-control"
+                    type="text"
+                    value={attachmentName}
+                    onChange={(e) => setAttachmentName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="includeInPlan" className="form-label me-5 fs-15 w-29">
+                    Include in Plan
+                  </Label>
+                  <Input
+                    name="includeInPlan"
+                    className="form-control"
+                    type="checkbox"
+                    checked={includeInPlan}
+                    onChange={(e) => setIncludeInPlan(e.target.checked)}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="isFromTemplate" className="form-label me-5 fs-15 w-29">
+                    Is from Template?
+                  </Label>
+                  <Input
+                    name="isFromTemplate"
+                    className="form-control"
+                    type="checkbox"
+                    checked={isFromTemplate}
+                    onChange={(e) => setIsFromTemplate(e.target.checked)}
+                  />
+                </div>
               </div>
             </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Document Information
-          </div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-8">
-                {["Document File"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
+            <div className="form-content">
+              <div className="form-heading">Document Information</div>
+              <div className="border-1"></div>
+              <div className="row pt-4">
+                <div className="col-8">
+                  <div className="mb-3 d-flex align-items-center">
+                    <Label htmlFor="documentFile" className="form-label me-2 fs-15 w-40">
+                      Document File
                     </Label>
                     <Input
-                      name="file"
+                      name="documentFile"
                       className="form-control"
                       type="file"
+                      onChange={(e) => setDocumentFile(e.target.files[0])}
+                      required
                     />
                   </div>
-                ))}
-                {["Description"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
+                  <div className="mb-3 d-flex align-items-center">
+                    <Label htmlFor="description" className="form-label me-2 fs-15 w-40">
+                      Description
                     </Label>
                     <textarea
-                      name="text"
+                      name="description"
                       className="form-control"
-                      type="text"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                     />
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </Form>

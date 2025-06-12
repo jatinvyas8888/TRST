@@ -1,8 +1,9 @@
+// backend/src/models/database.model.js
 import mongoose from 'mongoose';
 
 const databaseSchema = new mongoose.Schema(
   {
-    //database information
+    // Database information
     databaseId: {
       type: String,
     },
@@ -10,16 +11,19 @@ const databaseSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    databaseVesion: {
+    databaseVersion: {
       type: String,
     },
-    databaseOwner: {
+    databaseOwner:
+      [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default:null,
+      }],
+    databaseDescription: {
       type: String,
     },
-    databaseIdDescription: {
-      type: String,
-    },
-    EndPointAddress: {
+    endPointAddress: {
       type: String,
     },
     databaseType: {
@@ -33,21 +37,27 @@ const databaseSchema = new mongoose.Schema(
     },
     rto: {
       type: String,
+      default:null
     },
-    //dependencies
-    application: {
+    // Dependencies
+    applications: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Application',
-    },
-    hardware: {
+      default:null,
+    }],
+    hardware: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Hardware',
-    },
+      default:null,
+    }],
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+      default:null,
     },
   },
   { timestamps: true }
 );
-export default mongoose.model('Database', databaseSchema);
+
+const Database = mongoose.model('Database', databaseSchema);
+export default Database;

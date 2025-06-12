@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { Form, Label, Button, Spinner, Alert, Input } from "reactstrap";
 import { NavLink } from "react-router-dom";
-import { FaCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { HiMiniWrench } from "react-icons/hi2";
 import { BiSolidEdit } from "react-icons/bi";
@@ -12,102 +12,91 @@ import { IoIosSearch } from "react-icons/io";
 import { FaCircleQuestion } from "react-icons/fa6";
 import { SlCalender } from "react-icons/sl";
 import { BiSearchAlt2 } from "react-icons/bi";
-import {
-  Card,
-  CardBody,
-  Col,
-  Container,
-  Input,
-  Label,
-  Row,
-  Button,
-  Form,
-  FormFeedback,
-  Alert,
-  Spinner,
-} from "reactstrap";
-import { TiPlus } from "react-icons/ti";
+import { FaCheck } from "react-icons/fa";
 
-function NewThreat() {
-  const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
-  const [isHostelOpen, setIsHostelOpen] = useState(false); // Employee Status dropdown
+function NewRisk() {
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isToolOpen, setIsToolOpen] = useState(false); // State for tool dropdown
 
-  const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "No", "Yes"];
+  // **Form State**
+  const [formData, setFormData] = useState({
+    threat: "",
+    threatType: "",
+    weight: "",
+    likelihood: "",
+    impact: "",
+    mitigatingControls: "",
+    controlDescription: "",
+  });
 
-  const [selectedHostel, setSelectedHostel] = useState("-- Please select --");
-  const hostelOptions = ["-- Please select --", "No", "No"];
-  const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
-  const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
+  // **Dropdown Options**
+  const threatTypeOptions = ["Man-Made", "Natural", "Political", "Technology/Infrastructure"];
+  const likelihoodOptions = ["High", "Moderate", "Low", "Very Low", "Not Applicable"];
+  const impactOptions = ["Catastrophic", "Significant", "Moderate", "Minor", "No Impact"];
+  const mitigatingControlsOptions = ["Complete", "Nearly Complete", "Significant", "Moderate", "Minor", "None"];
 
-  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
-  const handleSelectStatus = (option) => {
-    setSelectedStatus(option);
-    setIsStatusOpen(false);
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  const handleSelecthostel = (option) => {
-    setSelectedHostel(option);
-    setIsHostelOpen(false);
-  };
-  // State variables for new dropdowns
-  const [isRTOpen, setIsRTOpen] = useState(false);
-  const [isDROpen, setIsDROpen] = useState(false);
-  const [isRPOpen, setIsRPOpen] = useState(false);
 
-  const [selectedRTO, setSelectedRTO] = useState("-- Please select --");
-  const [selectedDR, setSelectedDR] = useState("-- Please select --");
-  const [selectedRPO, setSelectedRPO] = useState("-- Please select --");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
 
-  const RTOOptions = ["-- Please select --", "1 Hour", "4 Hours", "24 Hours"];
-  const DROptions = [
-    "-- Please select --",
-    "Cloud-Based",
-    "On-Premise",
-    "Hybrid",
-  ];
-  const RPOOptions = [
-    "-- Please select --",
-    "0 Minutes",
-    "1 Hour",
-    "4 Hours",
-    "24 Hours",
-  ];
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/threats/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-  // Toggle functions
-  const toggleRTODropdown = () => setIsRTOpen((prev) => !prev);
-  const toggleDRDropdown = () => setIsDROpen((prev) => !prev);
-  const toggleRPODropdown = () => setIsRPOpen((prev) => !prev);
+      const result = await response.json();
 
-  // Selection handlers
-  const handleSelectRTO = (option) => {
-    setSelectedRTO(option);
-    setIsRTOpen(false);
+      if (response.ok) {
+        setSuccessMessage("Threat created successfully!");
+        setFormData({
+          threat: "",
+          threatType: "",
+          weight: "",
+          likelihood: "",
+          impact: "",
+          mitigatingControls: "",
+          controlDescription: "",
+        });
+      } else {
+        setErrorMessage(result.message || "Error creating threat!");
+      }
+    } catch (error) {
+      setErrorMessage("Network error! Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleSelectDR = (option) => {
-    setSelectedDR(option);
-    setIsDROpen(false);
+
+  const toggleToolDropDown = () => {
+    setIsToolOpen(!isToolOpen);
   };
-  const handleSelectRPO = (option) => {
-    setSelectedRPO(option);
-    setIsRPOpen(false);
-  };
+
   return (
     <React.Fragment>
       <Helmet>
-        <title>New Threat Page | TRST</title>
-        <meta name="description" content="This is the home page description" />
-        <meta name="keywords" content="home, react, meta tags" />
+        <title>New Risk Page | TRST</title>
       </Helmet>
       <div className="page-content">
         <div className="main-content1">
           <div className="d-flex align-items-center justify-content-between">
-            <div className="header-text">Threat : New Threat </div>
+            <div className="header-text">
+              Risk/Threat Assessment: New Risk/Threat Assessment
+            </div>
             <div className="d-flex align-items-center justify-content-end">
               <div>
                 <NavLink
                   className="button3 border-1 button3-changes me-1"
-                  to="#"
+                  to="/risk-assessments"
                   title="Cancel"
                 >
                   <RxCross2
@@ -123,13 +112,17 @@ function NewThreat() {
                 >
                   Save & New
                 </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
+                <Button
+                  className="button3 border-1 me-3"
+                  title="Save"
+                  onClick={handleSubmit}
+                >
                   <FaCheck
                     className="me-1"
                     style={{ width: "15px", height: "15px" }}
                   />
                   Save
-                </NavLink>
+                </Button>
               </div>
               <div
                 className="map-action k-widget k-button-group order-1"
@@ -192,249 +185,58 @@ function NewThreat() {
           </div>
         </div>
         <div className="form-content">
-          <div className="form-heading">Threat Information
-          </div>
-          <div className="border-1"></div>
-          <Form>
+          <div className="form-heading">Threat Information</div>
+          {successMessage && <Alert color="success">{successMessage}</Alert>}
+          {errorMessage && <Alert color="danger">{errorMessage}</Alert>}
+          <Form onSubmit={handleSubmit}>
             <div className="row pt-4">
               <div className="col-8">
-                {["Threat"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}{" "}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="applicationType"
-                    className="form-label me-2 fs-15 w-40"
-                  >
-                   Threat Type
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleStatusDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedStatus}</span>
-                      <svg
-                        className={`ms-2 ${isStatusOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isStatusOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {statusOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectStatus(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>{" "}
-                {["Weight"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input
-                      name="text"
-                      className="form-control"
-                      type="text"
-                    />
-                  </div>
-                ))}{" "}
+                <Label>Threat</Label>
+                <Input type="text" name="threat" value={formData.threat} onChange={handleChange} required />
+
+                <Label>Threat Type</Label>
+                <Input type="select" name="threatType" value={formData.threatType} onChange={handleChange} required>
+                  <option value="">-- Please select --</option>
+                  {threatTypeOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </Input>
+
+                <Label>Weight</Label>
+                <Input type="number" name="weight" value={formData.weight} onChange={handleChange} required />
+
+                <Label>Likelihood</Label>
+                <Input type="select" name="likelihood" value={formData.likelihood} onChange={handleChange} required>
+                  <option value="">-- Please select --</option>
+                  {likelihoodOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </Input>
+
+                <Label>Impact</Label>
+                <Input type="select" name="impact" value={formData.impact} onChange={handleChange} required>
+                  <option value="">-- Please select --</option>
+                  {impactOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </Input>
+
+                <Label>Mitigating Controls</Label>
+                <Input type="select" name="mitigatingControls" value={formData.mitigatingControls} onChange={handleChange} required>
+                  <option value="">-- Please select --</option>
+                  {mitigatingControlsOptions.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </Input>
+
+                <Label>Control Description</Label>
+                <Input type="textarea" name="controlDescription" value={formData.controlDescription} onChange={handleChange} required />
               </div>
             </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Threat Assessment
-          </div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-8">
-                {/* Likelihood Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="rto" className="form-label me-2 fs-15 w-40">
-                    Likelihood
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleRTODropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedRTO}</span>
-                      <svg
-                        className={`ms-2 ${isRTOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isRTOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {RTOOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectRTO(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {/* Impact Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="rpo" className="form-label me-2 fs-15 w-40">
-                    Impact
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleRPODropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedRPO}</span>
-                      <svg
-                        className={`ms-2 ${isRPOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isRPOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {RPOOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectRPO(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>  {/* Mitigating Controls Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="drStrategy"
-                    className="form-label me-2 fs-15 w-40"
-                  >
-                  Mitigating Controls
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleDRDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedDR}</span>
-                      <svg
-                        className={`ms-2 ${isDROpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isDROpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {DROptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectDR(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div> {["Control Description"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <textarea name="text" className="form-control" type="text" />
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* <Button type="submit" color="primary" disabled={loading}>
+              {loading ? <Spinner size="sm" /> : "Create Threat"}
+            </Button> */}
+           
           </Form>
         </div>
       </div>
@@ -442,4 +244,4 @@ function NewThreat() {
   );
 }
 
-export default NewThreat;
+export default NewRisk;

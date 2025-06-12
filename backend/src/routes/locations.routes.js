@@ -15,10 +15,11 @@ router.route("/create").post(verifyJWT, createLocation);
 
 // Get all locations with filtering and pagination
 router.route("/all").get(verifyJWT, getAllLocations);
+router.route("/:id").get( getLocationById);
 
 // Handle operations on specific location by ID
 router.route("/:id")
-    .get(verifyJWT, getLocationById)      // Get single location
+    // .get(verifyJWT, getLocationById)      // Get single location
     .patch(verifyJWT, updateLocation)     // Update location
     .delete(verifyJWT, deleteLocation);   // Delete location
 

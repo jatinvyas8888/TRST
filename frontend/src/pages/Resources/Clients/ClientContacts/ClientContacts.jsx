@@ -17,7 +17,7 @@ import { RiDeleteBin6Line, RiEdit2Line } from "react-icons/ri";
 import axios from "axios";
 import LoadingSpinner from "../../../../Components/Common/LoadingSpinner/LoadingSpinner";
 import "./ClientContacts.css";
-// import ClientModal from '../../../../Components/modals/Client.jsx';
+import Toastify from "toastify-js";
 
 function ClientContacts() {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,17 +35,18 @@ function ClientContacts() {
     { id: 'actions', label: 'Actions', width: 100, draggable: false },
     { id: 'clientContacts', label: 'Client Contacts', width: 200, draggable: true },
     { id: 'title', label: 'Title', width: 250, draggable: true },
-    { id: 'emailAddress', label: ' Email Address', width: 200, draggable: true },
+    { id: 'emailAddress', label: 'Email Address', width: 200, draggable: true },
     { id: 'workMobilePhone', label: 'Work Mobile Phone', width: 200, draggable: true },
     { id: 'workPhone', label: 'Work Phone', width: 150, draggable: true },
     { id: 'alternatePhone', label: 'Alternate Phone', width: 150, draggable: true },
   ]);
   const [visibleColumns, setVisibleColumns] = useState({
-    name: true,
-    email: true,
-    phone: true,
-    client: true,
-    createdAt: true
+    clientContacts: true,
+    title: true,
+    emailAddress: true,
+    workMobilePhone: true,
+    workPhone: true,
+    alternatePhone: true
   });
   const navigate = useNavigate();
   const [columnWidths, setColumnWidths] = useState({});
@@ -54,20 +55,27 @@ function ClientContacts() {
   const [selectedClients, setSelectedClients] = useState([]);
 
   // Fetch contacts
+  const fetchContacts = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/api/v1/client-contacts/all", {
+        withCredentials: true
+      });
+      setContacts(response.data);
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        const response = await axios.get("http://localhost:8000/api/v1/client-contacts/all", {
-          withCredentials: true
-        });
-        setContacts(response.data);
-      } catch (error) {
-        console.error("Error fetching contacts:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchContacts();
+    // Initialize visible columns based on the columns state
+    const initialVisibleColumns = {};
+    columns.forEach(column => {
+      initialVisibleColumns[column.id] = true;
+    });
+    setVisibleColumns(initialVisibleColumns);
   }, []);
 
   // Column handlers
@@ -77,11 +85,12 @@ function ClientContacts() {
 
   const resetColumns = () => {
     setVisibleColumns({
-      name: true,
-      email: true,
-      phone: true,
-      client: true,
-      createdAt: true
+      clientContacts: true,
+      title: true,
+      emailAddress: true,
+      workMobilePhone: true,
+      workPhone: true,
+      alternatePhone: true
     });
   };
 
@@ -217,6 +226,56 @@ function ClientContacts() {
   const handleEditClick = (contactId) => {
     navigate(`/client-contacts/edit/${contactId}`);
   };
+  const handleDeleteClick = async (contactId) => {
+    if (window.confirm("Are you sure you want to delete this client?")) {
+      try {
+        await fetch(`http://localhost:8000/api/v1/client-contacts/${contactId}`, {
+          method: "DELETE",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        fetchContacts(); // Refresh the list after deletion
+      } catch (error) {
+        console.error("Error deleting client:", error);
+      }
+    }
+  };
+
+  const handleRefresh = async () => {
+    try {
+      const button = document.querySelector('.refresh-button');
+      if (button) {
+        button.style.transform = 'rotate(360deg)';
+      }
+      await fetchContacts();
+      Toastify({
+        text: "Data refreshed successfully!",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+          background: "#28a745",
+        },
+      }).showToast();
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      Toastify({
+        text: "Error refreshing data",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+          background: "#dc3545",
+        },
+      }).showToast();
+    }
+  };
+
+  const ColumnDropDown = () => {
+    setIsColumnOpen(!isColumnOpen);
+  };
 
   return (
     <React.Fragment>
@@ -346,17 +405,18 @@ function ClientContacts() {
               <button className="button border-1 ms-1">
                 <FaHome className="hw-15" />
               </button>
-              <button className="button border-1 ms-1">
+              <button 
+                className="button border-1 ms-1 refresh-button"
+                onClick={handleRefresh}
+                title="Refresh data"
+              >
                 <LuRefreshCw className="hw-18" />
               </button>
               <span className="dropdown">
                 <button
                   className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
                   type="button"
-                  id="TollFropdown"
-                  data-bs-toggle="dropdown"
-                  aria-expanded={isColumnOpen}
-                  onClick={() => setIsColumnOpen(!isColumnOpen)}
+                  onClick={ColumnDropDown}
                 >
                   <FaTableColumns className="hw-14" />
                 </button>
@@ -369,45 +429,22 @@ function ClientContacts() {
                   }}
                 >
                   <li className="align-items-center justify-content-between d-flex me-1 ms-1">
-                    <span className="fw-bold">Columns</span>{" "}
-                    <a className="blue">Reset</a>
+                    <span className="fw-bold">Columns</span>
+                    <a className="blue" onClick={resetColumns} style={{ cursor: 'pointer' }}>Reset</a>
                   </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Client Contacts{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Title{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Email Address
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Work Mobile Phone
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Work Phone
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Alternate Phone
-                    </label>
-                  </li>
+                  {columns.filter(col => col.draggable).map(column => (
+                    <li key={column.id} className="dropdown-checkbox">
+                      <label>
+                        <input
+                          type="checkbox"
+                          className="ms-2 me-1"
+                          checked={visibleColumns[column.id]}
+                          onChange={() => handleColumnToggle(column.id)}
+                        />
+                        {column.label}
+                      </label>
+                    </li>
+                  ))}
                 </ul>
               </span>
               <button className="button border-1 ms-1">
@@ -431,67 +468,118 @@ function ClientContacts() {
             </div>
           </div>
         </div>
-      <div className="border-1 mt-2 mb-2"></div>
+        <div className="border-1 mt-2 mb-2"></div>
       
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <div className="table-responsive">
-
-          <table className="table table-hover">
-            <thead>
-              <tr>
-                <th style={{ width: '40px' }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedContacts.length === currentContacts.length && currentContacts.length > 0}
-                    onChange={handleSelectAll}
-                    className="form-check-input"
-                  />
-                </th>
-                <th style={{ width: '100px' }} className="text-center">Actions</th>
-                {columns
-                  .filter(col => col.id !== 'select' && col.id !== 'actions')
-                  .map(column => (
-                    <th 
-                      key={column.id}
-                      style={{ 
-                        width: columnWidths[column.id] || column.width,
-                        position: 'relative'
+        {loading ? (
+          <LoadingSpinner />
+        ) : (
+          <div className="table-responsive">
+              {/* Pagination */}
+              {filteredContacts.length > 4 && (
+              <div className="pagination-wrapper">
+                <div className="d-flex align-items-center gap-3 p-2 justify-content-between">
+                  <div className="d-flex align-items-center">
+                    <button 
+                      className="btn btn-sm btn-outline-secondary" 
+                      onClick={handleFirstPage}
+                      disabled={currentPage === 1}
+                    >{"<<"}</button>
+                    <button 
+                      className="btn btn-sm btn-outline-secondary" 
+                      onClick={handlePrevPage}
+                      disabled={currentPage === 1}
+                    >{"<"}</button>
+                    <span className="mx-2">Page</span>
+                    <input
+                      type="text"
+                      className="form-control page-input"
+                      value={currentPage}
+                      onChange={(e) => handlePageChange(Number(e.target.value))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handlePageChange(Number(e.target.value));
+                        }
                       }}
-                      draggable={column.draggable}
-                      onDragStart={(e) => handleDragStart(e, column)}
-                      onDragOver={(e) => handleDragOver(e)}
-                      onDrop={(e) => handleDrop(e, column)}
-                      onDragEnd={handleDragEnd}
-                    >
-                      <div className="d-flex align-items-center justify-content-between">
-                        <span>{column.label}</span>
-                        {column.id !== 'select' && column.id !== 'actions' && (
-                          <div className="d-flex align-items-center">
-                            <div
-                              className="resize-handle"
-                              onMouseDown={(e) => handleResizeStart(e, column.id)}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </th>
-                  ))}
-              </tr>
-            </thead>
-            <tbody>
-              {currentContacts.map((contact) => (
-                <tr key={contact._id} className={selectedContacts.includes(contact._id) ? 'selected-row' : ''}>
-                  <td>
+                      onBlur={(e) => {
+                        const page = Number(e.target.value);
+                        if (page > 0 && page <= Math.ceil(filteredContacts.length / itemsPerPage)) {
+                          handlePageChange(page);
+                        }
+                      }}
+                    />
+                    <span className="mx-2">of {Math.ceil(filteredContacts.length / itemsPerPage)}</span>
+                    <button 
+                      className="btn btn-sm btn-outline-secondary" 
+                      onClick={handleNextPage}
+                      disabled={currentPage === Math.ceil(filteredContacts.length / itemsPerPage)}
+                    >{">"}</button>
+                    <button 
+                      className="btn btn-sm btn-outline-secondary" 
+                      onClick={handleLastPage}
+                      disabled={currentPage === Math.ceil(filteredContacts.length / itemsPerPage)}
+                    >{">>"}</button>
+                  </div>
+                  <span className="ms-2 fw-bold">
+                    {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, filteredContacts.length)} of {filteredContacts.length} items
+                  </span>
+                </div>
+              </div>
+            )}
+            <table className="table table-hover">
+              <thead>
+                <tr>
+                  <th style={{ width: '40px' }}>
                     <input
                       type="checkbox"
-                      checked={selectedContacts.includes(contact._id)}
-                      onChange={() => handleSelect(contact._id)}
+                      checked={selectedContacts.length === currentContacts.length && currentContacts.length > 0}
+                      onChange={handleSelectAll}
                       className="form-check-input"
                     />
-                  </td>
-                  <td className="text-center">
+                  </th>
+                  <th style={{ width: '100px' }} className="text-center">Actions</th>
+                  {columns
+                    .filter(col => col.id !== 'select' && col.id !== 'actions' && visibleColumns[col.id])
+                    .map(column => (
+                      <th 
+                        key={column.id}
+                        style={{ 
+                          width: columnWidths[column.id] || column.width,
+                          position: 'relative'
+                        }}
+                        draggable={column.draggable}
+                        onDragStart={(e) => handleDragStart(e, column)}
+                        onDragOver={(e) => handleDragOver(e)}
+                        onDrop={(e) => handleDrop(e, column)}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <div className="d-flex align-items-center justify-content-between">
+                          <span>{column.label}</span>
+                          {column.id !== 'select' && column.id !== 'actions' && (
+                            <div className="d-flex align-items-center">
+                              <div
+                                className="resize-handle"
+                                onMouseDown={(e) => handleResizeStart(e, column.id)}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                </tr>
+              </thead>
+              <tbody>
+                {currentContacts.map((contact) => (
+                  <tr key={contact._id} className={selectedContacts.includes(contact._id) ? 'selected-row' : ''}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedContacts.includes(contact._id)}
+                        onChange={() => handleSelect(contact._id)}
+                        className="form-check-input"
+                      />
+                    </td>
+                    <td className="text-center">
                       <div className="d-flex align-items-center gap-2 justify-content-center">
                         <button
                           className="btn btn-sm btn-link p-0"
@@ -501,82 +589,34 @@ function ClientContacts() {
                         </button>
                         <button
                           className="btn btn-sm btn-link p-0"
+                          onClick={() => handleDelete(contact._id)}
                           title="Delete"
                         >
                           <RiDeleteBin6Line className="text-danger" size={18} />
                         </button>
                       </div>
                     </td>
-                  {columns.filter(col => col.id !== 'select' && col.id !== 'actions').map(column => (
-                    <td key={column.id}>
-                      {column.id === 'clientContacts' && `${contact.firstName} ${contact.lastName}`}
-                      {column.id === 'title' && contact.title}
-                      {column.id === 'emailAddress' && contact.emailAddress}
-                      {column.id === 'workMobilePhone' && contact.workMobilePhone}
-                      {column.id === 'workPhone' && contact.workPhone}
-                      {column.id === 'alternatePhone' && contact.alternatePhone}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    {columns.filter(col => col.id !== 'select' && col.id !== 'actions' && visibleColumns[col.id]).map(column => (
+                      <td key={column.id}>
+                        {column.id === 'clientContacts' && `${contact.firstName} ${contact.lastName}`}
+                        {column.id === 'title' && contact.title}
+                        {column.id === 'emailAddress' && contact.emailAddress}
+                        {column.id === 'workMobilePhone' && contact.workMobilePhone}
+                        {column.id === 'workPhone' && contact.workPhone}
+                        {column.id === 'alternatePhone' && contact.alternatePhone}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-          {/* Pagination */}
-          {filteredContacts.length > 10 && (
-            <div className="pagination-wrapper">
-              <div className="d-flex align-items-center gap-3 p-2 justify-content-between">
-                <div className="d-flex align-items-center">
-                  <button 
-                    className="btn btn-sm btn-outline-secondary" 
-                    onClick={handleFirstPage}
-                    disabled={currentPage === 1}
-                  >{"<<"}</button>
-                  <button 
-                    className="btn btn-sm btn-outline-secondary" 
-                    onClick={handlePrevPage}
-                    disabled={currentPage === 1}
-                  >{"<"}</button>
-                  <span className="mx-2">Page</span>
-                  <input
-                    type="text"
-                    className="form-control page-input"
-                    value={currentPage}
-                    onChange={(e) => handlePageChange(Number(e.target.value))}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handlePageChange(Number(e.target.value));
-                      }
-                    }}
-                    onBlur={(e) => {
-                      const page = Number(e.target.value);
-                      if (page > 0 && page <= Math.ceil(filteredContacts.length / itemsPerPage)) {
-                        handlePageChange(page);
-                      }
-                    }}
-                  />
-                  <span className="mx-2">of {Math.ceil(filteredContacts.length / itemsPerPage)}</span>
-                  <button 
-                    className="btn btn-sm btn-outline-secondary" 
-                    onClick={handleNextPage}
-                    disabled={currentPage === Math.ceil(filteredContacts.length / itemsPerPage)}
-                  >{">"}</button>
-                  <button 
-                    className="btn btn-sm btn-outline-secondary" 
-                    onClick={handleLastPage}
-                    disabled={currentPage === Math.ceil(filteredContacts.length / itemsPerPage)}
-                  >{">>"}</button>
-                </div>
-                <span className="ms-2 fw-bold">
-                  {indexOfFirstRow + 1} - {Math.min(indexOfLastRow, filteredContacts.length)} of {filteredContacts.length} items
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+          
+          </div>
+          
+        )}
       </div>
+      
     </React.Fragment>
   );
 }

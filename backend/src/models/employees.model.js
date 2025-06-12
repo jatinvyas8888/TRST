@@ -57,6 +57,10 @@ const employeeSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "BusinessEntity"
     }],
+    businessEntities: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "BusinessEntity" // Reference to BusinessEntity model
+      }],
     departmentNames: [{
         type: String
     }],
@@ -89,6 +93,7 @@ const employeeSchema = new mongoose.Schema({
     personalEmailAddress: {
         type: String
     },
+    
     updatedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

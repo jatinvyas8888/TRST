@@ -19,6 +19,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import "./Employees.css";
 
+
 function Employees() {
   const [isOpen, setIsOpen] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
@@ -387,7 +388,9 @@ function Employees() {
       }
     }
   };
-
+const handleView = (employeeId) => {
+  navigate(`/employees/view/${employeeId}`);
+};
   return (
     <React.Fragment>
       <Helmet>
@@ -800,7 +803,11 @@ function Employees() {
                     {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
                       <td key={`${employee._id}-${column.id}`}>
                         {column.id === 'id' && employee._id}
-                        {column.id === 'employee' && `${employee.firstName} ${employee.lastName}`}
+                        {column.id === 'firstName' && employee.firstName}
+                        <NavLink to={`/employees/view/${employee._id}`}>
+  {column.id === 'employee' && `${employee.firstName} ${employee.lastName}`}
+</NavLink>
+                        
                         {column.id === 'firstName' && employee.firstName}
                         {column.id === 'lastName' && employee.lastName}
                         {column.id === 'employeeID' && employee.employeeID}

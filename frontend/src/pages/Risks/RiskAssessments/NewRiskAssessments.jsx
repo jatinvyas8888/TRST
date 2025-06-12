@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Helmet } from "react-helmet";
 import { NavLink } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
@@ -27,6 +27,8 @@ import {
   Spinner,
 } from "reactstrap";
 import { TiPlus } from "react-icons/ti";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 function NewRiskAssessments() {
   const [isToolOpen, setIsToolOpen] = useState(false);
@@ -50,48 +52,67 @@ function NewRiskAssessments() {
     setSelectedHostel(option);
     setIsHostelOpen(false);
   };
-  // State variables for new dropdowns
-  const [isRTOpen, setIsRTOpen] = useState(false);
-  const [isDROpen, setIsDROpen] = useState(false);
-  const [isRPOpen, setIsRPOpen] = useState(false);
 
-  const [selectedRTO, setSelectedRTO] = useState("-- Please select --");
-  const [selectedDR, setSelectedDR] = useState("-- Please select --");
-  const [selectedRPO, setSelectedRPO] = useState("-- Please select --");
+  // State for form data
+  const [formData, setFormData] = useState({
+    assessmentName: "",
+    editors: "",
+    locations: "",
+    assessmentDate: null,
+    facilitator: "",
+    respondents: "",
+  });
 
-  const RTOOptions = ["-- Please select --", "1 Hour", "4 Hours", "24 Hours"];
-  const DROptions = [
-    "-- Please select --",
-    "Cloud-Based",
-    "On-Premise",
-    "Hybrid",
-  ];
-  const RPOOptions = [
-    "-- Please select --",
-    "0 Minutes",
-    "1 Hour",
-    "4 Hours",
-    "24 Hours",
-  ];
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Toggle functions
-  const toggleRTODropdown = () => setIsRTOpen((prev) => !prev);
-  const toggleDRDropdown = () => setIsDROpen((prev) => !prev);
-  const toggleRPODropdown = () => setIsRPOpen((prev) => !prev);
-
-  // Selection handlers
-  const handleSelectRTO = (option) => {
-    setSelectedRTO(option);
-    setIsRTOpen(false);
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  const handleSelectDR = (option) => {
-    setSelectedDR(option);
-    setIsDROpen(false);
+
+  const handleDateChange = (date) => {
+    setFormData({ ...formData, assessmentDate: date });
   };
-  const handleSelectRPO = (option) => {
-    setSelectedRPO(option);
-    setIsRPOpen(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/risk-assessments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage("Risk Assessment created successfully!");
+        setFormData({
+          assessmentName: "",
+          editors: "",
+          locations: "",
+          assessmentDate: null,
+          facilitator: "",
+          respondents: "",
+        });
+      } else {
+        setErrorMessage(result.message || "Error creating risk assessment!");
+      }
+    } catch (error) {
+      setErrorMessage("Network error! Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Reference for DatePicker
+  const datePickerRef = useRef(null);
+
   return (
     <React.Fragment>
       <Helmet>
@@ -109,7 +130,7 @@ function NewRiskAssessments() {
               <div>
                 <NavLink
                   className="button3 border-1 button3-changes me-1"
-                  to="#"
+                  to="/risk-assessments"
                   title="Cancel"
                 >
                   <RxCross2
@@ -125,13 +146,17 @@ function NewRiskAssessments() {
                 >
                   Save & New
                 </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
+                <Button
+                  className="button3 border-1 me-3"
+                  title="Save"
+                  onClick={handleSubmit}
+                >
                   <FaCheck
                     className="me-1"
                     style={{ width: "15px", height: "15px" }}
                   />
                   Save
-                </NavLink>
+                </Button>
               </div>
               <div
                 className="map-action k-widget k-button-group order-1"
@@ -196,20 +221,26 @@ function NewRiskAssessments() {
         <div className="form-content">
           <div className="form-heading">Risk/Threat Assessment Information</div>
           <div className="border-1"></div>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <div className="row pt-4">
               <div className="col-6">
-                {["Risk/Threat Assessment"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}{" "}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="assessmentName"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Risk/Threat Assessment
+                    <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="riskThreatAssessment"
+                    className="form-control"
+                    type="text"
+                    value={formData.riskThreatAssessment}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
                 <div className="mb-3 d-flex">
                   <label
                     htmlFor="editors"
@@ -218,16 +249,14 @@ function NewRiskAssessments() {
                     Editor(s)
                     <span className="text-danger">*</span>
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                  <Input
+                    name="editors"
+                    className="form-control"
+                    type="text"
+                    value={formData.editors}
+                    onChange={handleChange}
+                    required
+                  />
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -237,21 +266,19 @@ function NewRiskAssessments() {
                 </div>
                 <div className="mb-3 d-flex">
                   <label
-                    htmlFor="editors"
+                    htmlFor="locations"
                     className="form-label fs-15 w-20 me-2"
                   >
                     Locations
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                  <Input
+                    name="locations"
+                    className="form-control"
+                    type="text"
+                    value={formData.locations}
+                    onChange={handleChange}
+                    required
+                  />
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -263,45 +290,42 @@ function NewRiskAssessments() {
               <div className="col-6">
                 <div className="mb-3 d-flex">
                   <label
-                    htmlFor="editors"
+                    htmlFor="assessmentDate"
                     className="form-label fs-15 w-20 me-2"
                   >
                     Assessment Date
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                  <DatePicker
+                    ref={datePickerRef}
+                    selected={formData.assessmentDate}
+                    onChange={handleDateChange}
+                    dateFormat="MM/dd/yyyy"
+                    className="form-control"
+                    placeholderText="Select a date"
+                  />
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
+                    onClick={() => datePickerRef.current.setOpen(true)}
                   >
                     <SlCalender className="fs-15" />
                   </button>
                 </div>
                 <div className="mb-3 d-flex">
                   <label
-                    htmlFor="editors"
+                    htmlFor="facilitator"
                     className="form-label fs-15 w-20 me-2"
                   >
                     Facilitator
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                  <Input
+                    name="facilitator"
+                    className="form-control"
+                    type="text"
+                    value={formData.facilitator}
+                    onChange={handleChange}
+                    required
+                  />
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -311,21 +335,19 @@ function NewRiskAssessments() {
                 </div>
                 <div className="mb-3 d-flex">
                   <label
-                    htmlFor="editors"
+                    htmlFor="respondents"
                     className="form-label fs-15 w-20 me-2"
                   >
                     Respondent(s)
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                  <Input
+                    name="respondents"
+                    className="form-control"
+                    type="text"
+                    value={formData.respondents}
+                    onChange={handleChange}
+                    required
+                  />
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -335,6 +357,8 @@ function NewRiskAssessments() {
                 </div>
               </div>
             </div>
+            {successMessage && <Alert color="success">{successMessage}</Alert>}
+            {errorMessage && <Alert color="danger">{errorMessage}</Alert>}
           </Form>
         </div>
       </div>

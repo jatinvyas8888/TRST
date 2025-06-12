@@ -247,7 +247,7 @@ function Vendors() {
               </button>
             </div>
             <div>
-              <NavLink className="button1 border-1" to="/new-vendor">
+              <NavLink className="button1 border-1" to="/new-vendors">
                 <TiPlus className="hw-20" />
                 Vendor
               </NavLink>
@@ -262,7 +262,6 @@ function Vendors() {
               </button>
             </div>
           </div>
-          <div className="border-1 mt-2 mb-2"></div>
         </div>
       </div>
     </React.Fragment>

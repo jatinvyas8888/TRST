@@ -1,11 +1,16 @@
+
 import React, { useState, useEffect } from "react";
+import axios from "axios";  // Assuming you're using Axios for API calls
 import { useNavigate, useParams } from "react-router-dom";
 import { NavLink } from "react-router-dom";
-import axios from "axios";
+
 import Toastify from "toastify-js";
 import LoadingSpinner from "../../../../Components/Common/LoadingSpinner/LoadingSpinner";
 import "toastify-js/src/toastify.css";
-
+import { Form } from "react-bootstrap";
+import { Table } from "reactstrap";
+import EmployeeModal from './EmployeeModal';
+import Employees from './Employees';
 // Icons
 import { FaCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
@@ -15,8 +20,14 @@ import { HiMiniWrench } from "react-icons/hi2";
 import { BiSolidEdit, BiSearchAlt2, BiRefresh } from "react-icons/bi";
 import { FcSettings } from "react-icons/fc";
 import { FaPrint } from "react-icons/fa6";
-
+import { Input } from "reactstrap";
 import "./OrganizationalEntityForm.css";
+import LocationSection from "./LocationSection";
+import { TiPlus } from "react-icons/ti";
+import ApplicationSection from "./ApplicationSection";
+
+
+
 
 // Add this constant at the top of the file after imports
 const BUSINESS_ENTITY_TYPES = [
@@ -119,10 +130,35 @@ const EditOrganizationalEntity = () => {
   const [locationLoading, setLocationLoading] = useState(false);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [tempChildEntities, setTempChildEntities] = useState([]);
+const [showEmployeedataModal, setShowEmployeedataModal] = useState(false);
+
+//employess
+
+const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
+const [selectedApplicationIds, setSelectedApplicationIds] = useState([]);
+
+const handleSelectedApplications = (ids) => {
+  console.log("Selected IDs from ApplicationSection:", ids);
+  setSelectedApplicationIds(ids);
+};
+
+//location
+  const [locationData, setlocationData] = useState([]); // Selected Employee IDs
+  const [locationDataNames, setlocationDataNames] = useState(""); // Selected Employee Names
+  const [selectedLocationIds, setSelectedLocationIds] = useState([]); // Store selected location IDs
+
+
+  const handleEmployeeSelect = (selectedEmployees) => {
+    console.log("Selected Employees:", selectedEmployees); // Debugging
+    setEmployeedata(selectedEmployees); // Store all selected employee data
+  };
+ 
+    
+
   const [allChildEntitiesSelected, setAllChildEntitiesSelected] =
     useState(false);
   const [currentSelectionType, setCurrentSelectionType] = useState(""); // 'parent' or 'child'
-
+  const [isOpen, setIsOpen] = useState(false);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -153,6 +189,10 @@ const EditOrganizationalEntity = () => {
         editors: formData.editors,
         childBusinessEntities: formData.childEntities || [],
         relatedLocations: selectedLocations.map((loc) => loc.locationId) || [],
+        employees: selectedEmployeeIds || [],
+        locations: selectedLocationIds || [],
+        applications: selectedApplicationIds || [],
+
       };
 
       const response = await axios.post(
@@ -176,6 +216,9 @@ const EditOrganizationalEntity = () => {
         parentEntity: [],
         childEntities: [],
         relatedLocations: "",
+        employees: [],
+        locations:[],
+        applications: []
       });
     } catch (error) {
       console.error("Error saving:", error);
@@ -444,11 +487,43 @@ const EditOrganizationalEntity = () => {
     setShowModal(false);
   };
 
+  
+
+
+
+    const [selectedEmployees, setSelectedEmployees] = useState([]); // Stores selected employees
+    // // Toggle selection when a checkbox is clicked
+    const handleCheckboxChange = (employee) => {
+      setSelectedEmployees((prev) => {
+        const isSelected = prev.some((item) => item._id === employee._id);
+        return isSelected
+          ? prev.filter((item) => item._id !== employee._id) // Remove if already selected
+          : [...prev, employee]; // Add if not selected
+      });
+    };
+    const [selectedlocations, setSelectedLocationsIds] = useState([]); // Stores selected employees
+    const handleCheckboxChangeloc = (location) => {
+      setSelectedLocationsIds((prev) => {
+        const isSelected = prev.some((item) => item._id === location._id);
+        return isSelected
+          ? prev.filter((item) => item._id !== location._id) // Remove if already selected
+          : [...prev, location]; // Add if not selected
+      });
+    };
+   
+  
   return (
+
     <div className="page-content">
+
       {/* Header Section */}
+      
       <div className="d-flex align-items-center justify-content-between mb-4">
-        <h1 className="header-text">Organizational Entity: New Entity</h1>
+        <h1 className="header-text">Organizational Entity: New Entity
+
+       
+        </h1>
+
         <div className="d-flex align-items-center">
         <div className="d-flex justify-content-end me-2">
             <button
@@ -535,10 +610,54 @@ const EditOrganizationalEntity = () => {
       </div>
 
       {/* Form Section */}
+     
       <div className="form-content">
-        <div className="form-heading">Organizational Entity Information</div>
-        <div className="border-1 mb-3"></div>
+      <div
+  className="d-flex justify-content-between align-items-center mb-3"
+  style={{ borderBottom: "1px solid #ccc", paddingBottom: "8px" }}
+>
+  <div className="form-heading">Organizational Entity Information</div>
+
+  <button
+    className="btn btn-outline-secondary toggle-btn"
+    onClick={() => setIsOpen(!isOpen)}
+    title={isOpen ? "Collapse Form" : "Expand Form"}
+    style={{
+      fontSize: "1.2rem",
+      padding: "4px 10px",
+      height: "36px",
+      lineHeight: "1",
+    }}
+  >
+    {isOpen ? "−" : <TiPlus />}
+  </button>
+</div>
+
+       
+        {isOpen && (
         <div className="row">
+          <div className="border-1 mb-3"></div>
+        
+        <div className="d-flex justify-content-end mt-3 gap-2">
+          <button
+            type="submit"
+            className="btn btn-primary"
+            onClick={handleSubmit}
+            title="Update Organizational Entity"
+          >
+            <FaCheck className="me-1" style={{ width: "15px", height: "15px" }} />
+            Save
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => navigate("/organizational-entities")}
+            title="Cancel"
+          >
+            <RxCross2 className="me-1" style={{ width: "15px", height: "15px" }} />
+            Cancel
+          </button>
+          </div>
+          <div className="border-1 mb-3"></div>
           <div className="col-9">
             <form onSubmit={handleSubmit}>
               <div className="mb-3 d-flex">
@@ -691,6 +810,7 @@ const EditOrganizationalEntity = () => {
                   rows="3"
                 ></textarea>
               </div>
+              
               <div className="border-1"></div>
 
               {/* Relationships */}
@@ -928,12 +1048,31 @@ const EditOrganizationalEntity = () => {
                 >
                   <BiSearchAlt2 />
                 </button>
-              </div>  
+              </div> 
+              
+             
             </form>
           </div>
         </div>
+        )}
+ 
       </div>
 
+      {/* employess */}
+      <Employees setSelectedEmployeeIds={setSelectedEmployeeIds} />
+ <div>
+     
+      <LocationSection setSelectedLocationIds={setSelectedLocationIds} />
+      
+      <ApplicationSection setSelectedApplicationIds={handleSelectedApplications} />
+          
+    </div>
+         
+      
+
+
+      
+  
       {/* Business Entity Modal */}
       {showModal && (
         <div className="modal show d-block" tabIndex="-1">
@@ -1207,6 +1346,7 @@ const EditOrganizationalEntity = () => {
           </div>
         </div>
       )}
+   
 
       {/* Add Location Modal */}
       {showLocationModal && (
@@ -1344,8 +1484,10 @@ const EditOrganizationalEntity = () => {
             </div>
           </div>
         </div>
+        
       )}
     </div>
+    
   );
 };
 

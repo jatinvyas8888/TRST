@@ -70,6 +70,11 @@ const locationSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "BusinessEntity"
     }],
+    //relationship with location
+    businessEntitiesRelationships: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "BusinessEntity"
+    }],
 }, {
     timestamps: true
 })

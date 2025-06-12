@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { HiMiniWrench } from "react-icons/hi2";
@@ -10,9 +10,9 @@ import { LuTableOfContents, LuClock9 } from "react-icons/lu";
 import { FaPrint, FaRegFilePdf } from "react-icons/fa";
 import { IoIosSearch } from "react-icons/io";
 import { FaCircleQuestion } from "react-icons/fa6";
-// import "./ApprovalGroups.css";
 import { BiSearchAlt2 } from "react-icons/bi";
 import { SlCalender } from "react-icons/sl";
+import axios from "axios";
 import {
   Card,
   CardBody,
@@ -23,36 +23,60 @@ import {
   Row,
   Button,
   Form,
-  FormFeedback,
+  FormGroup,
   Alert,
-  Spinner,
 } from "reactstrap";
-import { TiPlus } from "react-icons/ti";
+import Toastify from "toastify-js";
+import "toastify-js/src/toastify.css";
 
 function NewApprovalGroups() {
-  const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isTimeZoneOpen, setIsTimeZoneOpen] = useState(false); // Time Zone dropdown
-  const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
+  const navigate = useNavigate();
+  const [approvalGroup, setApprovalGroup] = useState("");
+  const [groupDescription, setGroupDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [isToolOpen, setIsToolOpen] = useState(false); // Define isToolOpen state
 
-  const [isHostelOpen, setIsHostelOpen] = useState(false); // Employee Status dropdown
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+    setSuccess(null);
 
-  const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "No", "Yes"];
+    try {
+      const response = await axios.post("http://localhost:8000/api/v1/approval-groups/create", {
+        approvalGroup,
+        groupDescription,
+      });
+      setSuccess("Approval Group created successfully!");
+      // Reset form fields
+      setApprovalGroup("");
+      setGroupDescription("");
 
-  const [selectedHostel, setSelectedHostel] = useState("-- Please select --");
-  const hostelOptions = ["-- Please select --", "No", "No"];
-  const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
-  const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
-
-  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
-  const handleSelectStatus = (option) => {
-    setSelectedStatus(option);
-    setIsStatusOpen(false);
+      Toastify({
+        text: "Approval Group created successfully!",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+          background: "#28a745",
+        },
+      }).showToast();
+      navigate("/approval-groups");
+    } catch (error) {
+      console.error("Full error:", error);
+      if (error.response) {
+        console.log("Error response:", error.response.data);
+        alert(error.response.data.message || "Error creating approval group");
+      } else {
+        alert("Network error occurred");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-  const handleSelecthostel = (option) => {
-    setSelectedHostel(option);
-    setIsHostelOpen(false);
-  };
+
   return (
     <React.Fragment>
       <Helmet>
@@ -70,7 +94,7 @@ function NewApprovalGroups() {
               <div>
                 <NavLink
                   className="button3 border-1 button3-changes me-1"
-                  to="#"
+                  to="/approval-groups"
                   title="Cancel"
                 >
                   <RxCross2
@@ -83,10 +107,16 @@ function NewApprovalGroups() {
                   className="button3 border-1 button3-changes me-1"
                   to="#"
                   title="Save & New"
+                  onClick={handleSubmit}
                 >
                   Save & New
                 </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
+                <NavLink
+                  className="button3 border-1 me-3"
+                  to="#"
+                  title="Save"
+                  onClick={handleSubmit}
+                >
                   <FaCheck
                     className="me-1"
                     style={{ width: "15px", height: "15px" }}
@@ -107,7 +137,7 @@ function NewApprovalGroups() {
                     id="TollFropdown"
                     data-bs-toggle="dropdown"
                     aria-expanded={isToolOpen}
-                    onClick={toggleToolDropDown}
+                    onClick={() => setIsToolOpen(!isToolOpen)}
                   >
                     <HiMiniWrench className="hw-16" />
                   </button>
@@ -156,39 +186,44 @@ function NewApprovalGroups() {
           </div>
         </div>
         <div className="form-content">
-          <div className="form-heading">Approval Group Information
-          </div>
+          <div className="form-heading">Approval Group Information</div>
           <div className="border-1"></div>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <div className="row pt-4">
-              <div className="col-8">
-                {[" Approval Group"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                      <span class="text-danger">*</span>
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
-                {["Group Description"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <textarea
-                      name="text"
-                      className="form-control"
-                      type="text"
-                    />
-                  </div>
-                ))}
+              <div className="col-6">
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="approvalGroup"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Approval Group
+                  </Label>
+                  <Input
+                    type="text"
+                    id="approvalGroup"
+                    value={approvalGroup}
+                    onChange={(e) => setApprovalGroup(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="groupDescription"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Group Description
+                  </Label>
+                  <Input
+                    type="text"
+                    id="groupDescription"
+                    value={groupDescription}
+                    onChange={(e) => setGroupDescription(e.target.value)}
+                    required
+                  />
+                </div>
+                {/* <Button type="submit" color="primary" disabled={isSubmitting} className="w-100">
+                  {isSubmitting ? "Submitting..." : "Submit"}
+                </Button> */}
               </div>
             </div>
           </Form>

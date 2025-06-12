@@ -12,6 +12,8 @@ import { IoIosSearch } from "react-icons/io";
 import { FaCircleQuestion } from "react-icons/fa6";
 import "./Databases.css";
 import { BiSearchAlt2 } from "react-icons/bi";
+import DatabaseOwnerModal from "./DatabaseOwnerModal";
+import ApplicationModal from "./ApplicationModal";
 import {
   Card,
   CardBody,
@@ -36,10 +38,23 @@ function NewDatabase() {
   const [isHostelOpen, setIsHostelOpen] = useState(false); // Employee Status dropdown
 
   const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "No", "Yes"];
+  const statusOptions = ["-- Please select --", "DB2", "Mongo DB", "MySQL", "Oracle", "Teradata", "SQL"];
+  //databaseowner modal
+  const [databaseOwner, setDatabaseOwner] = useState([]);
+    const [databaseOwnerNames, setDatabaseOwnerNames] = useState(""); // Stores selected names
+    const [showDatabaseOwnerModal, setShowDatabaseOwnerModal] = useState(false);
+      // Application Modal State
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [selectedApplications, setSelectedApplications] = useState([]);
+  const [selectedApplicationNames, setSelectedApplicationNames] = useState("");
+
 
   const [selectedHostel, setSelectedHostel] = useState("-- Please select --");
-  const hostelOptions = ["-- Please select --", "No", "No"];
+  const hostelOptions = ["-- Please select --",
+    
+    "Other",
+     "Internal",
+    "External"];
   const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
   const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
 
@@ -58,11 +73,14 @@ function NewDatabase() {
   const [selectedRTO, setSelectedRTO] = useState("-- Please select --");
   const DROptions = [
     "-- Please select --",
-    "Cloud-Based",
-    "On-Premise",
-    "Hybrid",
+    "Active/Active",
+    "Active/Standby",
+    "Manual Restore",
+    "Other"
   ];
-  const RTOOptions = ["-- Please select --", "1 Hour", "4 Hours", "24 Hours"];
+  const RTOOptions = ["-- Please select --", 
+      
+      "15Mins", "1 Hours", "0.5 Hours","2Hrs","3Hrs","4Hrs","6Hrs"];
   const toggleDRDropdown = () => setIsDROpen((prev) => !prev);
   const toggleRTODropdown = () => setIsRTOpen((prev) => !prev);
   const handleSelectDR = (option) => {
@@ -276,12 +294,17 @@ function NewDatabase() {
                       padding: "6px 12px",
                       backgroundColor: "#fff",
                     }}
-                  ></div>
+
+                  >
+                    {databaseOwnerNames} 
+                  </div>
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
+
                   >
-                    <BiSearchAlt2 className="fs-15" />
+                    <BiSearchAlt2 className="fs-15"
+                     onClick={() => setShowDatabaseOwnerModal(true)}  />
                   </button>
                 </div>
                 {["Description"].map((label, index) => (
@@ -468,30 +491,31 @@ function NewDatabase() {
           <Form>
             <div className="row pt-4">
               <div className="col-8">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Applications
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
+                     {/* Applications Section */}
+              <div className="mb-3 d-flex">
+                <label htmlFor="applications" className="form-label">
+                  Applications
+                </label>
+                <div
+                  className="form-control1 d-flex flex-wrap gap-2"
+                  style={{
+                    minHeight: "38px",
+                    border: "1px solid #ced4da",
+                    borderRadius: "5px",
+                    padding: "8px",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  {selectedApplicationNames}
                 </div>
+                <button
+                  type="button"
+                  className="btn btn-secondary ms-2"
+                  onClick={() => setShowApplicationModal(true)}
+                >
+                  <BiSearchAlt2 className="fs-15" />
+                </button>
+              </div>
                 <div className="mb-3 d-flex">
                   <label
                     htmlFor="editors"
@@ -520,7 +544,32 @@ function NewDatabase() {
             </div>
           </Form>
         </div>
+         
       </div>
+
+      {/* databaseowner */}
+        <DatabaseOwnerModal
+        isOpen={showDatabaseOwnerModal}
+        toggle={() => setShowDatabaseOwnerModal(false)}
+        onSelect={(ownerData) => {
+          setDatabaseOwner(ownerData.ids); // Store selected IDs
+          setDatabaseOwnerNames(ownerData.names); // Display selected names
+        }}
+      />
+      {/* Application Modal */}
+      <ApplicationModal
+        isOpen={showApplicationModal}
+        toggle={() => setShowApplicationModal(false)}
+        onSelect={(appData) => {
+          setSelectedApplications(appData.ids); 
+          setSelectedApplicationNames(appData.names);
+        }}
+      />
+    
+       
+    
+
+
     </React.Fragment>
   );
 }

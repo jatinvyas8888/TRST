@@ -308,6 +308,8 @@ const getEmployee = asyncHandler(async (req, res) => {
         .populate('subordinates')
         .populate('location')
         .populate('department')
+        .populate("businessEntities", "businessEntity businessEntityType description businessEntityId childBusinessEntities parentBusinessEntity relatedLocations updatedAt")
+
         .populate('updatedBy', 'fullName email');
 
     if (!employee) {

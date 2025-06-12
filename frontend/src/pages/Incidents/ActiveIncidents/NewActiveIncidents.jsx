@@ -1,515 +1,371 @@
 import React, { useState } from "react";
-import { Helmet } from "react-helmet";
-import { NavLink } from "react-router-dom";
-import { FaCheck, FaTimes } from "react-icons/fa";
-import { RxCross2 } from "react-icons/rx";
-import { HiMiniWrench } from "react-icons/hi2";
-import { BiSolidEdit } from "react-icons/bi";
-import { FcSettings } from "react-icons/fc";
-import { LuTableOfContents, LuClock9 } from "react-icons/lu";
-import { FaPrint, FaRegFilePdf } from "react-icons/fa";
-import { IoIosSearch } from "react-icons/io";
-import { FaCircleQuestion } from "react-icons/fa6";
-import { SlCalender } from "react-icons/sl";
-import { BiSearchAlt2 } from "react-icons/bi";
-import { MdOutlineWatchLater } from "react-icons/md";
-import {
-  Card,
-  CardBody,
-  Col,
-  Container,
-  Input,
-  Label,
-  Row,
-  Button,
-  Form,
-  FormFeedback,
-  Alert,
-  Spinner,
-} from "reactstrap";
-import { TiPlus } from "react-icons/ti";
+import { Form, Input, Label, Button} from "reactstrap";
+import { Link, NavLink } from "react-router-dom"; // Ensure Link is imported
 import { FaCalendarAlt } from "react-icons/fa";
+import { MdOutlineWatchLater } from "react-icons/md";
+import { BiSearchAlt2 } from "react-icons/bi";
+import ApplicationModal from "./ApplicationModal";
+import LocationModal from "./LocationModal";
+import PlanModal from "./PlanModal";
+import UserModal from "./UserModal";
+import { FaCheck } from "react-icons/fa";
+import { RxCross2 } from "react-icons/rx";
 
 function NewActiveIncidents() {
-  const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
-  const [isHostelOpen, setIsHostelOpen] = useState(false); // Employee Status dropdown
 
-  const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "No", "Yes"];
+  // Application Modal State
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [selectedApplications, setSelectedApplications] = useState([]);
+  const [selectedApplicationNames, setSelectedApplicationNames] = useState("");
+  //location modal
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [selectedLocations, setSelectedLocations] = useState([]);
+  const [selectedLocationNames, setSelectedLocationNames] = useState("");
+   //plan modal
+   const [showPlanModal, setShowPlanModal] = useState(false);
+   const [selectedPlans, setSelectedPlans] = useState([]);
+   const [selectedPlanNames, setSelectedPlanNames] = useState("");
+   //User modal
+   const [showUserModal, setShowUserModal] = useState(false);
+   const [selectedUsers, setSelectedUsers] = useState([]);
+   const [selectedUserNames, setSelectedUserNames] = useState("");
+  // State for form data  
+  const [incident, setIncident] = useState("");
+  const [incidentDate, setIncidentDate] = useState(""); // Date
+  const [incidentTime, setIncidentTime] = useState(""); // Time
+  const [incidentDescription, setIncidentDescription] = useState("");
+  const [incidentCommander, setIncidentCommander] = useState("");
+  const [location, setLocation] = useState("");
+  const [application, setApplication] = useState("");
+  const [plans, setPlan] = useState("");
+  const [process, setProcess] = useState("");
+  const [vendors, setVendors] = useState("");
+  const [incidentType, setIncidentType] = useState([]); // For multiple selections
+  const [severity, setSeverity] = useState("");
 
-  const [selectedHostel, setSelectedHostel] = useState("-- Please select --");
-  const hostelOptions = ["-- Please select --", "No", "No"];
-  const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
-  const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
-
-  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
-  const handleSelectStatus = (option) => {
-    setSelectedStatus(option);
-    setIsStatusOpen(false);
-  };
-  const handleSelecthostel = (option) => {
-    setSelectedHostel(option);
-    setIsHostelOpen(false);
-  };
-  // State variables for new dropdowns
-  const [isRTOpen, setIsRTOpen] = useState(false);
-  const [isDROpen, setIsDROpen] = useState(false);
-  const [isRPOpen, setIsRPOpen] = useState(false);
-
-  const [selectedRTO, setSelectedRTO] = useState("-- Please select --");
-  const [selectedDR, setSelectedDR] = useState("-- Please select --");
-  const [selectedRPO, setSelectedRPO] = useState("-- Please select --");
-
-  const RTOOptions = ["-- Please select --", "1 Hour", "4 Hours", "24 Hours"];
-  const DROptions = [
-    "-- Please select --",
-    "Cloud-Based",
-    "On-Premise",
-    "Hybrid",
+  // Define the incident types based on your Mongoose schema
+  const incidentTypes = [
+    'Accident',
+    'Criminal',
+    'Cyber Security',
+    'Facilities',
+    'Fire',
+    'HazMat',
+    'Infrastructure',
+    'Medical',
+    'Natural Disaster',
+    'Other',
+    'Severe Weather',
+    'Technology',
+    'Workplace Violence'
   ];
-  const RPOOptions = [
-    "-- Please select --",
-    "0 Minutes",
-    "1 Hour",
-    "4 Hours",
-    "24 Hours",
-  ];
 
-  // Toggle functions
-  const toggleRTODropdown = () => setIsRTOpen((prev) => !prev);
-  const toggleDRDropdown = () => setIsDROpen((prev) => !prev);
-  const toggleRPODropdown = () => setIsRPOpen((prev) => !prev);
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent the default form submission
 
-  // Selection handlers
-  const handleSelectRTO = (option) => {
-    setSelectedRTO(option);
-    setIsRTOpen(false);
-  };
-  const handleSelectDR = (option) => {
-    setSelectedDR(option);
-    setIsDROpen(false);
-  };
-  const handleSelectRPO = (option) => {
-    setSelectedRPO(option);
-    setIsRPOpen(false);
-  };
+    // Combine date and time into a single datetime string
+    const combinedDateTime = `${incidentDate}T${incidentTime}`;
+
+    // Ensure that application and plans are arrays of ObjectId (strings)
+    const data = {
+        incident,
+        incidentDate: combinedDateTime, // Send the combined datetime
+        incidentType: Array.isArray(incidentType) ? incidentType : [], // Ensure this is an array
+        incidentDescription,
+        severity,
+        incidentCommander: incidentCommander.length > 0 ? [incidentCommander] : undefined, // Use undefined instead of null
+        location: location.length > 0 ? [location] : undefined, // Use undefined instead of null
+        application: Array.isArray(application) && application.length > 0 ? application : undefined, // Ensure this is an array
+        plans: Array.isArray(plans) && plans.length > 0 ? plans : undefined, // Ensure this is an array
+        process: Array.isArray(process) && process.length > 0 ? process : undefined, // Ensure this is an array
+        vendors: Array.isArray(vendors) && vendors.length > 0 ? vendors : undefined, // Ensure this is an array
+    };
+
+    console.log("Data being sent:", data); // Log the data being sent
+
+    try {
+        const response = await fetch("http://localhost:8000/api/v1/activeincident/create", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorResponse = await response.json(); // Log the error response
+            console.error("Error response:", errorResponse);
+            throw new Error(`Network response was not ok: ${errorResponse.message || 'Unknown error'}`);
+        }
+
+        const result = await response.json();
+        console.log("Success:", result);
+        // Handle success (e.g., show a success message, redirect, etc.)
+    } catch (error) {
+        console.error("Error:", error);
+        // Handle error (e.g., show an error message)
+    }
+};
+// Confirm Selection
+
+
   return (
-    <React.Fragment>
-      <Helmet>
-        <title>New Incident Page | TRST</title>
-        <meta name="description" content="This is the home page description" />
-        <meta name="keywords" content="home, react, meta tags" />
-      </Helmet>
-      <div className="page-content">
-        <div className="main-content1">
-          <div className="d-flex align-items-center justify-content-between">
-            <div className="header-text">Incident : New Incident </div>
-            <div className="d-flex align-items-center justify-content-end">
-              <div>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Cancel"
-                >
-                  <RxCross2
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                  />
-                  Cancel
-                </NavLink>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save & New"
-                >
-                  Save & New
-                </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
-                  <FaCheck
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                  />
-                  Save
-                </NavLink>
-              </div>
-              <div
-                className="map-action k-widget k-button-group order-1"
-                id="map-action-toggle"
-                role="group"
-              >
-                <span className="dropdown">
-                  <button
-                    className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                    type="button"
-                    id="TollFropdown"
-                    data-bs-toggle="dropdown"
-                    aria-expanded={isToolOpen}
-                    onClick={toggleToolDropDown}
-                  >
-                    <HiMiniWrench className="hw-16" />
-                  </button>
-                  <ul
-                    className={`right-auto dropdown-menu  ${
-                      isToolOpen ? "show" : ""
-                    }`}
-                    aria-labelledby="TollFropdown"
-                  >
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <BiSolidEdit className="hw-15" /> Design this page
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FcSettings className="hw-15" /> Object Definition
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <LuTableOfContents className="hw-15" /> Tab Definition
-                      </a>
-                    </li>
-                    <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FaPrint className="hw-15" /> Print
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FaRegFilePdf className="hw-15" /> PDF
-                      </a>
-                    </li>
-                    <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <LuClock9 className="hw-15" /> Page Load Time
-                      </a>
-                    </li>
-                  </ul>
-                </span>
-              </div>
+    <div className="form-content">
+
+      <div className="form-heading">Incident Information</div>
+      <div className="d-flex align-items-center justify-content-between">
+                  <div className="header-text">Active Incidents: New Active Incident </div>
+                  <div className="d-flex align-items-center justify-content-end">
+                    <div>
+                      <NavLink className="button3 border-1 button3-changes me-1" to="/active-incidents">
+                        <RxCross2 className="me-1" style={{ width: "15px", height: "15px" }} />
+                        Cancel
+                      </NavLink>
+                      <NavLink className="button3 border-1 button3-changes me-1" onClick={handleSubmit} title="Save">
+                        Save & New
+                      </NavLink>
+                      <NavLink className="button3 border-1 me-3" to="#" title="Save">
+                        <FaCheck className="me-1" style={{ width: "15px", height: "15px" }} />
+                        Save
+                      </NavLink>
+                    </div>
+                  </div>
+                </div>
+      <div className="border-1"></div>
+      <Form onSubmit={handleSubmit}>
+        <div className="row pt-4">
+          <div className="col-8">
+            <div className="mb-3 d-flex align-items-center">
+              <Label htmlFor="incident" className="form-label me-2 fs-15 w-40">
+                Incident
+                <span className="text-danger">*</span>
+              </Label>
+              <Input
+                id="incident"
+                type="text"
+                value={incident}
+                onChange={(e) => setIncident(e.target.value)}
+                required
+              />
             </div>
+            <div className="mb-3 d-flex">
+              <Label htmlFor="incidentDate" className="form-label fs-15 w-20 me-2">
+                Incident Date
+              </Label>
+              <Input
+                id="incidentDate"
+                type="date"
+                value={incidentDate}
+                onChange={(e) => setIncidentDate(e.target.value)}
+                required
+              />
+              <button type="button" className="btn btn-secondary border-radius-2 me-1">
+                <FaCalendarAlt className="fs-15" />
+              </button>
+            </div>
+            <div className="mb-3 d-flex">
+              <Label htmlFor="incidentTime" className="form-label fs-15 w-20 me-2">
+                Incident Time
+              </Label>
+              <Input
+                id="incidentTime"
+                type="time"
+                value={incidentTime}
+                onChange={(e) => setIncidentTime(e.target.value)}
+                required
+              />
+              <button type="button" className="btn btn-secondary border-radius-2 me-1">
+                <MdOutlineWatchLater className="fs-15" />
+              </button>
+            </div>
+            <div className="mb-3 d-flex align-items-center">
+              <Label htmlFor="incidentType" className="form-label me-2 fs-15 w-40">
+                Incident Type
+              </Label>
+              <select
+                id="incidentType"
+                multiple
+                value={incidentType}
+                onChange={(e) => {
+                  const options = Array.from(e.target.selectedOptions).map(option => option.value);
+                  setIncidentType(options);
+                }}
+                className="form-control"
+              >
+                {incidentTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-3 d-flex align-items-center">
+              <Label htmlFor="incidentDescription" className="form-label me-2 fs-15 w-40">
+                Incident Description
+              </Label>
+              <textarea
+                id="incidentDescription"
+                className="form-control"
+                value={incidentDescription}
+                onChange={(e) => setIncidentDescription(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-3 d-flex align-items-center">
+              <Label htmlFor="severity" className="form-label me-2 fs-15 w-40">
+                Severity
+              </Label>
+              <Input
+                id="severity"
+                type="select"
+                value={severity}
+                onChange={(e) => setSeverity(e.target.value)}
+                required
+              >
+                <option value="">-- Please select --</option>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+                <option value="Monitoring">Monitoring</option>
+              </Input>
+            </div>
+            <div className="mb-3 d-flex">
+              <Label htmlFor="incidentCommander" className="form-label fs-15 w-20 me-2">
+                Incident Commander (ID)
+              </Label>
+              <Input
+                id="incidentCommander"
+                type="text"
+                value={incidentCommander}
+                onChange={(e) => setIncidentCommander(e.target.value)}
+              />
+              <button type="button" className="btn btn-secondary border-radius-2"
+               onClick={() => setShowUserModal(true)}
+              >
+                <BiSearchAlt2 className="fs-15" />
+              </button>
+            </div>
+            <div className="mb-3 d-flex">
+              <Label htmlFor="location" className="form-label fs-15 w-20 me-2">
+                Location (ID)
+              </Label>
+              <Input
+                id="location"
+                type="text"
+                value= {selectedLocationNames}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+             
+              <button type="button" className="btn btn-secondary border-radius-2"
+             onClick={() => setShowLocationModal(true)}
+              >
+                <BiSearchAlt2 className="fs-15" />
+              </button>
+            </div>
+            <div className="mb-3 d-flex">
+              <Label htmlFor="application" className="form-label fs-15 w-20 me-2">
+                Application (ID)
+              </Label>
+              <Input
+                id="application"
+                type="text"
+                value=   {selectedApplicationNames}
+                onChange={(e) => setApplication(e.target.value)}
+              />
+           
+              <button type="button" className="btn btn-secondary border-radius-2"
+               onClick={() => setShowApplicationModal(true)}>
+                <BiSearchAlt2 className="fs-15" />
+              </button>
+            </div>
+            <div className="mb-3 d-flex">
+              <Label htmlFor="plans" className="form-label fs-15 w-20 me-2">
+                Plans (ID)
+              </Label>
+              <Input
+                id="plans"
+                type="text"
+                value={selectedPlanNames}
+                onChange={(e) => setPlan(e.target.value)}
+              />
+              <button type="button" className="btn btn-secondary border-radius-2"
+               onClick={() => setShowPlanModal(true)} >
+                <BiSearchAlt2 className="fs-15" />
+              </button>
+            </div>
+            <div className="mb-3 d-flex">
+              <Label htmlFor="process" className="form-label fs-15 w-20 me-2">
+                Process (ID)
+              </Label>
+              <Input
+                id="process"
+                type="text"
+                value={process}
+                onChange={(e) => setProcess(e.target.value)}
+              />
+              <button type="button" className="btn btn-secondary border-radius-2">
+                <BiSearchAlt2 className="fs-15" />
+              </button>
+            </div>
+            <div className="mb-3 d-flex">
+              <Label htmlFor="vendors" className="form-label fs-15 w-20 me-2">
+                Vendors (ID)
+              </Label>
+              <Input
+                id="vendors"
+                type="text"
+                value={vendors}
+                onChange={(e) => setVendors(e.target.value)}
+              />
+              <button type="button" className="btn btn-secondary border-radius-2">
+                <BiSearchAlt2 className="fs-15" />
+              </button>
+            </div>
+            <Button type="submit">Submit</Button>
+            <Link  className="Link1 border-1" to="/active-incidents" >back</Link>
           </div>
         </div>
-        <div className="form-content">
-          <div className="form-heading">Incident Information</div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-8">
-                {["Incident"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                      <span className="text-danger">*</span>
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}{" "}
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Incident Date
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2 me-1"
-                  >
-                    <FaCalendarAlt className="fs-15" />
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <MdOutlineWatchLater className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="applicationType"
-                    className="form-label me-2 fs-15 w-40 d-flex align-items-center justify-content-between"
-                  >
-                    Incident Type <FaCircleQuestion className="fs-15" />
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleStatusDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedStatus}</span>
-                      <svg
-                        className={`ms-2 ${isStatusOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isStatusOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {statusOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectStatus(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>{" "}
-                {["Incident Description"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <textarea
-                      name="text"
-                      className="form-control"
-                      type="text"
-                    />
-                  </div>
-                ))}{" "}
-                {/* Severity Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="rto" className="form-label me-2 fs-15 w-40">
-                    Severity
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleRTODropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedRTO}</span>
-                      <svg
-                        className={`ms-2 ${isRTOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isRTOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {RTOOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectRTO(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Incident Commander
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Impacted Resources</div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-8">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Location
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Application
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Plans
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Process
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Vendors
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Form>
-        </div>
-      </div>
-    </React.Fragment>
+      </Form>
+      <ApplicationModal
+    isOpen={showApplicationModal}
+    toggle={() => setShowApplicationModal(false)}
+    onSelect={(appData) => {
+        setSelectedApplications(appData.ids); // Store selected application IDs
+        setSelectedApplicationNames(appData.names); // Store selected application names
+        setApplication(appData.ids.join(",")); // Store selected application IDs in the application state
+    }}
+/>
+      <LocationModal
+        isOpen={showLocationModal}
+        toggle={() => setShowLocationModal(false)}
+        onSelect={(appData) => {
+          setSelectedLocations(appData.ids); 
+          setSelectedLocationNames(appData.names);
+          setLocation(appData.ids.join(",")); // Store selected application IDs in the application state
+        }}
+      />
+       <PlanModal
+        isOpen={showPlanModal}
+        toggle={() => setShowPlanModal(false)}
+        onSelect={(appData) => {
+          setSelectedPlans(appData.ids); 
+          setSelectedPlanNames(appData.names);
+          setPlan(appData.ids.join(",")); // Store selected application IDs in the application state
+        }}
+      />
+
+        <UserModal
+        isOpen={showUserModal}
+        toggle={() => setShowUserModal(false)}
+        onSelect={(appData) => {
+          setSelectedUsers(appData.ids); 
+          setSelectedUserNames(appData.names);
+          setUser(appData.ids.join(",")); // Store selected application IDs in the application state
+        }}
+      />
+    </div>
+   
   );
 }
 

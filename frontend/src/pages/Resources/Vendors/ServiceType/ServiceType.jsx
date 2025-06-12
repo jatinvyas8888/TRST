@@ -322,14 +322,14 @@ function ServiceType() {
                   <th>Service Type</th>
                   <th>Created At</th>
                   <th>Updated At</th>
-                  <th>Updated By</th>
+                 
                 </tr>
               </thead>
               <tbody>
                 {currentRows.map((serviceType) => (
                   <tr key={serviceType._id}>
                     <td className="text-center">
-                      <div className="d-flex align-items-center gap-2 justify-content-center">
+                      {/* <div className="d-flex align-items-center gap-2 justify-content-center">
                         <button
                           className="btn btn-sm btn-link p-0"
                           onClick={() => handleEdit(serviceType._id)}
@@ -344,12 +344,20 @@ function ServiceType() {
                         >
                           <RiDeleteBin6Line className="text-danger" size={18} />
                         </button>
-                      </div>
+                      </div> */}
+                       <div style={{ gap: "10px" }} className="d-flex align-items-center">
+                      <button onClick={() => handleEdit(record.id)} className="btn btn-sm btn-link">
+                        <BiSolidEdit className="hw-15" />
+                      </button>
+                      <button onClick={() => handleDelete(record.id)} className="btn btn-sm btn-link text-danger">
+                        <FaRegTrashCan className="hw-15" />
+                      </button>
+                    </div>
                     </td>
                     <td>{serviceType.serviceType}</td>
                     <td>{new Date(serviceType.createdAt).toLocaleString()}</td>
                     <td>{new Date(serviceType.updatedAt).toLocaleString()}</td>
-                    <td>{serviceType.updatedBy?.username || ''}</td>
+                    
                   </tr>
                 ))}
               </tbody>

@@ -1,0 +1,161 @@
+.page-content {
+    padding: 20px;
+  }
+  
+  .main-content1 {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 50px !important;
+  }
+  
+  .header-text {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .map-action {
+    display: flex;
+    align-items: center;
+  }
+  
+  .dropdown-menu {
+    min-width: 200px;
+  }
+  
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .dropdown-item .hw-15 {
+    margin-right: 5px;
+  }
+  
+  .border-1 {
+    border-top: 1px solid #dee2e6;
+    margin: 10px 0;
+  }
+  
+  .table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+  }
+  
+  .table-bordered {
+    border: 1px solid #dee2e6;
+  }
+  
+  .table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  .table tbody + tbody {
+    border-top: 2px solid #dee2e6;
+  }
+  
+  .table .form-check-input {
+    margin-top: 0;
+    margin-left: 0;
+  }
+  
+  .btn-link {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .btn-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  .text-danger {
+    color: #dc3545 !important;
+  }
+
+
+  .page-content {
+    padding: 20px;
+  }
+  
+  .main-content1 {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+  }
+  
+  .header-text {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .map-action {
+    display: flex;
+    align-items: center;
+  }
+  
+  .dropdown-menu {
+    min-width: 200px;
+  }
+  
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .dropdown-item .hw-15 {
+    margin-right: 5px;
+  }
+  
+  .border-1 {
+    border-top: 1px solid #dee2e6;
+    margin: 10px 0;
+  }
+  
+  .table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+  }
+  
+  .table-bordered {
+    border: 1px solid #dee2e6;
+  }
+  
+  .table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  .table tbody + tbody {
+    border-top: 2px solid #dee2e6;
+  }
+  
+  .table .form-check-input {
+    margin-top: 0;
+    margin-left: 0;
+  }
+  
+  .btn-link {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .btn-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+  }
+  
+  .text-center {
+    text-align: center;
+  }
+  
+  .text-danger {
+    color: #dc3545 !important;
+  }

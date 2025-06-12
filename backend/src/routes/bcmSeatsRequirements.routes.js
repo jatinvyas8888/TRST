@@ -2,7 +2,7 @@ import express from 'express';
 import {
   createBCMSeatsRequirement,
   getAllBCMSeatsRequirements,
-  getBCMSeatsRequirement,
+  getBCMSeatsRequirementById,
   updateBCMSeatsRequirement,
   deleteBCMSeatsRequirement,
 } from '../controllers/bcmSeatsRequirements.controller.js';
@@ -17,12 +17,12 @@ router.use(verifyJWT);
 router.post('/create', createBCMSeatsRequirement);
 
 // Get all BCM Seats Requirements
-router.get('/all', getAllBCMSeatsRequirements);
+router.get('/all',  getAllBCMSeatsRequirements);
 
-// Get a single BCM Seats Requirement
+// // Get a single BCM Seats Requirement
 router
-  .get('/:id', getBCMSeatsRequirement)
-  .patch('/:id', updateBCMSeatsRequirement)
-  .delete('/:id', deleteBCMSeatsRequirement);
+  .get('/:id', getBCMSeatsRequirementById)
+  .patch('/upadate/:id', updateBCMSeatsRequirement)
+.delete('/delete/:id', deleteBCMSeatsRequirement);
 
 export default router;

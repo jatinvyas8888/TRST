@@ -181,6 +181,7 @@ function NewPlans() {
         </div>
         <div className="border-1 mt-3"></div>
       </div>
+   
     </React.Fragment>
   );
 }

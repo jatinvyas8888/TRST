@@ -30,6 +30,9 @@ import {
 import { TiPlus } from "react-icons/ti";
 
 function NewBIA() {
+   const [successMessage, setSuccessMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
+    const [loading, setLoading] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isTimeZoneOpen, setIsTimeZoneOpen] = useState(false);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
@@ -37,6 +40,7 @@ function NewBIA() {
   const [isRTOOpen, setIsRTOOpen] = useState(false);
   const [isRPOOpen, setIsRPOOpen] = useState(false);
   const [isDROpen, setIsDROpen] = useState(false);
+  
 
   const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
   const [selectedTimeZone, setSelectedTimeZone] = useState(
@@ -407,6 +411,125 @@ function NewBIA() {
     setSelectedLegalImpact3D(option);
     setIsLegalImpact3DOpen(false);
   };
+ // **Form State - Includes All Fields**
+  const [biaData, setBiaData] = useState({
+    department: "",
+    biaEditor: "",
+    division: "",
+    approvalGroup: "",
+    group: "",
+    respondents: "",
+    generalManager: "",
+    bcmChampionPrimary: "",
+    bcmChampionSecondary: "",
+    normalWorkingHours: "",
+    workBacklog: "Yes",
+    
+    // **Financial Impact Fields**
+    financialImpact24H: "NA",
+    financialImpact1D24H: "NA",
+    financialImpact2D: "NA",
+    financialImpact3D: "NA",
+    financialImpact1W: "NA",
+    
+    // **Regulatory Impact Fields**
+    regulatoryImpact2D: "NA",
+    regulatoryImpact3D: "NA",
+    regulatoryImpact1W: "NA",
+
+    // **Reputational Impact Fields (9)**
+    reputationalImpact02H: "NA",
+    reputationalImpact24H: "NA",
+    reputationalImpact1W: "NA",
+    reputationalImpact1D24H: "NA",
+    reputationalImpact2D: "NA",
+    reputationalImpact3D: "NA",
+
+    // **Legal Impact Fields (6)**
+    legalImpact02H: "NA",
+    legalImpact24H: "NA",
+    legalImpact1D24H: "NA",
+    legalImpact2D: "NA",
+    legalImpact3D: "NA",
+    legalImpact1W: "NA",
+  });
+
+  // **Handle Input Change**
+  const handleChange = (e) => {
+    setBiaData({ ...biaData, [e.target.name]: e.target.value });
+  };
+
+  // **API Call to Create BIA**
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/bia-dashboards/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(biaData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage("BIA created successfully!");
+        setBiaData({
+          department: "",
+          biaEditor: "",
+          division: "",
+          approvalGroup: "",
+          group: "",
+          respondents: "",
+          generalManager: "",
+          bcmChampionPrimary: "",
+          bcmChampionSecondary: "",
+          normalWorkingHours: "",
+          workBacklog: "Yes",
+
+          financialImpact24H: "NA",
+          financialImpact1D24H: "NA",
+          financialImpact2D: "NA",
+          financialImpact3D: "NA",
+          financialImpact1W: "NA",
+
+          regulatoryImpact2D: "NA",
+          regulatoryImpact3D: "NA",
+          regulatoryImpact1W: "NA",
+
+          reputationalImpact02H: "NA",
+          reputationalImpact24H: "NA",
+          reputationalImpact1W: "NA",
+          reputationalImpact1D24H: "NA",
+          reputationalImpact2D: "NA",
+          reputationalImpact3D: "NA",
+
+          legalImpact02H: "NA",
+          legalImpact24H: "NA",
+          legalImpact1D24H: "NA",
+          legalImpact2D: "NA",
+          legalImpact3D: "NA",
+          legalImpact1W: "NA",
+        });
+      } else {
+        setErrorMessage(result.message || "Error creating BIA!");
+      }
+    } catch (error) {
+      setErrorMessage("Network error! Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // **Dropdown Options**
+  const yesNoOptions = ["Yes", "No"];
+  const impactOptions = ["NA", "Negligible impact", "Minor impact", "Moderate impact", "Material Impact", "Enormous Impact"];
+
+
+
   return (
     <React.Fragment>
       <Helmet>
@@ -422,7 +545,7 @@ function NewBIA() {
               <div>
                 <NavLink
                   className="button3 border-1 button3-changes me-1"
-                  to="#"
+                  to="/bia"
                   title="Cancel"
                 >
                   <RxCross2
@@ -435,15 +558,17 @@ function NewBIA() {
                   className="button3 border-1 button3-changes me-1"
                   to="#"
                   title="Save & New"
+                  onClick={handleSubmit}
                 >
                   Save & New
                 </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
+                <NavLink className="button3 border-1 me-3" to="#" title="Save" onClick={handleSubmit} >
                   <FaCheck
                     className="me-1"
                     style={{ width: "15px", height: "15px" }}
                     title="Save"
                   />
+                  
                   Save
                 </NavLink>
               </div>
@@ -510,7 +635,12 @@ function NewBIA() {
         <div className="form-content">
           <div className="form-heading">BIA Information </div>
           <div className="border-1"></div>
-          <Form>
+          <Form >
+            
+                      {/* Success & Error Messages */}
+                      {successMessage && <Alert color="success" timeout={5000}>{successMessage}</Alert>}
+                      {errorMessage && <Alert color="danger" timeout={5000}>{errorMessage}</Alert>}
+            
             <div className="row pt-4">
               <div className="col-6">
                 <div className="mb-3 d-flex">
@@ -520,16 +650,8 @@ function NewBIA() {
                   >
                     Department <span class="text-danger">*</span>
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                   <Input type="text" name="department" value={biaData.department} onChange={handleChange} required />
+                                
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -544,16 +666,10 @@ function NewBIA() {
                   >
                     Division
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                  
+                     <Input type="text" name="division" value={biaData.division} onChange={handleChange} required />
+                                   
+                 
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -565,16 +681,9 @@ function NewBIA() {
                   <label htmlFor="group" className="form-label fs-15 w-20 me-2">
                     Group
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                  
+                    <Input type="text" name="group" value={biaData.group} onChange={handleChange} required />
+         
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -589,16 +698,8 @@ function NewBIA() {
                   >
                     General Manager
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                 
+                     <Input type="text" name="generalManager" value={biaData.generalManager} onChange={handleChange} required />
 
                   <button
                     type="button"
@@ -620,16 +721,9 @@ function NewBIA() {
                   >
                     BCM Champion (Secondary)
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+
+                    <Input type="text" name="bcmChampionSecondary" value={biaData.bcmChampionSecondary} onChange={handleChange} required />
+ 
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -645,11 +739,11 @@ function NewBIA() {
                     Do you normally work with a work backlog
                   </Label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleStatusDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                     <Input type="select" name="workBacklog" value={biaData.workBacklog} onChange={handleChange}>
+                                      {yesNoOptions.map((option) => (
+                                        <option key={option} value={option}>{option}</option>
+                                      ))}
+                                    </Input>
                       <span>{selectedStatus}</span>
                       <svg
                         className={`ms-2 ${isStatusOpen ? "rotate-180" : ""}`}
@@ -665,7 +759,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                    
                     {isStatusOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -684,6 +778,7 @@ function NewBIA() {
                       </div>
                     )}
                   </div>
+                 
                 </div>
                 <div className="mb-3 d-flex align-items-center">
                   <Label
@@ -694,11 +789,12 @@ function NewBIA() {
                     <FaCircleQuestion className="me-2 hw-20" />
                   </Label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleTimeZoneDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                    <Input type="select" name={`financialImpact`} value={biaData[`financialImpact`]} onChange={handleChange}>
+                                          {impactOptions.map((option) => (
+                                            <option key={option} value={option}>{option}</option>
+                                          ))}
+                                        </Input>
+                    
                       <span>{selectedTimeZone}</span>
                       <svg
                         className={`ms-2 ${isTimeZoneOpen ? "rotate-180" : ""}`}
@@ -714,7 +810,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                   
                     {isTimeZoneOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -743,11 +839,11 @@ function NewBIA() {
                     <FaCircleQuestion className="me-2 hw-20" />
                   </Label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleHostelDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                  <Input type="select" name={`financialImpact`} value={biaData[`financialImpact`]} onChange={handleChange}>
+                                          {impactOptions.map((option) => (
+                                            <option key={option} value={option}>{option}</option>
+                                          ))}
+                                        </Input>
                       <span>{selectedHostel}</span>{" "}
                       <svg
                         className={`ms-2 ${isHostelOpen ? "rotate-180" : ""}`}
@@ -763,7 +859,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                    
                     {isHostelOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -791,11 +887,11 @@ function NewBIA() {
                     Regulatory Impact 2D
                   </Label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleRTODropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                  <Input type="select" name={`reputationalImpact`} value={biaData[`reputationalImpact`]} onChange={handleChange}>
+                                        {impactOptions.map((option) => (
+                                          <option key={option} value={option}>{option}</option>
+                                        ))}
+                                      </Input>
                       <span>{selectedRTO}</span>
                       <svg
                         className={`ms-2 ${isRTOOpen ? "rotate-180" : ""}`}
@@ -811,7 +907,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                   
                     {isRTOOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -840,11 +936,11 @@ function NewBIA() {
                     <FaCircleQuestion className="me-2 hw-20" />
                   </Label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleRPODropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                  <Input type="select" name={`reputationalImpact`} value={biaData[`reputationalImpact`]} onChange={handleChange}>
+                                        {impactOptions.map((option) => (
+                                          <option key={option} value={option}>{option}</option>
+                                        ))}
+                                      </Input>
                       <span>{selectedRPO}</span>
                       <svg
                         className={`ms-2 ${isRPOOpen ? "rotate-180" : ""}`}
@@ -860,7 +956,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                   
                     {isRPOOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -890,11 +986,11 @@ function NewBIA() {
                     <FaCircleQuestion className="me-2 hw-20" />
                   </Label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleDRDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                  <Input type="select" name={`reputationalImpact`} value={biaData[`reputationalImpact`]} onChange={handleChange}>
+                                        {impactOptions.map((option) => (
+                                          <option key={option} value={option}>{option}</option>
+                                        ))}
+                                      </Input>
                       <span>{selectedDR}</span>
                       <svg
                         className={`ms-2 ${isDROpen ? "rotate-180" : ""}`}
@@ -910,7 +1006,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                    
                     {isDROpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -940,11 +1036,11 @@ function NewBIA() {
                     <FaCircleQuestion className="me-2 hw-20" />
                   </label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleReputationalImpact1DDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                  <Input type="select" name={`reputationalImpact`} value={biaData[`reputationalImpact`]} onChange={handleChange}>
+                                        {impactOptions.map((option) => (
+                                          <option key={option} value={option}>{option}</option>
+                                        ))}
+                                      </Input>
                       <span>{selectedReputationalImpact1D}</span>
                       <svg
                         className={`ms-2 ${
@@ -962,7 +1058,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                   
                     {isReputationalImpact1DOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -994,11 +1090,11 @@ function NewBIA() {
                     <FaCircleQuestion className="me-2 hw-20" />
                   </label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleReputationalImpact3DDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                  <Input type="select" name={`reputationalImpact`} value={biaData[`reputationalImpact`]} onChange={handleChange}>
+                                        {impactOptions.map((option) => (
+                                          <option key={option} value={option}>{option}</option>
+                                        ))}
+                                      </Input>
                       <span>{selectedReputationalImpact3D}</span>
                       <svg
                         className={`ms-2 ${
@@ -1016,7 +1112,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                   
                     {isReputationalImpact3DOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -1048,11 +1144,11 @@ function NewBIA() {
                     <FaCircleQuestion className="me-2 hw-20" />
                   </label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleImpactLegalImpact24DDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                    <Input type="select" name={`legalImpact`} value={biaData[`legalImpact`]} onChange={handleChange}>
+                                          {impactOptions.map((option) => (
+                                            <option key={option} value={option}>{option}</option>
+                                          ))}
+                                        </Input>
                       <span>{selectedLegalImpact24D}</span>
                       <svg
                         className={`ms-2 ${
@@ -1070,7 +1166,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                   
                     {isLegalImpact24DOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -1099,11 +1195,11 @@ function NewBIA() {
                     <FaCircleQuestion className="me-2 hw-20" />
                   </label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleLegalImpact2DDropdown} // Correct function name
-                      className="form-control text-start d-flex justify-content-between align-items-center" // Your styling
-                      type="button"
-                    >
+                   <Input type="select" name={`legalImpact`} value={biaData[`legalImpact`]} onChange={handleChange}>
+                                         {impactOptions.map((option) => (
+                                           <option key={option} value={option}>{option}</option>
+                                         ))}
+                                       </Input>
                       <span>{selectedLegalImpact2D}</span>
                       <svg
                         className={`ms-2 ${
@@ -1121,7 +1217,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />
                       </svg>
-                    </button>
+                  
                     {isLegalImpact2DOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1" // Your styling
@@ -1151,11 +1247,11 @@ function NewBIA() {
                     <FaCircleQuestion className="me-2 hw-20" />
                   </label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleLegalImpact1WDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                  <Input type="select" name={`legalImpact`} value={biaData[`legalImpact`]} onChange={handleChange}>
+                                         {impactOptions.map((option) => (
+                                           <option key={option} value={option}>{option}</option>
+                                         ))}
+                                       </Input>
                       <span>{selectedLegalImpact1W}</span>
                       <svg
                         className={`ms-2 ${
@@ -1173,7 +1269,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                    
                     {isLegalImpact1WOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1" // Your styling
@@ -1202,16 +1298,9 @@ function NewBIA() {
                   >
                     BIA Editor
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+               
+                     <Input type="text" name="biaEditor" value={biaData.biaEditor} onChange={handleChange} required />
+    
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -1226,16 +1315,9 @@ function NewBIA() {
                   >
                     Approval Group
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+          
+                    <Input type="text" name="approvalGroup" value={biaData.approvalGroup} onChange={handleChange} required />
+                     
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -1250,16 +1332,9 @@ function NewBIA() {
                   >
                     Respondents
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                
+                     <Input type="text" name="respondents" value={biaData.respondents} onChange={handleChange} required />
+  
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -1274,16 +1349,9 @@ function NewBIA() {
                   >
                     BCM Champion (Primary)
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
+                
+                     <Input type="text" name="bcmChampionPrimary" value={biaData.bcmChampionPrimary} onChange={handleChange} required />
+                 
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
@@ -1299,7 +1367,8 @@ function NewBIA() {
                     >
                       {label}
                     </Label>
-                    <Input name="text" className="form-control" type="text" />
+                   <Input type="text" name="normalWorkingHours" value={biaData.normalWorkingHours} onChange={handleChange} required />
+                                  
                   </div>
                 ))}
                 <div className="mb-3 d-flex align-items-center">
@@ -1312,11 +1381,11 @@ function NewBIA() {
                   </Label>{" "}
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     {" "}
-                    <button
-                      onClick={toggleFinancialImpact24HDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center" 
-                      type="button"
-                    >
+                   <Input type="select" name={`financialImpact`} value={biaData[`financialImpact`]} onChange={handleChange}>
+                                         {impactOptions.map((option) => (
+                                           <option key={option} value={option}>{option}</option>
+                                         ))}
+                  </Input> 
                       <span>{selectedFinancialImpact24H}</span>
                       <svg
                         className={`ms-2 ${
@@ -1334,7 +1403,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                    
                     {isFinancialImpact24HOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -1366,11 +1435,11 @@ function NewBIA() {
                   </Label>{" "}
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     {" "}
-                    <button
-                      onClick={toggleFinancialImpact2DDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center" 
-                      type="button"
-                    >
+                    <Input type="select" name={`financialImpact`} value={biaData[`financialImpact`]} onChange={handleChange}>
+                                         {impactOptions.map((option) => (
+                                           <option key={option} value={option}>{option}</option>
+                                         ))}
+                    </Input>                   
                       <span>{selectedFinancialImpact2D}</span>
                       <svg
                         className={`ms-2 ${
@@ -1388,7 +1457,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                    
                     {isFinancialImpact2DOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -1420,11 +1489,11 @@ function NewBIA() {
                   </Label>{" "}
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     {" "}
-                    <button
-                      onClick={toggleFinancialImpact1WDropdown} 
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                    <Input type="select" name={`financialImpact`} value={biaData[`financialImpact`]} onChange={handleChange}>
+                                         {impactOptions.map((option) => (
+                                           <option key={option} value={option}>{option}</option>
+                                         ))}
+                  </Input> 
                       <span>{selectedFinancialImpact1W}</span>
                       <svg
                         className={`ms-2 ${
@@ -1442,7 +1511,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                    
                     {isFinancialImpact1WOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -1474,11 +1543,11 @@ function NewBIA() {
                   </Label>{" "}
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     {" "}
-                    <button
-                      onClick={toggleRegulatoryImpact3DDropdown} 
-                      className="form-control text-start d-flex justify-content-between align-items-center" 
-                      type="button"
-                    >
+                   <Input type="select" name={`reputationalImpact`} value={biaData[`reputationalImpact`]} onChange={handleChange}>
+                                         {impactOptions.map((option) => (
+                                           <option key={option} value={option}>{option}</option>
+                                         ))}
+                                       </Input>
                       <span>{selectedRegulatoryImpact3D}</span>
                       <svg
                         className={`ms-2 ${
@@ -1496,7 +1565,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                    
                     {isRegulatoryImpact3DOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -1528,11 +1597,11 @@ function NewBIA() {
                   </Label>{" "}
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     {" "}
-                    <button
-                      onClick={toggleReputationalImpact02HDropdown} 
-                      className="form-control text-start d-flex justify-content-between align-items-center" 
-                      type="button"
-                    >
+                    <Input type="select" name={`reputationalImpact`} value={biaData[`reputationalImpact`]} onChange={handleChange}>
+                                          {impactOptions.map((option) => (
+                                            <option key={option} value={option}>{option}</option>
+                                          ))}
+                                        </Input>
                       <span>{selectedReputationalImpact02H}</span>
                       <svg
                         className={`ms-2 ${
@@ -1550,7 +1619,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                   
                     {isReputationalImpact02HOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -1582,11 +1651,11 @@ function NewBIA() {
                   </Label>{" "}
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     {" "}
-                    <button
-                      onClick={toggleReputationalImpact1WDropdown} 
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                    <Input type="select" name={`reputationalImpact`} value={biaData[`reputationalImpact`]} onChange={handleChange}>
+                                          {impactOptions.map((option) => (
+                                            <option key={option} value={option}>{option}</option>
+                                          ))}
+                                        </Input>
                       <span>{selectedReputationalImpact1W}</span>
                       <svg
                         className={`ms-2 ${
@@ -1604,7 +1673,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                    
                     {isReputationalImpact1WOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1" 
@@ -1636,11 +1705,11 @@ function NewBIA() {
                   </Label>{" "}
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     {" "}
-                    <button
-                      onClick={toggleReputationalImpact2DDropdown} 
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                    <Input type="select" name={`reputationalImpact`} value={biaData[`reputationalImpact`]} onChange={handleChange}>
+                                          {impactOptions.map((option) => (
+                                            <option key={option} value={option}>{option}</option>
+                                          ))}
+                                        </Input>
                       <span>{selectedReputationalImpact2D}</span>
                       <svg
                         className={`ms-2 ${
@@ -1658,7 +1727,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                   
                     {isReputationalImpact2DOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1" // Your styling
@@ -1690,11 +1759,11 @@ function NewBIA() {
                   </Label>{" "}
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     {" "}
-                    <button
-                      onClick={toggleLegalImpact02HDropdown} 
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
+                   <Input type="select" name={`legalImpact`} value={biaData[`legalImpact`]} onChange={handleChange}>
+                                         {impactOptions.map((option) => (
+                                           <option key={option} value={option}>{option}</option>
+                                         ))}
+                                       </Input>
                       <span>{selectedLegalImpact02H}</span>
                       <svg
                         className={`ms-2 ${
@@ -1712,7 +1781,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                  
                     {isLegalImpact02HOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -1742,11 +1811,11 @@ function NewBIA() {
                   </Label>{" "}
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     {" "}
-                    <button
-                      onClick={toggleLegalImpact1D24HDropdown} 
-                      className="form-control text-start d-flex justify-content-between align-items-center" 
-                      type="button"
-                    >
+                    <Input type="select" name={`legalImpact`} value={biaData[`legalImpact`]} onChange={handleChange}>
+                                         {impactOptions.map((option) => (
+                                           <option key={option} value={option}>{option}</option>
+                                         ))}
+                                       </Input>
                       <span>{selectedLegalImpact1D24H}</span>
                       <svg
                         className={`ms-2 ${
@@ -1764,7 +1833,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                    
                     {isLegalImpact1D24HOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -1794,11 +1863,11 @@ function NewBIA() {
                   </Label>{" "}
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     {" "}
-                    <button
-                      onClick={toggleLegalImpact3DDropdown} 
-                      className="form-control text-start d-flex justify-content-between align-items-center" 
-                      type="button"
-                    >
+                    <Input type="select" name={`legalImpact`} value={biaData[`legalImpact`]} onChange={handleChange}>
+                                         {impactOptions.map((option) => (
+                                           <option key={option} value={option}>{option}</option>
+                                         ))}
+                                       </Input>
                       <span>{selectedLegalImpact3D}</span>
                       <svg
                         className={`ms-2 ${
@@ -1816,7 +1885,7 @@ function NewBIA() {
                           d="M19 9l-7 7-7-7"
                         />{" "}
                       </svg>
-                    </button>
+                   
                     {isLegalImpact3DOpen && (
                       <div
                         className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
@@ -1838,6 +1907,9 @@ function NewBIA() {
                 </div>
               </div>
             </div>
+             <Button type="submit" color="primary" disabled={loading}>
+                          {loading ? <Spinner size="sm" /> : "Create BIA"}
+                        </Button>
           </Form>
         </div>
       </div>

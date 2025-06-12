@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import Tab from "react-bootstrap/Tab";
-import Tabs from "react-bootstrap/Tabs";
+
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+
 import { Link, NavLink } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { HiMiniWrench } from "react-icons/hi2";
@@ -30,8 +31,47 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { TfiMenuAlt } from "react-icons/tfi";
 import { GrDetach } from "react-icons/gr";
 import { FaHome } from "react-icons/fa";
+import RelatedBusinessEntity from "./relatedBusinessEntity";
 
+import { Tabs, Tab } from "react-bootstrap";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useParams } from "react-router-dom";
 function ViewLocation() {
+
+
+
+
+
+
+
+
+  const { id } = useParams(); // Get ID from the URL
+  const [apiData, setApiData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!id) {
+      console.error("No ID provided, skipping API call.");
+      return;
+    }
+  
+    console.log(`Fetching data for location ID: ${id}`);
+  
+    axios
+      .get(`http://localhost:8000/api/v1/locations/${id}`)
+      .then((response) => {
+        console.log("API Response Data:", response.data);
+        setApiData(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+        setError(error.message);
+        setLoading(false);
+      });
+  }, [id]);
+  
   const [key, setKey] = useState("Location Info");
   const [isOpen, setIsOpen] = useState(false);
   const [isVendorOpen, setIsVendorOpen] = useState(false);
@@ -593,169 +633,16 @@ function ViewLocation() {
             </div>
           </Tab>
           <Tab eventKey="Business Entities" title="Business Entities">
-            <div className="main-content2 pt-3">
-              <div className="d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center">
-                  <span className="header-title">
-                    {" "}
-                    Departments at this Location
-                  </span>
-                  <div className="dropdown">
-                    <button
-                      className="btn btn-secondary dropdown-toggle border-radius-2"
-                      type="button"
-                      id="dropdownMenuButton"
-                      data-bs-toggle="dropdown"
-                      aria-expanded={isOpen}
-                      onClick={toggleDropdown}
-                    >
-                      All Business Entities
-                      <IoMdArrowDropdown className="hw-20" />
-                    </button>
-                    <ul
-                      className={`dropdown-menu ${isOpen ? "show" : ""}`}
-                      aria-labelledby="dropdownMenuButton"
-                      style={{
-                        "--vz-dropdown-min-width": "15rem",
-                        "--vz-dropdown-font-size": "14px;",
-                      }}
-                    >
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          <TiPlus className="mb-2px hw-15" />
-                          Create New View
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          <IoMdArrowDropright className="hw-20" />
-                          All Business Entities
-                          <BiSolidEdit className="hw-15 ml-20px" />
-                          <FaTableColumns className="hw-15 ml-5px" />
-                          <ImCopy className="hw-15 ml-5px" />
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Business Entity Scorecard
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Department List
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Business Units
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Orphaned Business Entities
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                  <button className="button border-1 ms-1">
-                    <LuRefreshCw className="hw-18" />
-                  </button>
-                  <span className="dropdown">
-                    <button
-                      className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                      type="button"
-                      id="TollFropdown"
-                      data-bs-toggle="dropdown"
-                      aria-expanded={isColumnOpen}
-                      onClick={ColumnDropDown}
-                    >
-                      <FaTableColumns className="hw-14" />
-                    </button>
-                    <ul
-                      className={`dropdown-menu ${isColumnOpen ? "show" : ""}`}
-                      aria-labelledby="TollFropdown"
-                      style={{
-                        "--vz-dropdown-min-width": "15rem",
-                        "--vz-dropdown-font-size": "14px;",
-                      }}
-                    >
-                      <li className="align-items-center justify-content-between d-flex me-1 ms-1">
-                        <span className="fw-bold">Columns</span>{" "}
-                        <a className="blue">Reset</a>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Business Entity
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Business Entity Type
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Related Locations
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Parent Business Entity
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Child Business Entities
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Updated At
-                        </label>
-                      </li>
-                    </ul>
-                  </span>
-                  <button className="button border-1 ms-1">
-                    <FaFilter className="hw-15" />
-                  </button>
-                </div>
-                <div>
-                  <button
-                    className="button border-1 ms-1"
-                    title="Attach Employee"
-                  >
-                    <IoMdAttach className="hw-20" />
-                  </button>
-                  <button
-                    className="button border-1 ms-1 me-1"
-                    title="Detach Employee"
-                  >
-                    <GrDetach className="hw-20" />
-                  </button>
-                  <NavLink className="button1 border-1" to="/businessentity ">
-                    <TiPlus className="hw-20" />
-                    Business Entity
-                  </NavLink>
-                  <button className="button border-1 ms-1">
-                    <FaRegTrashCan className="hw-18" />
-                  </button>
-                  <button className="button border-1 ms-1">
-                    <HiDotsHorizontal className="hw-20" />
-                  </button>
-                  <button className="button border-1 ms-1">
-                    <MdOutlineKeyboardArrowDown className="hw-20" />
-                  </button>
-                </div>
-              </div>
-              <div className="border-1 mt-2 mb-2"></div>
-            </div>
-          </Tab>
+  {apiData && apiData.location ? (
+    <RelatedBusinessEntity locationId={apiData.location._id} data={apiData} />
+  ) : (
+    <p>Loading...</p>
+  )}
+</Tab>
+
+
+
+
           <Tab eventKey="Relationships" title="Relationships">
             <div className="main-content2 pt-3">
               <div className="d-flex align-items-center justify-content-between">

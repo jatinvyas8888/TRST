@@ -9,31 +9,31 @@ const bcmSeatsRequirementsSchema = new mongoose.Schema(
     bcmSeatsRequirementsRecovery: {
       type: String,
     },
-    activities: {
+    activities: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Activities',
-    },
-    TimeofOperation: {
+      ref: 'Activity',
+    }],
+    timeOfOperation: { // Updated field name to match frontend
       type: String,
     },
     bcmSeatNumber: {
       type: Number,
     },
-    bcmSite: {
+    bcmSite: { // Ensure this matches the frontend
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Location',
     },
 
     //primary staff
-    primaryCriticalStaff: {
+    primaryCriticalStaff: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Employee',
-    },
+    }],
     //secondary Staff
-    alternateCriticalStaff: {
+    alternateCriticalStaff: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Employee',
-    },
+    }],
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

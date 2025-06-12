@@ -1,0 +1,77 @@
+/* custom-datepicker.css */
+.react-datepicker {
+    font-family: Arial, sans-serif;
+  }
+  
+  .react-datepicker__header {
+    background-color: #007bff; /* Change header background color */
+    color: white; /* Change header text color */
+  }
+  
+  .react-datepicker__day--selected {
+    background-color: #28a745; /* Change selected day background color */
+    color: white; /* Change selected day text color */
+  }
+ /* TimePickerStyles.css */
+
+/* TimePickerStyles.css */
+
+/* Style for the time picker container */
+.react-time-picker {
+    border: 1px solid #ced4da; /* Border color */
+    border-radius: 4px; /* Rounded corners */
+    background-color: #fff; /* Background color */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 10px; /* Padding inside the time picker */
+  }
+  
+  /* Style for the input field */
+  .react-time-picker__inputGroup {
+    display: flex; /* Flexbox for input and buttons */
+    align-items: center; /* Center items vertically */
+  }
+  
+  /* Style for the input field */
+  .react-time-picker__input {
+    border: 1px solid #ced4da; /* Border color */
+    border-radius: 4px; /* Rounded corners */
+    padding: 8px; /* Padding inside the input */
+    font-size: 16px; /* Font size */
+    width: 100%; /* Full width */
+  }
+  
+  /* Style for the clock button */
+  .react-time-picker__clock {
+    background-color: #007bff; /* Button background color */
+    color: white; /* Button text color */
+    border: none; /* Remove default border */
+    border-radius: 4px; /* Rounded corners */
+    padding: 8px 12px; /* Button padding */
+    cursor: pointer; /* Pointer cursor on hover */
+  }
+  
+  /* Hover effect for the clock button */
+  .react-time-picker__clock:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+  }
+  
+  /* Style for the dropdown menu */
+  .react-time-picker__clock-wrapper {
+    position: absolute; /* Position dropdown below the button */
+    z-index: 1000; /* Ensure it appears above other elements */
+    background-color: white; /* Dropdown background color */
+    border: 1px solid #ced4da; /* Border for dropdown */
+    border-radius: 4px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  }
+  
+  /* Style for dropdown items */
+  .react-time-picker__option {
+    padding: 10px; /* Padding for dropdown items */
+    cursor: pointer; /* Pointer cursor on hover */
+  }
+  
+  /* Hover effect for dropdown items */
+  .react-time-picker__option:hover {
+    background-color: #f1f1f1; /* Light gray on hover */
+  }

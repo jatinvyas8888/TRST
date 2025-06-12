@@ -500,9 +500,9 @@ const Navdata = () => {
       },
       subItems: [
         {
-          id: "approval-groups",
+          id: "plan_approval-group",
           label: "Approval Groups",
-          link: "/approval-groups",
+          link: "/plan_approval-group",
           parentId: "plans",
         },
         {

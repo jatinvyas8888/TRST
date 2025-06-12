@@ -160,10 +160,15 @@ const getLocationById = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Location not found");
     }
 
+    // Find Business Entities where this location ID is stored
+    const businessEntitiesRelationships = await BusinessEntity.find({ locations: id })
+        .select(" businessEntity description businessEntityType businessEntityId");
+
     return res.status(200).json(
-        new ApiResponse(200, location, "Location retrieved successfully")
+        new ApiResponse(200, { location, businessEntitiesRelationships }, "Location retrieved successfully")
     );
 });
+
 
 const updateLocation = asyncHandler(async (req, res) => {
     const { id } = req.params;

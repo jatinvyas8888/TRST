@@ -1081,66 +1081,58 @@ const OrganizationalEntitiesPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentRows.map((row) => (
-                    <tr key={row.id}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          checked={checkedItems.includes(row.id)}
-                          onChange={() => handleCheckboxChange(row.id)}
-                        />
-                      </td>
-                      <td className="text-center">
-                        <div className="d-flex align-items-center gap-2 justify-content-center">
-                          <button
-                            className="btn btn-sm btn-link p-0"
-                            onClick={() => handleEdit(row.id)}
-                            title="Edit"
-                          >
-                            <CiEdit
-                              style={{
-                                cursor: "pointer",
-                                fontSize: "1.2em",
-                                color: "green",
-                              }}
-                              size={18}
-                            />
-                          </button>
-                          <button
-                            className="btn btn-sm btn-link p-0"
-                            onClick={() => handleDelete(row.id)}
-                            title="Delete"
-                          >
-                            <RiDeleteBin6Line
-                              className="text-danger"
-                              size={18}
-                            />
-                          </button>
-                        </div>
-                      </td>
-                      {visibleColumns.businessEntity && (
-                        <td>
-                          <NavLink
-                            to={`/view-organizational-entity/${row.id}`}
-                            className="text-primary"
-                          >
-                            {row.businessEntity}
-                          </NavLink>
-                        </td>
-                      )}
-                      {columns
-                        .filter(
-                          (col) => col.draggable && visibleColumns[col.id]
-                        )
-                        .map((column) => (
-                          <td key={`${row.id}-${column.id}`}>
-                            {row[column.id]}
-                          </td>
-                        ))}
-                    </tr>
-                  ))}
-                </tbody>
+  {currentRows.map((row) => (
+    <tr key={row.id}>
+      <td>
+        <input
+          type="checkbox"
+          className="form-check-input"
+          checked={checkedItems.includes(row.id)}
+          onChange={() => handleCheckboxChange(row.id)}
+        />
+      </td>
+      <td className="text-center">
+        <div className="d-flex align-items-center gap-2 justify-content-center">
+          <button
+            className="btn btn-sm btn-link p-0"
+            onClick={() => handleEdit(row.id)}
+            title="Edit"
+          >
+            <CiEdit
+              style={{
+                cursor: "pointer",
+                fontSize: "1.2em",
+                color: "green",
+              }}
+              size={18}
+            />
+          </button>
+          <button
+            className="btn btn-sm btn-link p-0"
+            onClick={() => handleDelete(row.id)}
+            title="Delete"
+          >
+            <RiDeleteBin6Line className="text-danger" size={18} />
+          </button>
+        </div>
+      </td>
+      {visibleColumns.businessEntity && (
+        <td>
+          <a href={`/organizational-entities/view/${row._id || row.id}`} className="text-primary">
+  {row.businessEntity}
+</a>
+
+        </td>
+      )}
+      {columns
+        .filter((col) => col.draggable && visibleColumns[col.id])
+        .map((column) => (
+          <td key={`${row.id}-${column.id}`}>{row[column.id]}</td>
+        ))}
+    </tr>
+  ))}
+</tbody>
+
               </table>
             </div>
 

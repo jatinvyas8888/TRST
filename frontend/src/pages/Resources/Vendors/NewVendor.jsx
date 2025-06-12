@@ -27,36 +27,31 @@ import {
   Spinner,
 } from "reactstrap";
 import { TiPlus } from "react-icons/ti";
+import axios from 'axios'; // Import Axios
 
 function NewVendor() {
   const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isTimeZoneOpen, setIsTimeZoneOpen] = useState(false); // Time Zone dropdown
-  const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
-  const [isStateOpen, setIsStateOpen] = useState(false); // Add missing state toggle
-  const [isCountryOpen, setIsCountryOpen] = useState(false); // Add missing state toggle
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [isStateOpen, setIsStateOpen] = useState(false);
+  const [isCountryOpen, setIsCountryOpen] = useState(false);
   const [selectedState, setSelectedState] = useState("-- Please select --");
   const [selectedCountry, setSelectedCountry] = useState("-- Please select --");
-  const [isHostelOpen, setIsHostelOpen] = useState(false); // Employee Status dropdown
-
   const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "No", "Yes"];
+  const [vendor, setVendor] = useState("");
+  const [mainPhone, setMainPhone] = useState("");
+  const [faxNumber, setFaxNumber] = useState("");
+  const [website, setWebsite] = useState("");
+  const [vendorManagementContacts, setVendorManagementContacts] = useState("");
+  const [serviceTypes, setServiceTypes] = useState("");
+  const [address1, setAddress1] = useState("");
+  const [address2, setAddress2] = useState("");
+  const [notes, setNotes] = useState("");
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [selectedHostel, setSelectedHostel] = useState("-- Please select --");
-  const hostelOptions = ["-- Please select --", "No", "No"];
-  const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
-  const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
-  const toggleStateDropdown = () => setIsStateOpen((prev) => !prev);
-  const toggleCountryDropdown = () => setIsCountryOpen((prev) => !prev);
-  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
-  const handleSelectStatus = (option) => {
-    setSelectedStatus(option);
-    setIsStatusOpen(false);
-  };
-  const handleSelecthostel = (option) => {
-    setSelectedHostel(option);
-    setIsHostelOpen(false);
-  };
-  const StateOptions = [
+  const statusOptions = ["-- Please select --", "Critical", "High", "Medium", "Low", "Not Applicable"];
+  const stateOptions = [
     "-- Please select --",
     "Alabama",
     "Alaska",
@@ -108,9 +103,9 @@ function NewVendor() {
     "Washington",
     "West Virginia",
     "Wisconsin",
-    "Wyoming",
-  ];
-  const CountryOptions = [
+    "Wyoming",
+  ];
+  const countryOptions = [
     "-- Please select --",
     "Afghanistan",
     "Alaska",
@@ -295,19 +290,81 @@ function NewVendor() {
     "Yemen",
     "Zambia",
     "Zimbabwe",
-  ];
+  ];
+
+  const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
+  const toggleStateDropdown = () => setIsStateOpen((prev) => !prev);
+  const toggleCountryDropdown = () => setIsCountryOpen((prev) => !prev);
+  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
+
+  const handleSelectStatus = (option) => {
+    setSelectedStatus(option);
+    setIsStatusOpen(false);
+  };
+
   const handleSelectState = (option) => {
-    setSelectedSate(option);
+    setSelectedState(option);
     setIsStateOpen(false);
   };
+
   const handleSelectCountry = (option) => {
     setSelectedCountry(option);
     setIsCountryOpen(false);
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const vendorData = {
+      vendor,
+      mainPhone,
+      faxNumber,
+      website,
+      criticality: selectedStatus,
+      vendorManagementContacts,
+      serviceTypes,
+      address1,
+      address2,
+      stateProvince: selectedState,
+      country: selectedCountry,
+      notes,
+    };
+
+    try {
+      setLoading(true);
+      const response = await axios.post('http://localhost:8000/api/v1/vendors/create', vendorData);
+      setSuccessMessage('Vendor created successfully!');
+      setError('');
+      console.log('Vendor created successfully:', response.data);
+      resetForm();
+    } catch (error) {
+      console.error('Error creating vendor:', error.response || error.message);
+      setError('Error creating vendor. Please try again.');
+      setSuccessMessage('');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setVendor('');
+    setMainPhone('');
+    setFaxNumber('');
+    setWebsite('');
+    setSelectedStatus('-- Please select --');
+    setVendorManagementContacts('');
+    setServiceTypes('');
+    setAddress1('');
+    setAddress2('');
+    setSelectedState('-- Please select --');
+    setSelectedCountry('-- Please select --');
+    setNotes('');
+  };
+
   return (
     <React.Fragment>
       <Helmet>
-        <title> New Vendor Page | TRST</title>
+        <title>New Vendor Page | TRST</title>
         <meta name="description" content="This is the home page description" />
         <meta name="keywords" content="home, react, meta tags" />
       </Helmet>
@@ -317,37 +374,19 @@ function NewVendor() {
             <div className="header-text">Vendor: New Vendor</div>
             <div className="d-flex align-items-center justify-content-end">
               <div>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Cancel"
-                >
-                  <RxCross2
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                  />
+                <NavLink className="button3 border-1 button3-changes me-1" to="#" title="Cancel">
+                  <RxCross2 className="me-1" style={{ width: "15px", height: "15px" }} />
                   Cancel
                 </NavLink>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save & New"
-                >
+                <NavLink className="button3 border-1 button3-changes me-1" to="#" title="Save & New">
                   Save & New
                 </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
-                  <FaCheck
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                  />
+                <NavLink className="button3 border-1 me-3" to="#" title="Save" onClick={handleSubmit}>
+                  <FaCheck className="me-1" style={{ width: "15px", height: "15px" }} />
                   Save
                 </NavLink>
               </div>
-              <div
-                className="map-action k-widget k-button-group order-1"
-                id="map-action-toggle"
-                role="group"
-              >
+              <div className="map-action k-widget k-button-group order-1" id="map-action-toggle" role="group">
                 <span className="dropdown">
                   <button
                     className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
@@ -359,12 +398,7 @@ function NewVendor() {
                   >
                     <HiMiniWrench className="hw-16" />
                   </button>
-                  <ul
-                    className={`right-auto dropdown-menu  ${
-                      isToolOpen ? "show" : ""
-                    }`}
-                    aria-labelledby="TollFropdown"
-                  >
+                  <ul className={`right-auto dropdown-menu ${isToolOpen ? "show" : ""}`} aria-labelledby="TollFropdown">
                     <li>
                       <a className="dropdown-item" href="#">
                         <BiSolidEdit className="hw-15" /> Design this page
@@ -406,41 +440,56 @@ function NewVendor() {
         <div className="form-content">
           <div className="form-heading">Vendor Information</div>
           <div className="border-1"></div>
-          <Form>
+          <Form onSubmit={handleSubmit}>
+            {successMessage && <Alert color="success" timeout={3000}>{successMessage}</Alert>}
+            {error && <Alert color="danger" timeout={3000}>{error}</Alert>}
             <div className="row pt-4">
               <div className="col-6">
-                {["Vendor"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                      <span class="text-danger">*</span>
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
-                {["Main Phone", "Fax Number", "Website"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="vendor" className="form-label me-2 fs-15 w-40">Vendor<span className="text-danger">*</span></Label>
+                  <Input
+                    name="vendor"
+                    className="form-control"
+                    type="text"
+                    value={vendor}
+                    onChange={(e) => setVendor(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="mainPhone" className="form-label me-2 fs-15 w-40">Main Phone</Label>
+                  <Input
+                    name="mainPhone"
+                    className="form-control"
+                    type="text"
+                    value={mainPhone}
+                    onChange={(e) => setMainPhone(e.target.value)}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="faxNumber" className="form-label me-2 fs-15 w-40">Fax Number</Label>
+                  <Input
+                    name="faxNumber"
+                    className="form-control"
+                    type="text"
+                    value={faxNumber}
+                    onChange={(e) => setFaxNumber(e.target.value)}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="website" className="form-label me-2 fs-15 w-40">Website</Label>
+                  <Input
+                    name="website"
+                    className="form-control"
+                    type="text"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                  />
+                </div>
               </div>
               <div className="col-6">
                 <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="criticality"
-                    className="form-label me-2 fs-15 w-40"
-                  >
-                    Criticality
-                  </Label>
+                  <Label htmlFor="criticality" className="form-label me-2 fs-15 w-40">Criticality</Label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     <button
                       onClick={toggleStatusDropdown}
@@ -464,10 +513,7 @@ function NewVendor() {
                       </svg>
                     </button>
                     {isStatusOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
+                      <div className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1" style={{ zIndex: 1000 }}>
                         {statusOptions.map((option, index) => (
                           <button
                             key={index}
@@ -483,78 +529,30 @@ function NewVendor() {
                   </div>
                 </div>
                 <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2 d-flex justify-content-between align-items-center"
-                  >
-                    Business Owner(s){" "}
-                    <FaCircleQuestion className="me-2 hw-20" />
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2 d-flex justify-content-between align-items-center"
-                  >
+                  <label htmlFor="vendorManagementContacts" className="form-label fs-15 w-20 me-2 d-flex justify-content-between align-items-center">
                     Vendor Management Contact(s)
                     <FaCircleQuestion className="me-2 hw-20" />
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
+                  <Input
+                    name="vendorManagementContacts"
+                    className="form-control"
+                    type="text"
+                    value={vendorManagementContacts}
+                    onChange={(e) => setVendorManagementContacts(e.target.value)}
+                  />
                 </div>
                 <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2 d-flex justify-content-between align-items-center"
-                  >
-                    Service Types <FaCircleQuestion className="me-2 hw-20" />
+                  <label htmlFor="serviceTypes" className="form-label fs-15 w-20 me-2 d-flex justify-content-between align-items-center">
+                    Service Types
+                    <FaCircleQuestion className="me-2 hw-20" />
                   </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
+                  <Input
+                    name="serviceTypes"
+                    className="form-control"
+                    type="text"
+                    value={serviceTypes}
+                    onChange={(e) => setServiceTypes(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -566,26 +564,38 @@ function NewVendor() {
           <Form>
             <div className="row pt-4">
               <div className="col-6">
-                {["Address 1", "Address 2", "City"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="address1" className="form-label me-2 fs-15 w-40">Address 1</Label>
+                  <Input
+                    name="address1"
+                    className="form-control"
+                    type="text"
+                    value={address1}
+                    onChange={(e) => setAddress1(e.target.value)}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="address2" className="form-label me-2 fs-15 w-40">Address 2</Label>
+                  <Input
+                    name="address2"
+                    className="form-control"
+                    type="text"
+                    value={address2}
+                    onChange={(e) => setAddress2(e.target.value)}
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="city" className="form-label me-2 fs-15 w-40">City</Label>
+                  <Input
+                    name="city"
+                    className="form-control"
+                    type="text"
+                  />
+                </div>
               </div>
               <div className="col-6">
                 <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="State/Province"
-                    className="form-label me-2 fs-15 w-40"
-                  >
-                    State/Province
-                  </Label>
+                  <Label htmlFor="State/Province" className="form-label me-2 fs-15 w-40">State/Province</Label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     <button
                       onClick={toggleStateDropdown}
@@ -609,11 +619,8 @@ function NewVendor() {
                       </svg>
                     </button>
                     {isStateOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {StateOptions.map((option, index) => (
+                      <div className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1" style={{ zIndex: 1000 }}>
+                        {stateOptions.map((option, index) => (
                           <button
                             key={index}
                             onClick={() => handleSelectState(option)}
@@ -627,25 +634,16 @@ function NewVendor() {
                     )}
                   </div>
                 </div>
-
-                {["Zip Code"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
                 <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="Country"
-                    className="form-label me-2 fs-15 w-40"
-                  >
-                    Country
-                  </Label>
+                  <Label htmlFor="zipCode" className="form-label me-2 fs-15 w-40">Zip Code</Label>
+                  <Input
+                    name="zipCode"
+                    className="form-control"
+                    type="text"
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label htmlFor="Country" className="form-label me-2 fs-15 w-40">Country</Label>
                   <div className="dropdown-container position-relative flex-grow-1 w-100">
                     <button
                       onClick={toggleCountryDropdown}
@@ -669,11 +667,8 @@ function NewVendor() {
                       </svg>
                     </button>
                     {isCountryOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {CountryOptions.map((option, index) => (
+                      <div className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1" style={{ zIndex: 1000 }}>
+                        {countryOptions.map((option, index) => (
                           <button
                             key={index}
                             onClick={() => handleSelectCountry(option)}
@@ -696,7 +691,16 @@ function NewVendor() {
           <div className="border-1"></div>
           <Form>
             <div className="row pt-4">
-              <div className="col-12"></div>
+              <div className="col-12">
+                <Label htmlFor="notes" className="form-label me-2 fs-15 w-40">Notes</Label>
+                <Input
+                  name="notes"
+                  className="form-control"
+                  type="text"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+              </div>
             </div>
           </Form>
         </div>

@@ -6,40 +6,63 @@ import mongoose from "mongoose"
 const businessEntitySchema = new mongoose.Schema({
     businessEntityType: {
         type: String,
-        required: true,
+        required: false,
         trim: true
     },
     businessEntity: {
         type: String,
-        required: true,
+        required: false,
         unique: true,
         trim: true
     },
     businessEntityId: {
         type: String,
+        required: false,
     },
     editors: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        ref: "User",
+        default:[]
     }],
     description: {
         type: String,
+        required: false,
     },
     parentBusinessEntity: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "BusinessEntity",
+        default:[]
     },
     childBusinessEntities: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "BusinessEntity"
+        ref: "BusinessEntity",
+        default:[]
     }],
     relatedLocations: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Location"
+        ref: "Location",
+        default:[]
     }],
+    employees: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Employee",
+        default:[]
+    }],
+    locations: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Location",
+        default:[]
+    }],
+    applications: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Application",
+        default:[]
+    }],
+    applicationIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Application' , default:[]}],
     updatedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+    
     }
 }, {
     timestamps: true

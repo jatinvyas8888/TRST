@@ -1,668 +1,541 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { Input, Label, Button, Form } from "reactstrap";
+import ApplicationOwnerModal from "./ApplicationOwnerModal";
+import BusinessOwnerModal from "./BusinessOwnerModal";
+import BusinessEntityModal from "./BusinessEntityModal";
+import DataCenterModal from "./DataCenterModal";
+import AlternateDataCenterModal from "./AlternateDataCenterModal";
+import VendorModal from "./VendorModal"; // ✅ Ensure correct path
+import { Link } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 import { FaCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
-import { HiMiniWrench } from "react-icons/hi2";
-import { BiSolidEdit } from "react-icons/bi";
-import { FcSettings } from "react-icons/fc";
-import { LuTableOfContents, LuClock9 } from "react-icons/lu";
-import { FaPrint, FaRegFilePdf } from "react-icons/fa";
-import { IoIosSearch } from "react-icons/io";
-import { FaCircleQuestion } from "react-icons/fa6";
-import "./Applications.css";
-import { BiSearchAlt2 } from "react-icons/bi";
-import {
-  Card,
-  CardBody,
-  Col,
-  Container,
-  Input,
-  Label,
-  Row,
-  Button,
-  Form,
-  FormFeedback,
-  Alert,
-  Spinner,
-} from "reactstrap";
-import { TiPlus } from "react-icons/ti";
+import { BiSearchAlt2 } from 'react-icons/bi';
+import axios from "axios";
+import { Alert } from "reactstrap";
 
 function NewApplication() {
-  const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isTimeZoneOpen, setIsTimeZoneOpen] = useState(false); // Time Zone dropdown
-  const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
+  // Form state variables
+  const [applicationOwner, setApplicationOwner] = useState([]);
+  const [applicationOwnerNames, setApplicationOwnerNames] = useState(""); // Stores selected names
+  const [showApplicationOwnerModal, setShowApplicationOwnerModal] = useState(false);
+  
+const [businessOwner, setBusinessOwner] = useState([]); // Stores selected IDs
+const [businessOwnerNames, setBusinessOwnerNames] = useState(""); // Stores selected names
+const [showBusinessOwnerModal, setShowBusinessOwnerModal] = useState(false);
+// Business Entity
+const [businessEntity, setBusinessEntity] = useState([]); // Stores selected IDs
+const [businessEntityNames, setBusinessEntityNames] = useState(""); // Stores selected names
+const [showBusinessEntityModal, setShowBusinessEntityModal] = useState(false);
+// Data Center
+const [primaryDataCenter, setPrimaryDataCenter] = useState([]); // Stores selected IDs
+const [primaryDataCenterNames, setPrimaryDataCenterNames] = useState(""); // Stores selected names
+const [showDataCenterModal, setShowDataCenterModal] = useState(false);
+// Alternate Data Center
+const [alternateDataCenter, setAlternateDataCenter] = useState([]); // Stores selected IDs
+const [alternateDataCenterNames, setAlternateDataCenterNames] = useState(""); // Stores selected names
+const [showAlternateDataCenterModal, setShowAlternateDataCenterModal] = useState(false);
+//
+const [applicationVendor, setApplicationVendor] = useState([]);
+const [applicationVendorNames, setApplicationVendorNames] = useState("");
+const [showVendorModal, setShowVendorModal] = useState(false);
 
-  const [isHostelOpen, setIsHostelOpen] = useState(false); // Employee Status dropdown
 
-  const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "No", "Yes"];
 
-  const [selectedHostel, setSelectedHostel] = useState("-- Please select --");
-  const hostelOptions = ["-- Please select --", "No", "No"];
-  const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
-  const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
+  //other fields
+  const [applicationID, setApplicationID] = useState("");
+  const [applicationName, setApplicationName] = useState("");
+  const [applicationType, setApplicationType] = useState(""); // Multi-select
+  const [applicationAlias, setApplicationAlias] = useState("");
+  const [applicationURL, setApplicationURL] = useState("");
+  const [description, setDescription] = useState("");
+  const [hostedType, setHostedType] = useState("");
+  const [drStrategy, setDrStrategy] = useState("");
+  const [rto, setRTO] = useState("");
+  const [rpo, setRPO] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false); // Show loading state
+  
+ 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSuccessMessage("");
+    setErrorMessage("");
+    setLoading(true);
+  
+    const formData = {
+      applicationID,
+      applicationName,
+      applicationType,
+      applicationAlias,
+      applicationURL,
+      description,
+      hostedType,
+      drStrategy,
+      rto,
+      rpo,
+      applicationOwner: applicationOwner.length > 0 ? applicationOwner : [], // ✅ Allow multiple selections
+      businessOwner: businessOwner.length > 0 ? businessOwner : [],
+      businessEntity: businessEntity.length > 0 ? businessEntity : [],
+      primaryDataCenter: primaryDataCenter.length > 0 ? primaryDataCenter : [],
+      alternateDataCenter: alternateDataCenter.length > 0 ? alternateDataCenter : [],
+      applicationVendor: applicationVendor.length > 0 ? applicationVendor : [], // ✅ If empty, send null
 
-  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
-  const handleSelectStatus = (option) => {
-    setSelectedStatus(option);
-    setIsStatusOpen(false);
+    };
+  
+    console.log("📤 Submitting Application Data:", formData);
+  
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/applications/create",
+        formData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+  
+      console.log("✅ Success:", response.data);
+      setSuccessMessage(response.data.message || "Application created successfully!");
+      
+      resetForm(); // ✅ Reset form after success
+  
+    } catch (error) {
+      console.error("❌ API Error:", error);
+  
+      if (error.response) {
+        console.log("🛑 Error Response:", error.response.data);
+        setErrorMessage(error.response.data.message || "Failed to create application.");
+      } else if (error.request) {
+        setErrorMessage("❌ No response from server. Please check your connection.");
+      } else {
+        setErrorMessage("⚠ Something went wrong. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleSelecthostel = (option) => {
-    setSelectedHostel(option);
-    setIsHostelOpen(false);
-  };
-  // State variables for new dropdowns
-  const [isRTOpen, setIsRTOpen] = useState(false);
-  const [isDROpen, setIsDROpen] = useState(false);
-  const [isRPOpen, setIsRPOpen] = useState(false);
-
-  const [selectedRTO, setSelectedRTO] = useState("-- Please select --");
-  const [selectedDR, setSelectedDR] = useState("-- Please select --");
-  const [selectedRPO, setSelectedRPO] = useState("-- Please select --");
-
-  const RTOOptions = ["-- Please select --", "1 Hour", "4 Hours", "24 Hours"];
-  const DROptions = [
-    "-- Please select --",
-    "Cloud-Based",
-    "On-Premise",
-    "Hybrid",
-  ];
-  const RPOOptions = [
-    "-- Please select --",
-    "0 Minutes",
-    "1 Hour",
-    "4 Hours",
-    "24 Hours",
-  ];
-
-  // Toggle functions
-  const toggleRTODropdown = () => setIsRTOpen((prev) => !prev);
-  const toggleDRDropdown = () => setIsDROpen((prev) => !prev);
-  const toggleRPODropdown = () => setIsRPOpen((prev) => !prev);
-
-  // Selection handlers
-  const handleSelectRTO = (option) => {
-    setSelectedRTO(option);
-    setIsRTOpen(false);
-  };
-  const handleSelectDR = (option) => {
-    setSelectedDR(option);
-    setIsDROpen(false);
-  };
-  const handleSelectRPO = (option) => {
-    setSelectedRPO(option);
-    setIsRPOpen(false);
-  };
-
   return (
     <React.Fragment>
       <Helmet>
-        <title>New Application Page | TRST</title>
-        <meta name="description" content="This is the home page description" />
-        <meta name="keywords" content="home, react, meta tags" />
+        <title>New Application | TRST</title>
       </Helmet>
-      <div className="page-content">
-        <div className="main-content1">
-          <div className="d-flex align-items-center justify-content-between">
-            <div className="header-text">Application: New Application </div>
-            <div className="d-flex align-items-center justify-content-end">
-              <div>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="/applications"
-                >
-                  <RxCross2
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                  />
-                  Cancel
-                </NavLink>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save"
-                >
-                  Save & New
-                </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
-                  <FaCheck
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                  />
-                  Save
-                </NavLink>
-              </div>
-              <div
-                className="map-action k-widget k-button-group order-1"
-                id="map-action-toggle"
-                role="group"
-              >
-                <span className="dropdown">
-                  <button
-                    className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                    type="button"
-                    id="TollFropdown"
-                    data-bs-toggle="dropdown"
-                    aria-expanded={isToolOpen}
-                    onClick={toggleToolDropDown}
-                  >
-                    <HiMiniWrench className="hw-16" />
-                  </button>
-                  <ul
-                    className={`right-auto dropdown-menu  ${
-                      isToolOpen ? "show" : ""
-                    }`}
-                    aria-labelledby="TollFropdown"
-                  >
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <BiSolidEdit className="hw-15" /> Design this page
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FcSettings className="hw-15" /> Object Definition
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <LuTableOfContents className="hw-15" /> Tab Definition
-                      </a>
-                    </li>
-                    <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FaPrint className="hw-15" /> Print
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FaRegFilePdf className="hw-15" /> PDF
-                      </a>
-                    </li>
-                    <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <LuClock9 className="hw-15" /> Page Load Time
-                      </a>
-                    </li>
-                  </ul>
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Application Information</div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-6">
-                {[
-                  "Application Name",
-                  "Application ID",
-                  "Application Alias",
-                  "Application URL",
-                ].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                      <span class="text-danger">*</span>
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
-                {["Description"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                      <span class="text-danger">*</span>
-                    </Label>
-                    <textarea
-                      name="text"
-                      className="form-control"
-                      type="text"
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="col-6">
-                {/* Application Type Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="applicationType"
-                    className="form-label me-2 fs-15 w-40"
-                  >
-                    Application Type
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleStatusDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedStatus}</span>
-                      <svg
-                        className={`ms-2 ${isStatusOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
+     <div className="page-content">
+             <div className="main-content1">
+               <div className="d-flex align-items-center justify-content-between">
+                 <div className="header-text">Application: New Application</div>
+                 <div className="d-flex align-items-center justify-content-end">
+                   <div>
+                     <NavLink className="button3 border-1 button3-changes me-1" to="/applications" title="Cancel">
+                       <RxCross2 className="me-1" style={{ width: "15px", height: "15px" }} />
+                       Cancel
+                     </NavLink>
+                     <button type="submit" className="button3 border-1 button3-changes me-1" title="Save" onClick={handleSubmit}>
+                       <FaCheck className="me-1" style={{ width: "15px", height: "15px" }} />
+                      Save
                     </button>
-                    {isStatusOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {statusOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectStatus(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                   </div>
+                 </div>
+                 </div>
+                 <div className="form-content">
+                   <div className="form-heading">Application Information </div>
+                   <div className="border-1"></div>
+                     {/* Success Message */}
+      {successMessage && <Alert color="success">{successMessage}</Alert>}
+      
+      {/* Error Message */}
+      {errorMessage && <Alert color="danger">{errorMessage}</Alert>}
+                   <form onSubmit={handleSubmit}>
+                          <div className="row pt-4">
+                            <div className="col-6">
+                            
+                              <div className="mb-3 d-flex align-items-center">
+                                <Label htmlFor="company" className="form-label me-2 fs-15 w-40">
+                                Application Name<span className="text-danger">*</span>
+                                </Label>
+                                <Input
+                                  name="company"
+                                  className="form-control"
+                                  type="text"
+                                  value={applicationName} onChange={(e) => setApplicationName(e.target.value)}
+                                />
+                              </div>
+                              <div className="mb-3 d-flex align-items-center">
+                                <Label htmlFor="website" className="form-label me-2 fs-15 w-40">
+                                Application ID
+                                </Label>
+                                <Input
+                                  name="website"
+                                  className="form-control"
+                                  type="text"
+                                  value={applicationID} onChange={(e) => setApplicationID(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                              <div className="col-6">
+                                <div className="mb-3 d-flex align-items-center">
+                                  <Label htmlFor="mainPhone" className="form-label me-2 fs-15 w-40">
+                                  Application Type
+                                  </Label>
+                                  <Input 
+                                  type="select" 
+                                  value={applicationType || ""} // ✅ Ensure it's a string
+                                  onChange={(e) => setApplicationType(e.target.value)} // ✅ Store as a string
+                                  >
+                                  <option value="">Select Application Type</option>
+                                  <option value="3rd Party Web">3rd Party Web</option>
+                                  <option value="Acquisition">Acquisition</option>
+                                  <option value="COTS - Commercial Off The Shelf">COTS - Commercial Off The Shelf</option>
+                                  <option value="COTS - Customized">COTS - Customized</option>
+                                  <option value="Custom Developed In-House">Custom Developed In-House</option>
+                                  <option value="Custom Developed By Vendor">Custom Developed By Vendor</option>
+                                  <option value="Custom Used Web">Custom Used Web</option>
+                                  </Input>
+                                </div>
+                                <div className="mb-3 d-flex align-items-center">
+                                  <Label htmlFor="fax" className="form-label me-2 fs-15 w-40">
+                                  Hosted Type
+                                  </Label>
+                                  <Input type="select" value={hostedType} onChange={(e) => setHostedType(e.target.value)}>
+                                  <option value="">Select Hosted Type</option>
+                                    <option value="3rd Party Web">3rd Party Web</option>
+                                    <option value="AWS Data Center">AWS Data Center</option>
+                                    <option value="Azure">Azure</option>
+                                    <option value="Co-location">Co-location</option>
+                                    <option value="Internal Owned & Operated Data Center">Internal Owned & Operated Data Center</option>
+                                    <option value="On-prem Vendor Managed">On-prem Vendor Managed</option>
+                                    <option value="Reseller Data Center">Reseller Data Center</option>
+                                  </Input>
+                                </div>
+                              </div>
+                    
+                                <div className="col-6">
+                                  <div className="mb-3 d-flex align-items-center">
+                                    <Label htmlFor="mainPhone" className="form-label me-2 fs-15 w-40">
+                                    Application Alias
+                                    </Label>
+                                    <Input
+                                      name="mainPhone"
+                                      className="form-control"
+                                      type="text"
+                                      value={applicationAlias} onChange={(e) => setApplicationAlias(e.target.value)}
+                                    />
+                                  </div>
+                                
+                                </div>
 
-                {/* Hosted Type Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="hostedType"
-                    className="form-label me-2 fs-15 w-40"
-                  >
-                    Hosted Type
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleHostelDropdown} // Fix: Use correct toggle function
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedHostel}</span>{" "}
-                      {/* Fix: Use correct state */}
-                      <svg
-                        className={`ms-2 ${isHostelOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isHostelOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {hostelOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelecthostel(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
+                                <div className="col-6">
+                                  <div className="mb-3 d-flex align-items-center">
+                                    <Label htmlFor="mainPhone" className="form-label me-2 fs-15 w-40">
+                                    Application URL
+                                    </Label>
+                                    <Input
+                                      name="mainPhone"
+                                      className="form-control"
+                                      type="text"
+                                      value={applicationURL} onChange={(e) => setApplicationURL(e.target.value)}
+                                    />
+                                  </div>
+                                
+                                </div>
+                   
+                  
+                  
+                                  <div className="col-6">
+                                      <div className="mb-3 d-flex align-items-center">
+                                        <Label htmlFor="mainPhone" className="form-label me-2 fs-15 w-40">
+                                        Description
+                                        </Label>
+                                        <Input
+                                          name="mainPhone"
+                                          className="form-control"
+                                          type="textarea" value={description} onChange={(e) => setDescription(e.target.value)}
+                                      
+                                        />
+                                      </div>
+                                  
+                                    </div>
+                            
+                            </div>
+                            </form>
+                    <div className="border-1"></div>
+                    <div className="form-heading">Application Contacts
+                    </div>
+                    <div className="border-1"></div>
+                    <form onSubmit={handleSubmit}>
+                      <div className="row pt-4">
+                            <div className="col-6">
+                                  <div className="mb-3 d-flex align-items-center">
+                                    <Label htmlFor="company" className="form-label me-2 fs-15 w-40">
+                                    Application Owner
+                                    </Label>
+                                    <Input
+                                      name="company"
+                                      className="form-control"
+                                      type="text"
+                                      value={applicationOwnerNames}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary border-radius-2"
+                                        onClick={() => setShowApplicationOwnerModal(true)}
+                                      >
+                                        <BiSearchAlt2 className="fs-15"
+                                      
+                                          />
+                                      </button>
+                                  </div>
+                                  <div className="mb-3 d-flex align-items-center">
+                                    <Label htmlFor="website" className="form-label me-2 fs-15 w-40">
+                                    Application Vendor(s)
+                                    </Label>
+                                    <Input
+                                      name="website"
+                                      className="form-control"
+                                      type="text"
+                                      value={applicationVendorNames}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary border-radius-2"
+                                        onClick={() => setShowVendorModal(true)}
+                                      >
+                                        <BiSearchAlt2 className="fs-15"
+                                      
+                                          />
+                                      </button>
+                                  </div>
+                              
+                              </div>
+                                <div className="col-6">
+                                  <div className="mb-3 d-flex align-items-center">
+                                    <Label htmlFor="mainPhone" className="form-label me-2 fs-15 w-40">
+                                    Business Owner
+                                    </Label>
+                                    <Input
+                                      name="mainPhone"
+                                      className="form-control"
+                                      type="text"
+                                      value={businessOwnerNames} readOnly style={{ flex: 1 }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary border-radius-2"
+                                        onClick={() => setShowBusinessOwnerModal(true)}
+                                      >
+                                        <BiSearchAlt2 className="fs-15"
+                                      
+                                          />
+                                      </button>
+                                  </div>
+                                  <div className="mb-3 d-flex align-items-center">
+                                    <Label htmlFor="fax" className="form-label me-2 fs-15 w-40">
+                                    Business Entity
+                                    </Label>
+                                    <Input
+                                      name="fax"
+                                      className="form-control"
+                                      type="text"
+                                      value={businessEntityNames} readOnly style={{ flex: 1 }}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary border-radius-2"
+                                        onClick={() => setShowBusinessEntityModal(true)}
+                                      >
+                                        <BiSearchAlt2 className="fs-15"
+                                      
+                                          />
+                                      </button>
+                                  </div>
+                                </div>
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Application Contacts </div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-6">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Application Owner
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Application Vendor(s)
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-              </div>
-              <div className="col-6">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Business Owner
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Business Entity
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Recovery Objectives & Capability </div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-6">
-                {/* RTO Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="rto" className="form-label me-2 fs-15 w-40">
-                   RTO
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleRTODropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedRTO}</span>
-                      <svg
-                        className={`ms-2 ${isRTOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isRTOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {RTOOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectRTO(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                    </form>
+                    {/* Recovery Objectives & Capability*/}
+                    <div className="border-1"></div>
+                    <div className="form-heading">Recovery Objectives & Capability
 
-                {/* RPO Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="rpo" className="form-label me-2 fs-15 w-40">
-                    RPO
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleRPODropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedRPO}</span>
-                      <svg
-                        className={`ms-2 ${isRPOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isRPOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {RPOOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectRPO(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
+                    </div>
+                    <div className="border-1"></div>
+                    <form onSubmit={handleSubmit}>
+                    <div className="row pt-4">
+                    <div className="col-6">
+                      <div className="mb-3 d-flex align-items-center">
+                        <Label htmlFor="company" className="form-label me-2 fs-15 w-40">
+                        RTO
+                        </Label>
+                        <Input type="select" value={rto || ""} onChange={(e) => setRTO(e.target.value)}>
+                          <option value="">Select RTO</option>
+                          <option value="15 min">15 min</option>
+                          <option value="0.5 hour">0.5 hour</option>
+                          <option value="1 hour">1 hour</option>
+                          <option value="2 hours">2 hours</option>
+                          <option value="3 hours">3 hours</option>
+                          <option value="6 hours">6 hours</option>
+                          <option value="1 day">1 day</option>
+                          <option value="7 days">7 days</option>
+                          <option value="Week 2">Week 2</option>
+                        </Input>
+                        
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="col-6">
-                {/* DR Strategy Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="drStrategy"
-                    className="form-label me-2 fs-15 w-40"
-                  >
-                  DR Strategy
-                  </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleDRDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedDR}</span>
-                      <svg
-                        className={`ms-2 ${isDROpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isDROpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {DROptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectDR(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
+                      <div className="mb-3 d-flex align-items-center">
+                        <Label htmlFor="website" className="form-label me-2 fs-15 w-40">
+                        RPO
+                        </Label>
+                        <Input type="select" value={rpo || ""} onChange={(e) => setRPO(e.target.value)}>
+                          <option value="">Select RPO</option>
+                          <option value="15 min">15 min</option>
+                          <option value="0.5 hour">0.5 hour</option>
+                          <option value="1 hour">1 hour</option>
+                          <option value="2 hours">2 hours</option>
+                          <option value="3 hours">3 hours</option>
+                          <option value="6 hours">6 hours</option>
+                          <option value="1 day">1 day</option>
+                          <option value="7 days">7 days</option>
+                          <option value="Week 2">Week 2</option>
+                        </Input>
+
                       </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Locations</div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-6">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Primary Data Center
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-              </div>
-              <div className="col-6">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Alternate/Failover Data Center
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </Form>
-        </div>
-      </div>
+                    </div>
+                    <div className="col-6">
+                      <div className="mb-3 d-flex align-items-center">
+                        <Label htmlFor="mainPhone" className="form-label me-2 fs-15 w-40">
+                       
+                        DR Strategy
+                        </Label>
+                        <Input type="select" value={drStrategy} onChange={(e) => setDrStrategy(e.target.value)}>
+                        <option value="">Select DR Strategy</option>
+                          <option value="Active/Active">Active/Active</option>
+                          <option value="Active/Cold Site">Active/Cold Site</option>
+                          <option value="Active Standby">Active Standby</option>
+                          <option value="Hybrid">Hybrid</option>
+                          <option value="No DR Strategy">No DR Strategy</option>
+                          <option value="Sole Site Restore">Sole Site Restore</option>
+                        </Input>
+                        
+                      </div>
+                      
+                    </div>
+                    </div>
+                    </form>
+                    {/* Location */}
+                    <div className="border-1"></div>
+                    <div className="form-heading">Location </div>
+                    <form onSubmit={handleSubmit}>
+                    <div className="row pt-4">
+                    <div className="col-6">
+                      <div className="mb-3 d-flex align-items-center">
+                        <Label htmlFor="company" className="form-label me-2 fs-15 w-40">
+                        Primary Data Center
+                        </Label>
+                        <Input
+                          name="company"
+                          className="form-control"
+                          type="text"
+                          value={primaryDataCenterNames}
+                        />
+                         <button
+                            type="button"
+                            className="btn btn-secondary border-radius-2"
+                            onClick={() => setShowDataCenterModal(true)}
+                          >
+                            <BiSearchAlt2 className="fs-15"
+                           
+                              />
+                          </button>
+                      </div>
+                     
+                    </div>
+                    <div className="col-6">
+                      <div className="mb-3 d-flex align-items-center">
+                        <Label htmlFor="mainPhone" className="form-label me-2 fs-15 w-40">
+                        Alternate/Failover Data Center
+                        </Label>
+                        <Input
+                          name="mainPhone"
+                          className="form-control"
+                          type="text"
+                          value={alternateDataCenterNames} readOnly style={{ flex: 1 }}
+                        />
+                         <button
+                            type="button"
+                            className="btn btn-secondary border-radius-2"
+                            onClick={() => setShowAlternateDataCenterModal(true)}
+                          >
+                            <BiSearchAlt2 className="fs-15"
+                           
+                              />
+                          </button>
+                      </div>
+                      
+                    </div>
+                    </div>
+                    </form>
+                    
+                   
+                  {/* end location */}
+                 </div>
+                 
+                 </div>
+                 
+               </div> 
+               
+               
+      {/* Modal Components */}
+      <ApplicationOwnerModal
+  isOpen={showApplicationOwnerModal}
+  toggle={() => setShowApplicationOwnerModal(false)}
+  onSelect={(ownerData) => {
+    setApplicationOwner(ownerData.ids); // Store selected IDs
+    setApplicationOwnerNames(ownerData.names); // Display selected names
+  }}
+/>
+<BusinessOwnerModal
+  isOpen={showBusinessOwnerModal}
+  toggle={() => setShowBusinessOwnerModal(false)}
+  onSelect={(ownerData) => {
+    setBusinessOwner(ownerData.ids); // ✅ Store IDs for backend
+    setBusinessOwnerNames(ownerData.names); // ✅ Store Names for display
+  }}
+/>
+
+
+<BusinessEntityModal
+  isOpen={showBusinessEntityModal}
+  toggle={() => setShowBusinessEntityModal(false)}
+  onSelect={(entityData) => {
+    setBusinessEntity(entityData.ids); // Store selected IDs
+    setBusinessEntityNames(entityData.names); // Display selected names
+  }}
+/>
+<DataCenterModal
+  isOpen={showDataCenterModal}
+  toggle={() => setShowDataCenterModal(false)}
+  onSelect={(locationData) => {
+    setPrimaryDataCenter(locationData.ids); // Store selected IDs
+    setPrimaryDataCenterNames(locationData.names); // Display selected names
+  }}
+/>
+
+<AlternateDataCenterModal
+  isOpen={showAlternateDataCenterModal}
+  toggle={() => setShowAlternateDataCenterModal(false)}
+  onSelect={(locationData) => {
+    setAlternateDataCenter(locationData.ids); // Store selected IDs
+    setAlternateDataCenterNames(locationData.names); // Display selected names
+  }}
+/>
+{/* Vendor Selection Modal */}
+<VendorModal
+  isOpen={showVendorModal}
+  toggle={() => setShowVendorModal(false)}
+  onSelect={(ids, names) => {
+    setApplicationVendor(ids); // ✅ Store IDs
+    setApplicationVendorNames(names); // ✅ Show Names
+  }}
+  />
     </React.Fragment>
   );
 }
-
 export default NewApplication;

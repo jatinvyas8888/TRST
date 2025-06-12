@@ -1,58 +1,49 @@
+// backend/src/models/hardware.model.js
 import mongoose from 'mongoose';
 
 const hardwareSchema = new mongoose.Schema(
   {
-    //hardware information
+    hardwareId: {
+      type: String,
+      required: true, // Make this required if necessary
+    },
     hardwareName: {
       type: String,
       required: true,
     },
     hardwareType: {
       type: String,
-      required: true,
+      enum: ['Cluster', 'Database Instance', 'Infrastructure', 'Network', 'Server', 'Other'],
     },
-    hardwareId: {
-      type: String,
-    },
-    owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Hardware',
-    },
-    description: {
-      type: String,
-    },
-    searialNumber: {
-      type: String,
+    serialNumber: {
+      type: String, // Corrected from 'string' to 'String'
     },
     model: {
       type: String,
     },
-    opratingSystem: {
+    operatingSystem: {
       type: String,
     },
-    memory: {
-      type: String,
+    memoryGB: {
+      type: Number,
     },
     location: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Location',
+      type: String,
     },
     lowestApplicationRTO: {
       type: String,
     },
-    //hardware dependencies
+    description: {
+      type: String,
+    },
     parentHardware: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Hardware',
+      type: String,
     },
     childHardware: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Hardware',
+      type: String,
     },
-    //procument information
     vendor: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Vendor',
+      type: String,
     },
     warrantyExpiration: {
       type: Date,
@@ -60,11 +51,9 @@ const hardwareSchema = new mongoose.Schema(
     cost: {
       type: Number,
     },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
   },
-  { timestamps: true }
+  { timestamps: true } // Automatically manage createdAt and updatedAt fields
 );
+
+// Export the Hardware model
 export default mongoose.model('Hardware', hardwareSchema);

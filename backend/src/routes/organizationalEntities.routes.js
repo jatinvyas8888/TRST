@@ -1,21 +1,27 @@
 import { Router } from 'express';
-import { createOrganizationalEntity, getAllOrganizationalEntities, updateOrganizationalEntity, deleteOrganizationalEntity, getOrganizationalEntityDetails } from '../controllers/organizationalEntity.controller.js';
-import { verifyJWT } from '../middlewares/auth.middleware.js';
-
+import {
+  createOrganizationalEntity,
+  getAllOrganizationalEntities,
+  updateOrganizationalEntity,
+  deleteOrganizationalEntity,
+  getOrganizationalEntityDetails,
+  updateApplications
+} from '../controllers/organizationalEntity.controller.js';
 
 const router = Router();
 
 router.route("/create")
-    .post(verifyJWT, createOrganizationalEntity);
+  .post(createOrganizationalEntity);
 
 router.route("/all")
-    .get(verifyJWT, getAllOrganizationalEntities);
+  .get(getAllOrganizationalEntities);
 
 router.route("/:id")
-    .get(verifyJWT, getOrganizationalEntityDetails)
-    .patch(verifyJWT, updateOrganizationalEntity)
-    .delete(verifyJWT, deleteOrganizationalEntity);
+  .get(getOrganizationalEntityDetails)
+  .patch(updateOrganizationalEntity)
+  .delete(deleteOrganizationalEntity);
 
+router.route('/:id/applications')
+  .patch(updateApplications);
 
 export default router;
-

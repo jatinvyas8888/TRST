@@ -26,20 +26,85 @@ import {
   Alert,
   Spinner,
 } from "reactstrap";
+import axios from "axios"; // Import axios for API calls
 import { TiPlus } from "react-icons/ti";
+import UserSearchModal from "./UserSearchModal"; // Correct the import statement
 
 function NewVitalRecord() {
   const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isTimeZoneOpen, setIsTimeZoneOpen] = useState(false); // Time Zone dropdown
-  const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
+  const [isStatusOpen, setIsStatusOpen] = useState(false); // Vital Record Type dropdown
   const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "Customer", "Distribution"];
+  const statusOptions = [
+    "-- Please select --",
+    "Customer",
+    "Distribution",
+    "Finance",
+    "Access",
+    "Facilities/Blueprints",
+    "IT/Data Center",
+    "Inventory",
+    "Medical",
+    "Retail",
+    "Safety",
+    "Security",
+  ];
   const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
   const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
   const handleSelectStatus = (option) => {
     setSelectedStatus(option);
     setIsStatusOpen(false);
   };
+
+  // State variables for form fields
+  const [vitalRecordName, setVitalRecordName] = useState('');
+  const [description, setDescription] = useState('');
+  const [owners, setOwners] = useState([]);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
+
+  const toggleModal = () => setIsModalOpen(!isModalOpen);
+
+  const handleSelectUsers = (selectedEmployees) => {
+    setOwners(selectedEmployees);
+    toggleModal();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent the default form submission
+
+    // Prepare the data to be sent
+    const vitalRecordData = {
+      vitalRecordName,
+      vitalRecordType: selectedStatus,
+      description,
+      owners: owners.map((owner) => owner._id), // Store only the IDs of the selected employees
+      updatedBy: "60d0fe4f5311236168a109ca" // Replace with a valid ObjectId from your User collection
+    };
+
+    console.log('Submitting vital record data:', vitalRecordData); // Log the data being sent
+
+    try {
+      // Make the API call
+      const response = await axios.post('http://localhost:8000/api/v1/vital/create', vitalRecordData);
+      setSuccessMessage('Vital Record created successfully!');
+      setErrorMessage(''); // Clear any previous error messages
+      console.log('Vital Record created successfully:', response.data);
+      resetForm(); // Reset the form after successful submission
+    } catch (error) {
+      console.error('Error creating vital record:', error.response || error.message);
+      setErrorMessage('Error creating vital record. Please try again.');
+      setSuccessMessage(''); // Clear any previous success messages
+    }
+  };
+
+  const resetForm = () => {
+    setVitalRecordName('');
+    setSelectedStatus('-- Please select --');
+    setDescription('');
+    setOwners([]);
+  };
+
   return (
     <React.Fragment>
       <Helmet>
@@ -55,7 +120,7 @@ function NewVitalRecord() {
               <div>
                 <NavLink
                   className="button3 border-1 button3-changes me-1"
-                  to="/vital-records"
+                  to="#"
                   title="Cancel"
                 >
                   <RxCross2
@@ -71,11 +136,8 @@ function NewVitalRecord() {
                 >
                   Save & New
                 </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
-                  <FaCheck
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                  />
+                <NavLink className="button3 border-1 me-3" to="#" title="Save" onClick={handleSubmit}>
+                  <FaCheck className="me-1" style={{ width: "15px", height: "15px" }} title="Save" />
                   Save
                 </NavLink>
               </div>
@@ -101,6 +163,7 @@ function NewVitalRecord() {
                     }`}
                     aria-labelledby="TollFropdown"
                   >
+                    
                     <li>
                       <a className="dropdown-item" href="#">
                         <BiSolidEdit className="hw-15" /> Design this page
@@ -142,23 +205,30 @@ function NewVitalRecord() {
         <div className="form-content">
           <div className="form-heading">Vital Record Information</div>
           <div className="border-1"></div>
-          <Form>
+          <Form onSubmit={handleSubmit}>
+            {successMessage && <Alert color="success">{successMessage}</Alert>}
+            {errorMessage && <Alert color="danger">{errorMessage}</Alert>}
             <div className="row pt-4">
               <div className="col-8">
-                {["Vital Record Name"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}
                 <div className="mb-3 d-flex align-items-center">
                   <Label
-                    htmlFor="siteOwnership"
+                    htmlFor="vitalRecordName"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Vital Record Name
+                  </Label>
+                  <Input
+                    name="text"
+                    className="form-control"
+                    type="text"
+                    value={vitalRecordName}
+                    onChange={(e) => setVitalRecordName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="vitalRecordType"
                     className="form-label me-2 fs-15 w-40"
                   >
                     Vital Record Type
@@ -204,30 +274,29 @@ function NewVitalRecord() {
                     )}
                   </div>
                 </div>
-                {["Description"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <textarea
-                      name="text"
-                      className="form-control"
-                      type="text"
-                    />
-                  </div>
-                ))}
+                <div className="mb-3 d-flex align-items-center">
+                  <Label
+                    htmlFor="description"
+                    className="form-label me-2 fs-15 w-40"
+                  >
+                    Description
+                  </Label>
+                  <textarea
+                    name="text"
+                    className="form-control"
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </div>
                 <div className="mb-3 d-flex">
                   <label
-                    htmlFor="editors"
+                    htmlFor="owner"
                     className="form-label fs-15 w-20 me-2 justify-content-between d-flex align-items-center"
                   >
                     Owner
                     <FaCircleQuestion className="me-2 hw-20" />
                   </label>
-
                   <div
                     className="form-control1 d-flex flex-wrap gap-2"
                     style={{
@@ -237,10 +306,17 @@ function NewVitalRecord() {
                       padding: "6px 12px",
                       backgroundColor: "#fff",
                     }}
-                  ></div>
+                  >
+                    {owners.map((owner) => (
+                      <span key={owner._id} className="badge bg-primary me-1">
+                        {owner.firstName} {owner.lastName}
+                      </span>
+                    ))}
+                  </div>
                   <button
                     type="button"
                     className="btn btn-secondary border-radius-2"
+                    onClick={toggleModal}
                   >
                     <BiSearchAlt2 className="fs-15" />
                   </button>
@@ -250,6 +326,7 @@ function NewVitalRecord() {
           </Form>
         </div>
       </div>
+      <UserSearchModal isOpen={isModalOpen} toggle={toggleModal} onSelectUsers={handleSelectUsers} />
     </React.Fragment>
   );
 }

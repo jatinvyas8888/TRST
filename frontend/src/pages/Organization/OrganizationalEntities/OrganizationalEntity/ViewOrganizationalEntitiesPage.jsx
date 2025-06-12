@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
+import BusinessEntityTab from "./BusinessEntityTab";
+import EmployeesTab from "./EmployeesTab";
+import LocationsTab from "./LocationsTab";
+import PlanSection from "./Relationships/PlanSection";
+import ApplicationHeader from "./Relationships/applicationSectiontab"; // adjust the path if needed
+
 import "./style.css";
 import { Link, NavLink } from "react-router-dom";
 import { Helmet } from "react-helmet";
@@ -24,14 +30,71 @@ import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal,HiOutlineDotsHorizontal } from "react-icons/hi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { TfiMenuAlt } from "react-icons/tfi";
-
+import Employees from './Employees';
+import { useEffect} from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import { GrDetach } from "react-icons/gr";
-function ViewOrganizationalEntitiesPage() {
+
+function ViewOrganizationalEntitiesPage({ entityId }){
+  const { id } = useParams(); // Get ID from URL
+  const [entity, setEntity] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEntity = async () => {
+      setLoading(true); // Start loading
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/v1/organizational-entities/${id}`,
+          {
+            headers: { "Content-Type": "application/json" },
+            withCredentials: true,
+          }
+        );
+  
+        // Log the full response to verify its structure
+        console.log("Full API Response:", response);
+  
+        // Directly access data from response.data
+        const entityData = response && response.data ? response.data : null;
+  
+        if (entityData) {
+          setEntity(entityData); // Set entity data if found
+          console.log("✅ Entity data set:", entityData); // Log the entity data
+        } else {
+          console.log("❌ No entity data found in response.");
+          setEntity(null); // Ensure entity is null if no data
+        }
+      } catch (error) {
+        console.error("❌ Error fetching entity by ID:", error);
+        setEntity(null); // Set entity as null on error
+      } finally {
+        setLoading(false); // Stop loading
+      }
+    };
+  
+    if (id) {
+      fetchEntity(); // Make sure id is available before calling the API
+    }
+  
+  }, [id]);
+  ;
+  
+  
+  
+  
+
+
   const [key, setKey] = useState("Business Entity Info");
   const [isOpen, setIsOpen] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isColumnOpen, setIsColumnOpen] = useState(false);
   const [isExerciseOpen, setIsExerciseOpen] = useState(false);
+
+  //employess
+  
+  const [selectedEmployeeIds, setSelectedEmployeeIds] = useState([]);
   const toggleExerciseDropdown = () => {
     setIsExerciseOpen(!isExerciseOpen);
   };
@@ -233,628 +296,178 @@ function ViewOrganizationalEntitiesPage() {
           onSelect={(k) => setKey(k)}
           className="mb-3"
         >
-          <Tab eventKey="Business Entity Info" title="Business Entity Info">
-            <div className="container-fluid">
-              <div className="form-content">
-                <div className="form-heading">Business Entity Information</div>{" "}
-                <div className="border-1 mb-3"></div>
-                <div className="row">
-                  <div className="col-6">
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">Business Entity</div>
-                      <div className="tab-title">
-                        <a href="" className="text-blue">
-                          Accounting & Financial
-                        </a>
-                      </div>
-                    </div>
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">Business Entity ID</div>
-                      <div className="tab-title"></div>
-                    </div>
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">Business Entity Type</div>
-                      <div className="tab-title">
-                        <a href="" className="text-blue">
-                          Division
-                        </a>
-                      </div>
-                    </div>
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">Editor(s)</div>
-                      <div className="tab-title"></div>
-                    </div>
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">Description</div>
-                      <div className="tab-title"></div>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">Parent Business Entity</div>
-                      <div className="tab-title">
-                        <a href="" className="text-blue">
-                          Finance
-                        </a>
-                      </div>
-                    </div>
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">Child Business Entities</div>
-                      <div className="tab-title">
-                        <a href="" className="text-blue">
-                          Financial Accounting
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+    {/* <Tab eventKey="Business Entity Info" title="Business Entity Info">
+  <div className="container-fluid">
+    <div className="form-content">
+      <div className="form-heading">Business Entity Information</div>
+      <div className="border-1 mb-3"></div>
+      <div className="row">
+        <div className="col-6">
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Business Entity</div>
+            <div className="tab-title">
+              {!loading && entity ? (
+                <div>{entity.businessEntity || "N/A"}</div> // Ensure we're rendering a string
+              ) : loading ? (
+                <div>Loading...</div>
+              ) : (
+                <div>No Data Available</div>
+              )}
             </div>
-            <div className="container-fluid">
-              <div className="form-content">
-                <div className="form-heading">
-                  Business Entity Summary Information
-                </div>
-                <div className="border-1 mb-3"></div>
-                <div className="row">
-                  <div className="col-6">
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">
-                        Financial Impact - &lt;24 Hours
-                      </div>
-                      <div className="tab-title">$0.00</div>
-                    </div>
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">
-                        Percentage of Company Revenue &lt;24 Hours
-                      </div>
-                      <div className="tab-title"></div>
-                    </div>
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">
-                        Financial - Daily &gt;24 Hours
-                      </div>
-                      <div className="tab-title">$0.00</div>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">Plans Assigned</div>
-                      <div className="tab-title">0</div>
-                    </div>
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">Staffing Normal Level</div>
-                      <div className="tab-title">0</div>
-                    </div>
-                    <div className="d-flex pb-3">
-                      <div className="tab-heading">Staffing Work from Home</div>
-                      <div className="tab-title">0</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          </div>
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Business Entity ID</div>
+            <div className="tab-title">
+              {!loading && entity ? (
+                <div>{entity.businessEntityId || "N/A"}</div> // Ensure we're rendering a string
+              ) : loading ? (
+                <div>Loading...</div>
+              ) : (
+                <div>No Data Available</div>
+              )}
             </div>
-          </Tab>
-          <Tab eventKey="Employees" title="Employees">
-            <div className="main-content2 pt-3">
-              <div className="d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center">
-                  <span className="header-title">People</span>
-                  <div className="dropdown">
-                    <button
-                      className="btn btn-secondary dropdown-toggle border-radius-2"
-                      type="button"
-                      id="dropdownMenuButton"
-                      data-bs-toggle="dropdown"
-                      aria-expanded={isOpen}
-                      onClick={toggleDropdown}
-                    >
-                      All Active Employees
-                      <IoMdArrowDropdown className="hw-20" />
-                    </button>
-                    <ul
-                      className={`dropdown-menu ${isOpen ? "show" : ""}`}
-                      aria-labelledby="dropdownMenuButton"
-                      style={{
-                        "--vz-dropdown-min-width": "15rem",
-                        "--vz-dropdown-font-size": "14px;",
-                      }}
-                    >
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          <TiPlus className="mb-2px hw-15" />
-                          Create New View
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          <IoMdArrowDropright className="hw-20" />
-                          All Active Employees
-                          <BiSolidEdit className="hw-15 ml-20px" />
-                          <FaTableColumns className="hw-15 ml-5px" />
-                          <ImCopy className="hw-15 ml-5px" />
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Employees with Location
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Terminated Employees
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Portal Users
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Employee Contact Details
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Exercise Portal Users
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Notification Recipients
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Export Only
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          All Employees
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Data Migration
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                  <button className="button border-1 ms-1">
-                    <LuRefreshCw className="hw-18" />
-                  </button>
-                  <span className="dropdown">
-                    <button
-                      className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                      type="button"
-                      id="TollFropdown"
-                      data-bs-toggle="dropdown"
-                      aria-expanded={isColumnOpen}
-                      onClick={ColumnDropDown}
-                    >
-                      <FaTableColumns className="hw-14" />
-                    </button>
-                    <ul
-                      className={`dropdown-menu ${isColumnOpen ? "show" : ""}`}
-                      aria-labelledby="TollFropdown"
-                      style={{
-                        "--vz-dropdown-min-width": "15rem",
-                        "--vz-dropdown-font-size": "14px;",
-                      }}
-                    >
-                      <li className="align-items-center justify-content-between d-flex me-1 ms-1">
-                        <span className="fw-bold">Columns</span>{" "}
-                        <a className="blue">Reset</a>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Employee
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Title
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Employee ID
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Work Email Address
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Work Phone
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Work Mobile Phone
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Personal Mobile Phone
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Department
-                        </label>
-                      </li>
-                    </ul>
-                  </span>
-                  <button className="button border-1 ms-1">
-                    <FaFilter className="hw-15" />
-                  </button>
-                </div>
-                <div>
-                  <button
-                    className="button border-1 ms-1"
-                    title="Attach Employee"
-                  >
-                    <IoMdAttach className="hw-20" />
-                  </button>
-                  <button
-                    className="button border-1 ms-1 me-1"
-                    title="Detach Employee"
-                  >
-                    <GrDetach className="hw-20" />
-                  </button>
-                  <NavLink className="button1 border-1" to="/employee">
-                    <TiPlus className="hw-20" />
-                    Employee
-                  </NavLink>
-                  <button className="button border-1 ms-1">
-                    <FaRegTrashCan className="hw-18" />
-                  </button>
-                  <button className="button border-1 ms-1">
-                    <HiDotsHorizontal className="hw-20" />
-                  </button>
-                </div>
-              </div>
-              <div className="border-1 mt-2 mb-2"></div>
+          </div>
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Business Entity Type</div>
+            <div className="tab-title">
+              {!loading && entity ? (
+                <div>{entity.businessEntityType || "N/A"}</div> // Ensure we're rendering a string
+              ) : loading ? (
+                <div>Loading...</div>
+              ) : (
+                <div>No Data Available</div>
+              )}
             </div>
-          </Tab>
-          <Tab eventKey="Locations" title="Locations">
-            <div className="main-content2 pt-3">
-              <div className="d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center">
-                  <span className="header-title">Related Locations</span>
-                  <div className="dropdown">
-                    <button
-                      className="btn btn-secondary dropdown-toggle border-radius-2"
-                      type="button"
-                      id="dropdownMenuButton"
-                      data-bs-toggle="dropdown"
-                      aria-expanded={isOpen}
-                      onClick={toggleDropdown}
-                    >
-                      All Locations
-                      <IoMdArrowDropdown className="hw-20" />
-                    </button>
-                    <ul
-                      className={`dropdown-menu ${isOpen ? "show" : ""}`}
-                      aria-labelledby="dropdownMenuButton"
-                      style={{
-                        "--vz-dropdown-min-width": "15rem",
-                        "--vz-dropdown-font-size": "14px;",
-                      }}
-                    >
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          <TiPlus className="mb-2px hw-15" />
-                          Create New View
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          <IoMdArrowDropright className="hw-20" />
-                          All Locations
-                          <BiSolidEdit className="hw-15 ml-20px" />
-                          <FaTableColumns className="hw-15 ml-5px" />
-                          <ImCopy className="hw-15 ml-5px" />
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Locations with Addresses
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          All Locations (Longitude/Latitude)
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          For Export Only
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                  <button className="button border-1 ms-1">
-                    <LuRefreshCw className="hw-18" />
-                  </button>
-                  <span className="dropdown">
-                    <button
-                      className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                      type="button"
-                      id="TollFropdown"
-                      data-bs-toggle="dropdown"
-                      aria-expanded={isColumnOpen}
-                      onClick={ColumnDropDown}
-                    >
-                      <FaTableColumns className="hw-14" />
-                    </button>
-                    <ul
-                      className={`dropdown-menu ${isColumnOpen ? "show" : ""}`}
-                      aria-labelledby="TollFropdown"
-                      style={{
-                        "--vz-dropdown-min-width": "15rem",
-                        "--vz-dropdown-font-size": "14px;",
-                      }}
-                    >
-                      <li className="align-items-center justify-content-between d-flex me-1 ms-1">
-                        <span className="fw-bold">Columns</span>{" "}
-                        <a className="blue">Reset</a>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Location Name
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          ID
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Main Phone
-                        </label>
-                      </li>
-                    </ul>
-                  </span>
-                  <button className="button border-1 ms-1">
-                    <FaFilter className="hw-15" />
-                  </button>
-                </div>
-                <div>
-                  <button
-                    className="button border-1 ms-1"
-                    title="Attach Employee"
-                  >
-                    <IoMdAttach className="hw-20" />
-                  </button>
-                  <button
-                    className="button border-1 ms-1 me-1"
-                    title="Detach Employee"
-                  >
-                    <GrDetach className="hw-20" />
-                  </button>
-                  <NavLink className="button1 border-1" to="/location ">
-                    <TiPlus className="hw-20" />
-                    Location
-                  </NavLink>
-                  <button className="button border-1 ms-1">
-                    <FaRegTrashCan className="hw-18" />
-                  </button>
-                  <button className="button border-1 ms-1">
-                    <HiDotsHorizontal className="hw-20" />
-                  </button>
-                </div>
-              </div>
-              <div className="border-1 mt-2 mb-2"></div>
+          </div>
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Editor(s)</div>
+            <div className="tab-title">
+              {!loading && entity ? (
+                entity.editors && entity.editors.length > 0 ? (
+                  entity.editors.map((editor, index) => (
+                    <div key={index}>{editor.fullName}</div> // Render fullName (string) instead of object
+                  ))
+                ) : (
+                  <div>No Editors Available</div>
+                )
+              ) : loading ? (
+                <div>Loading...</div>
+              ) : (
+                <div>No Data Available</div>
+              )}
             </div>
-          </Tab>
-          <Tab eventKey="Relationships" title="Relationships">
-            <div className="main-content2 pt-3">
-              <div className="d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center">
-                  <span className="header-title">Plans</span>
-                  <div className="dropdown">
-                    <button
-                      className="btn btn-secondary dropdown-toggle border-radius-2"
-                      type="button"
-                      id="dropdownMenuButton"
-                      data-bs-toggle="dropdown"
-                      aria-expanded={isPlanOpen}
-                      onClick={togglePlanDropDown}
-                    >
-                      All Plans
-                      <IoMdArrowDropdown className="hw-20" />
-                    </button>
-                    <ul
-                      className={`dropdown-menu ${isPlanOpen ? "show" : ""}`}
-                      aria-labelledby="dropdownMenuButton"
-                      style={{
-                        "--vz-dropdown-min-width": "15rem",
-                        "--vz-dropdown-font-size": "14px;",
-                      }}
-                    >
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          <TiPlus className="mb-2px hw-15" />
-                          Create New View
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          <IoMdArrowDropright className="hw-20" />
-                          All Plans
-                          <BiSolidEdit className="hw-15 ml-20px" />
-                          <FaTableColumns className="hw-15 ml-5px" />
-                          <ImCopy className="hw-15 ml-5px" />
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          All Business Continuity Plans
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          All Disaster Recovery Plans
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          My Plans
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Update Frequency
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Plan Scorecard
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          All Plans - Exercise
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Plan Templates
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          IT User View
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          All Expired Plans
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          All Plans - Chart Only
-                        </a>
-                      </li>
-                    </ul>
+          </div>
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Description</div>
+            <div className="tab-title">
+              {!loading && entity ? (
+                <div>{entity.description || "N/A"}</div> // Ensure we're rendering a string
+              ) : loading ? (
+                <div>Loading...</div>
+              ) : (
+                <div>No Data Available</div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="col-6">
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Parent Business Entity</div>
+            <div className="tab-title">
+              {!loading && entity && entity.parentBusinessEntity ? (
+                <a href="#" className="text-blue">
+                  {entity.businessEntity || "N/A"} 
+                </a>
+              ) : (
+                <div>No Parent Entity Available</div>
+              )}
+            </div>
+          </div>
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Child Business Entities</div>
+            <div className="tab-title">
+              {!loading && entity && entity.childBusinessEntities && entity.childBusinessEntities.length > 0 ? (
+                entity.childBusinessEntities.map((child, index) => (
+                  <div key={index}>
+                    <a href="#" className="text-blue">
+                      {child.businessEntity || "N/A"}
+                    </a>
                   </div>
-                  <button className="button border-1 ms-1">
-                    <LuRefreshCw className="hw-18" />
-                  </button>
-                  <span className="dropdown">
-                    <button
-                      className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                      type="button"
-                      id="TollFropdown"
-                      data-bs-toggle="dropdown"
-                      aria-expanded={isPlanColumnOpen}
-                      onClick={togglePlanColumnDropDown}
-                    >
-                      <FaTableColumns className="hw-14" />
-                    </button>
-                    <ul
-                      className={`dropdown-menu ${
-                        isPlanColumnOpen ? "show" : ""
-                      }`}
-                      aria-labelledby="TollFropdown"
-                      style={{
-                        "--vz-dropdown-min-width": "15rem",
-                        "--vz-dropdown-font-size": "14px;",
-                      }}
-                    >
-                      <li className="align-items-center justify-content-between d-flex me-1 ms-1">
-                        <span className="fw-bold">Columns</span>{" "}
-                        <a className="blue">Reset</a>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Plan Name
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Status
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Plan Type
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Plan Editor(s)
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Plan Leader
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Next Update Date
-                        </label>
-                      </li>
-                    </ul>
-                  </span>
-                  <button className="button border-1 ms-1">
-                    <FaFilter className="hw-15" />
-                  </button>
-                </div>
-                <div>
-                  <button
-                    className="button border-1 ms-1"
-                    title="Attach Employee"
-                  >
-                    <IoMdAttach className="hw-20" />
-                  </button>
-                  <button
-                    className="button border-1 ms-1 me-1"
-                    title="Detach Employee"
-                  >
-                    <GrDetach className="hw-20" />
-                  </button>
-                  <NavLink className="button1 border-1" to="/plan ">
-                    <TiPlus className="hw-20" />
-                    Plan
-                  </NavLink>
+                ))
+              ) : (
+                <div>No Child Entities Available</div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div className="container-fluid">
+    <div className="form-content">
+      <div className="form-heading">Business Entity Summary Information</div>
+      <div className="border-1 mb-3"></div>
+      <div className="row">
+        <div className="col-6">
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Financial Impact - &lt;24 Hours</div>
+            <div className="tab-title">$0.00</div>
+          </div>
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Percentage of Company Revenue &lt;24 Hours</div>
+            <div className="tab-title"></div>
+          </div>
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Financial - Daily &gt;24 Hours</div>
+            <div className="tab-title">$0.00</div>
+          </div>
+        </div>
+        <div className="col-6">
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Plans Assigned</div>
+            <div className="tab-title">0</div>
+          </div>
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Staffing Normal Level</div>
+            <div className="tab-title">0</div>
+          </div>
+          <div className="d-flex pb-3">
+            <div className="tab-heading">Staffing Work from Home</div>
+            <div className="tab-title">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Tab> */}
 
-                  <button className="button border-1 ms-1">
-                    <FaRegTrashCan className="hw-18" />
-                  </button>
-                  <button className="button border-1 ms-1">
-                    <HiDotsHorizontal className="hw-20" />
-                  </button>
-                </div>
-              </div>
-              <div className="border-1 mt-2 mb-2"></div>
-            </div>
+
+<Tab eventKey="Business Entity Info" title="Business Entity Info">
+  <BusinessEntityTab entity={entity} loading={loading} />
+</Tab>
+
+<Tab eventKey="Employees" title="Employees">
+  <EmployeesTab
+    loading={loading}
+    entity={entity}
+    isOpen={isOpen}
+    toggleDropdown={toggleDropdown}
+    isColumnOpen={isColumnOpen}
+    ColumnDropDown={ColumnDropDown}
+  />
+</Tab>
+
+          
+        
+          {/*  */}
+          <Tab eventKey="Locations" title="Locations">
+  <LocationsTab entity={entity} loading={loading} />
+</Tab>
+
+          <Tab eventKey="Relationships" title="Relationships">
+          <div>
+      <PlanSection />
+    </div>
             <div className="main-content2 pt-3">
               <div className="d-flex align-items-center justify-content-between">
                 <div className="d-flex align-items-center">
@@ -1057,184 +670,16 @@ function ViewOrganizationalEntitiesPage() {
                 </div>
               </div>
               <div className="border-1 mt-2 mb-2"></div>
-            </div>
-            <div className="main-content2 pt-3">
-              <div className="d-flex align-items-center justify-content-between">
-                <div className="d-flex align-items-center">
-                  <span className="header-title">Applications</span>
-                  <div className="dropdown">
-                    <button
-                      className="btn btn-secondary dropdown-toggle border-radius-2"
-                      type="button"
-                      id="dropdownMenuButton"
-                      data-bs-toggle="dropdown"
-                      aria-expanded={isIncidentOpen}
-                      onClick={toggleIncidentDropdown}
-                    >
-                      All Applications
-                      <IoMdArrowDropdown className="hw-20" />
-                    </button>
-                    <ul
-                      className={`dropdown-menu ${
-                        isIncidentOpen ? "show" : ""
-                      }`}
-                      aria-labelledby="dropdownMenuButton"
-                      style={{
-                        "--vz-dropdown-min-width": "15rem",
-                        "--vz-dropdown-font-size": "14px;",
-                      }}
-                    >
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          <TiPlus className="mb-2px hw-15" />
-                          Create New View
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          <IoMdArrowDropright className="hw-20" />
-                          All Applications
-                          <BiSolidEdit className="hw-15 ml-20px" />
-                          <FaTableColumns className="hw-15 ml-5px" />
-                          <ImCopy className="hw-15 ml-5px" />
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Dependency Map View
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Impact View
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          My Applications
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          Application Requiring Updates (Icon Counts)
-                        </a>
-                      </li>
-                      <li>
-                        <a className="dropdown-item" href="#">
-                          All Applications (Export)
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                  <button className="button border-1 ms-1">
-                    <LuRefreshCw className="hw-18" />
-                  </button>
-                  <span className="dropdown">
-                    <button
-                      className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                      type="button"
-                      id="TollFropdown"
-                      data-bs-toggle="dropdown"
-                      aria-expanded={isExerciseOpen}
-                      onClick={toggleExerciseColumnDropDown}
-                    >
-                      <FaTableColumns className="hw-14" />
-                    </button>
-                    <ul
-                      className={`dropdown-menu ${
-                        isExerciseOpen ? "show" : ""
-                      }`}
-                      aria-labelledby="TollFropdown"
-                      style={{
-                        "--vz-dropdown-min-width": "15rem",
-                        "--vz-dropdown-font-size": "14px;",
-                      }}
-                    >
-                      <li className="align-items-center justify-content-between d-flex me-1 ms-1">
-                        <span className="fw-bold">Columns</span>{" "}
-                        <a className="blue">Reset</a>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Application Name
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Application Owner
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          RTO
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          RPO Value
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Aggregate Risk
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Updated At
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          Updated By
-                        </label>
-                      </li>
-                      <li class="dropdown-checkbox">
-                        <label>
-                          <input type="checkbox" className="ms-2 me-1" />
-                          RTO Text
-                        </label>
-                      </li>
-                    </ul>
-                  </span>
-                  <button className="button border-1 ms-1">
-                    <FaFilter className="hw-15" />
-                  </button>
-                </div>
-                <div>
-                  <button
-                    className="button border-1 ms-1"
-                    title="Attach Employee"
-                  >
-                    <IoMdAttach className="hw-20" />
-                  </button>
-                  <button
-                    className="button border-1 ms-1 me-1"
-                    title="Detach Employee"
-                  >
-                    <GrDetach className="hw-20" />
-                  </button>
-                  <NavLink className="button1 border-1" to="/application">
-                    <TiPlus className="hw-20" />
-                    Application
-                  </NavLink>
-                  <button className="button border-1 ms-1">
-                    <FaRegTrashCan className="hw-18" />
-                  </button>
-                  <button className="button border-1 ms-1">
-                    <HiDotsHorizontal className="hw-20" />
-                  </button>
-                </div>
-              </div>
-              <div className="border-1 mt-2 mb-2"></div>
-            </div>
+            {/* </div>
+            <ApplicationHeader
+  isIncidentOpen={isIncidentOpen}
+  isExerciseOpen={isExerciseOpen}
+  toggleIncidentDropdown={toggleIncidentDropdown}
+  toggleExerciseColumnDropDown={toggleExerciseColumnDropDown}
+/>
+<div> */}
+      <ApplicationHeader  businessEntityId={id}/>
+    </div>
           </Tab>
           <Tab eventKey="BIAs" title="BIAs">
             <div className="main-content2 pt-3">

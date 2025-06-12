@@ -928,7 +928,11 @@ function Locations() {
                     {columns.filter(col => col.draggable && visibleColumns[col.id]).map(column => (
                       <td key={`${location._id}-${column.id}`}>
                         {column.id === 'id' && location._id}
-                        {column.id === 'locationName' && location.locationName}
+                                        <NavLink to={`/locations/view/${location._id}`}>
+                  {column.id === 'locationName' && location.locationName}
+                </NavLink>
+
+                        
                         {column.id === 'locationType' && location.locationType}
                         {column.id === 'streetAddress1' && location.streetAddress1}
                         {column.id === 'streetAddress2' && location.streetAddress2}

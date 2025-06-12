@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet";
+import { Button, Form, Input, Label, Alert, Spinner } from "reactstrap";
 import { NavLink } from "react-router-dom";
-import { FaCheck } from "react-icons/fa";
 import { RxCross2 } from "react-icons/rx";
 import { HiMiniWrench } from "react-icons/hi2";
 import { BiSolidEdit } from "react-icons/bi";
@@ -12,44 +12,16 @@ import { IoIosSearch } from "react-icons/io";
 import { FaCircleQuestion } from "react-icons/fa6";
 import { SlCalender } from "react-icons/sl";
 import { BiSearchAlt2 } from "react-icons/bi";
-import {
-  Card,
-  CardBody,
-  Col,
-  Container,
-  Input,
-  Label,
-  Row,
-  Button,
-  Form,
-  FormFeedback,
-  Alert,
-  Spinner,
-} from "reactstrap";
-import { TiPlus } from "react-icons/ti";
+import { FaCheck } from "react-icons/fa";
+
+
 
 function NewRiskRegister() {
   const [isToolOpen, setIsToolOpen] = useState(false);
-  const [isStatusOpen, setIsStatusOpen] = useState(false); // Employee Status dropdown
-  const [isHostelOpen, setIsHostelOpen] = useState(false); // Employee Status dropdown
 
-  const [selectedStatus, setSelectedStatus] = useState("-- Please select --");
-  const statusOptions = ["-- Please select --", "No", "Yes"];
-
-  const [selectedHostel, setSelectedHostel] = useState("-- Please select --");
-  const hostelOptions = ["-- Please select --", "No", "No"];
-  const toggleStatusDropdown = () => setIsStatusOpen((prev) => !prev);
-  const toggleHostelDropdown = () => setIsHostelOpen((prev) => !prev);
-
-  const toggleToolDropDown = () => setIsToolOpen(!isToolOpen);
-  const handleSelectStatus = (option) => {
-    setSelectedStatus(option);
-    setIsStatusOpen(false);
-  };
-  const handleSelecthostel = (option) => {
-    setSelectedHostel(option);
-    setIsHostelOpen(false);
-  };
+const toggleToolDropDown = () => {
+  setIsToolOpen((prev) => !prev);
+};
   // State variables for new dropdowns
   const [isRTOpen, setIsRTOpen] = useState(false);
   const [isDROpen, setIsDROpen] = useState(false);
@@ -79,474 +51,376 @@ function NewRiskRegister() {
   const toggleDRDropdown = () => setIsDROpen((prev) => !prev);
   const toggleRPODropdown = () => setIsRPOpen((prev) => !prev);
 
-  // Selection handlers
-  const handleSelectRTO = (option) => {
-    setSelectedRTO(option);
-    setIsRTOpen(false);
+  // State for form data
+  const [formData, setFormData] = useState({
+    riskName: "",
+    riskType: "",
+    riskOwners: "",
+    description: "",
+    financialImpact: "",
+    actualClosureDate: "",
+    likelihood: "",
+    impact: "",
+    processes: "",
+    hardware: "",
+    applications: "",
+    vendors: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  const handleSelectDR = (option) => {
-    setSelectedDR(option);
-    setIsDROpen(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
+    try {
+      const response = await fetch("http://localhost:8000/api/v1/risk-registers/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage("Risk Register created successfully!");
+        setFormData({
+          riskName: "",
+          riskType: "",
+          riskOwners: "",
+          description: "",
+          financialImpact: "",
+          actualClosureDate: "",
+          likelihood: "",
+          impact: "",
+          processes: "",
+          hardware: "",
+          applications: "",
+          vendors: "",
+        });
+      } else {
+        setErrorMessage(result.message || "Error creating risk register!");
+      }
+    } catch (error) {
+      setErrorMessage("Network error! Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleSelectRPO = (option) => {
-    setSelectedRPO(option);
-    setIsRPOpen(false);
-  };
+
   return (
     <React.Fragment>
       <Helmet>
-        <title>New Risk Page | TRST</title>
-        <meta name="description" content="This is the home page description" />
-        <meta name="keywords" content="home, react, meta tags" />
+        <title>New Risk Register | TRST</title>
+        <meta name="description" content="This is the new risk register page description" />
+        <meta name="keywords" content="risk, register, new" />
       </Helmet>
       <div className="page-content">
+       <div className="main-content1">
+                <div className="d-flex align-items-center justify-content-between">
+                  <div className="header-text">
+                    
+                  </div>
+                  <div className="d-flex align-items-center justify-content-end">
+                    <div>
+                      <NavLink
+                        className="button3 border-1 button3-changes me-1"
+                        to="/risk-register"
+                        title="Cancel"
+                      >
+                        <RxCross2
+                          className="me-1"
+                          style={{ width: "15px", height: "15px" }}
+                        />
+                        Cancel
+                      </NavLink>
+                      <NavLink
+                        className="button3 border-1 button3-changes me-1"
+                        to="#"
+                        title="Save & New"
+                      >
+                        Save & New
+                      </NavLink>
+                      <Button type="submit" color="primary" disabled={loading}>
+              {loading ? <Spinner size="sm" /> : "Save"}
+            </Button>
+                      
+                    </div>
+                    <div
+                      className="map-action k-widget k-button-group order-1"
+                      id="map-action-toggle"
+                      role="group"
+                    >
+                      <span className="dropdown">
+                        <button
+                          className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
+                          type="button"
+                          id="TollFropdown"
+                          data-bs-toggle="dropdown"
+                          aria-expanded={isToolOpen}
+                          onClick={toggleToolDropDown}
+                        >
+                          <HiMiniWrench className="hw-16" />
+                        </button>
+                        <ul
+                          className={`right-auto dropdown-menu  ${
+                            isToolOpen ? "show" : ""
+                          }`}
+                          aria-labelledby="TollFropdown"
+                        >
+                          <li>
+                            <a className="dropdown-item" href="#">
+                              <BiSolidEdit className="hw-15" /> Design this page
+                            </a>
+                          </li>
+                          <li>
+                            <a className="dropdown-item" href="#">
+                              <FcSettings className="hw-15" /> Object Definition
+                            </a>
+                          </li>
+                          <li>
+                            <a className="dropdown-item" href="#">
+                              <LuTableOfContents className="hw-15" /> Tab Definition
+                            </a>
+                          </li>
+                          <div className="border-1"></div>
+                          <li>
+                            <a className="dropdown-item" href="#">
+                              <FaPrint className="hw-15" /> Print
+                            </a>
+                          </li>
+                          <li>
+                            <a className="dropdown-item" href="#">
+                              <FaRegFilePdf className="hw-15" /> PDF
+                            </a>
+                          </li>
+                          <div className="border-1"></div>
+                          <li>
+                            <a className="dropdown-item" href="#">
+                              <LuClock9 className="hw-15" /> Page Load Time
+                            </a>
+                          </li>
+                        </ul>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
         <div className="main-content1">
-          <div className="d-flex align-items-center justify-content-between">
-            <div className="header-text">Risk: New Risk</div>
-            <div className="d-flex align-items-center justify-content-end">
-              <div>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Cancel"
-                >
-                  <RxCross2
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                  />
-                  Cancel
-                </NavLink>
-                <NavLink
-                  className="button3 border-1 button3-changes me-1"
-                  to="#"
-                  title="Save & New"
-                >
-                  Save & New
-                </NavLink>
-                <NavLink className="button3 border-1 me-3" to="#" title="Save">
-                  <FaCheck
-                    className="me-1"
-                    style={{ width: "15px", height: "15px" }}
-                  />
-                  Save
-                </NavLink>
-              </div>
-              <div
-                className="map-action k-widget k-button-group order-1"
-                id="map-action-toggle"
-                role="group"
-              >
-                <span className="dropdown">
-                  <button
-                    className="btn btn-secondary dropdown-toggle border-radius-2 ms-1"
-                    type="button"
-                    id="TollFropdown"
-                    data-bs-toggle="dropdown"
-                    aria-expanded={isToolOpen}
-                    onClick={toggleToolDropDown}
-                  >
-                    <HiMiniWrench className="hw-16" />
-                  </button>
-                  <ul
-                    className={`right-auto dropdown-menu  ${
-                      isToolOpen ? "show" : ""
-                    }`}
-                    aria-labelledby="TollFropdown"
-                  >
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <BiSolidEdit className="hw-15" /> Design this page
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FcSettings className="hw-15" /> Object Definition
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <LuTableOfContents className="hw-15" /> Tab Definition
-                      </a>
-                    </li>
-                    <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FaPrint className="hw-15" /> Print
-                      </a>
-                    </li>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <FaRegFilePdf className="hw-15" /> PDF
-                      </a>
-                    </li>
-                    <div className="border-1"></div>
-                    <li>
-                      <a className="dropdown-item" href="#">
-                        <LuClock9 className="hw-15" /> Page Load Time
-                      </a>
-                    </li>
-                  </ul>
-                </span>
-              </div>
-            </div>
-          </div>
+          <div className="header-text">New Risk Register</div>
         </div>
+        
         <div className="form-content">
-          <div className="form-heading">Risk Information</div>
-          <div className="border-1"></div>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <div className="row pt-4">
-              <div className="col-8">
-                {[" Risk Name"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                      <span class="text-danger">*</span>
-                    </Label>
-                    <Input name="text" className="form-control" type="text" />
-                  </div>
-                ))}{" "}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label
-                    htmlFor="applicationType"
-                    className="form-label me-2 fs-15 w-40"
-                  >
+              <div className="col-6">
+                <div className="mb-3">
+                  <Label htmlFor="riskName" className="form-label">
+                    Risk Name
+                    <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="riskName"
+                    className="form-control"
+                    type="text"
+                    value={formData.riskName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <Label htmlFor="riskType" className="form-label">
                     Risk Type
+                    <span className="text-danger">*</span>
                   </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleStatusDropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedStatus}</span>
-                      <svg
-                        className={`ms-2 ${isStatusOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isStatusOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {statusOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectStatus(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>{" "}
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
+                  <Input
+                    name="riskType"
+                    className="form-control"
+                    type="select"
+                    value={formData.riskType}
+                    onChange={handleChange}
+                    required
                   >
+                    <option value="">-- Please select --</option>
+                    <option value="Active Shooter">Active Shooter</option>
+                    <option value="Aircraft / Airport Accident">Aircraft / Airport Accident</option>
+                    <option value="Arson">Arson</option>
+                    <option value="Avalanche">Avalanche</option>
+                    <option value="Bomb Threat / Warning">Bomb Threat / Warning</option>
+                  </Input>
+                </div>
+                <div className="mb-3">
+                  <Label htmlFor="riskOwners" className="form-label">
                     Risk Owners
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
+                    <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="riskOwners"
+                    className="form-control"
+                    type="text"
+                    value={formData.riskOwners}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
-                {["Description"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <textarea
-                      name="text"
-                      className="form-control"
-                      type="text"
-                    />
-                  </div>
-                ))}
-                {["Financial Impact"].map((label, index) => (
-                  <div className="mb-3 d-flex align-items-center" key={index}>
-                    <Label
-                      htmlFor={label}
-                      className="form-label me-2 fs-15 w-40"
-                    >
-                      {label}
-                    </Label>
-                    <Input
-                      name="number"
-                      className="form-control"
-                      type="number"
-                    />
-                  </div>
-                ))}{" "}
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
+                <div className="mb-3">
+                  <Label htmlFor="description" className="form-label">
+                    Description
+                    <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="description"
+                    className="form-control"
+                    type="textarea  "
+                    value={formData.description}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <Label htmlFor="financialImpact" className="form-label">
+                    Financial Impact
+                    <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="financialImpact"
+                    className="form-control"
+                    type="number"
+                    value={formData.financialImpact}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <Label htmlFor="actualClosureDate" className="form-label">
                     Actual Closure Date
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <SlCalender className="fs-15" />
-                  </button>
+                    <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="actualClosureDate"
+                    className="form-control"
+                    type="date"
+                    value={formData.actualClosureDate}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
               </div>
-            </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Impact</div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-8">
-                {/* Likelihood Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="rto" className="form-label me-2 fs-15 w-40">
+              <div className="col-6">
+                <div className="mb-3">
+                  <Label htmlFor="likelihood" className="form-label">
                     Likelihood
+                    <span className="text-danger">*</span>
                   </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleRTODropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedRTO}</span>
-                      <svg
-                        className={`ms-2 ${isRTOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isRTOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {RTOOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectRTO(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <Input
+                    name="likelihood"
+                    className="form-control"
+                    type="select"
+                    value={formData.likelihood}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">-- Please select --</option>
+                    <option value="High">High</option>
+                    <option value="Moderate">Moderate</option>
+                    <option value="Low">Low</option>
+                    <option value="Very Low">Very Low</option>
+                  </Input>
                 </div>
-                {/* Impact Dropdown */}
-                <div className="mb-3 d-flex align-items-center">
-                  <Label htmlFor="rpo" className="form-label me-2 fs-15 w-40">
+                <div className="mb-3">
+                  <Label htmlFor="impact" className="form-label">
                     Impact
+                    <span className="text-danger">*</span>
                   </Label>
-                  <div className="dropdown-container position-relative flex-grow-1 w-100">
-                    <button
-                      onClick={toggleRPODropdown}
-                      className="form-control text-start d-flex justify-content-between align-items-center"
-                      type="button"
-                    >
-                      <span>{selectedRPO}</span>
-                      <svg
-                        className={`ms-2 ${isRPOpen ? "rotate-180" : ""}`}
-                        style={{ width: "12px", height: "12px" }}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {isRPOpen && (
-                      <div
-                        className="position-absolute w-100 mt-1 bg-white border rounded dropdown-menu1"
-                        style={{ zIndex: 1000 }}
-                      >
-                        {RPOOptions.map((option, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleSelectRPO(option)}
-                            className="dropdown-item w-100 text-start py-2 px-3"
-                            type="button"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Form>
-        </div>
-        <div className="form-content">
-          <div className="form-heading">Relationships</div>
-          <div className="border-1"></div>
-          <Form>
-            <div className="row pt-4">
-              <div className="col-6">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
+                  <Input
+                    name="impact"
+                    className="form-control"
+                    type="select"
+                    value={formData.impact}
+                    onChange={handleChange}
+                    required
                   >
+                    <option value="">-- Please select --</option>
+                    <option value="Catastrophic">Catastrophic</option>
+                    <option value="Significant">Significant</option>
+                    <option value="Moderate">Moderate</option>
+                    <option value="Minor">Minor</option>
+                    <option value="No Impact">No Impact</option>
+                  </Input>
+                </div>
+                <div className="mb-3">
+                  <Label htmlFor="processes" className="form-label">
                     Processes
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
+                    <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="processes"
+                    className="form-control"
+                    type="text"
+                    value={formData.processes}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
-                    Applications
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
-                </div>
-              </div>
-              <div className="col-6">
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
+                <div className="mb-3">
+                  <Label htmlFor="hardware" className="form-label">
                     Hardware
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
+                    <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="hardware"
+                    className="form-control"
+                    type="text"
+                    value={formData.hardware}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
-                <div className="mb-3 d-flex">
-                  <label
-                    htmlFor="editors"
-                    className="form-label fs-15 w-20 me-2"
-                  >
+                <div className="mb-3">
+                  <Label htmlFor="applications" className="form-label">
+                    Applications
+                    <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="applications"
+                    className="form-control"
+                    type="text"
+                    value={formData.applications}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <Label htmlFor="vendors" className="form-label">
                     Vendors
-                  </label>
-                  <div
-                    className="form-control1 d-flex flex-wrap gap-2"
-                    style={{
-                      minHeight: "38px",
-                      border: "1px solid #ced4da",
-                      borderRadius: "4px",
-                      padding: "6px 12px",
-                      backgroundColor: "#fff",
-                    }}
-                  ></div>
-                  <button
-                    type="button"
-                    className="btn btn-secondary border-radius-2"
-                  >
-                    <BiSearchAlt2 className="fs-15" />
-                  </button>
+                    <span className="text-danger">*</span>
+                  </Label>
+                  <Input
+                    name="vendors"
+                    className="form-control"
+                    type="text"
+                    value={formData.vendors}
+                    onChange={handleChange}
+                    required
+                  />
                 </div>
               </div>
             </div>
+            <Button type="submit" color="primary" disabled={loading}>
+              {loading ? <Spinner size="sm" /> : "Create Risk Register"}
+            </Button>
+            {successMessage && <Alert color="success">{successMessage}</Alert>}
+            {errorMessage && <Alert color="danger">{errorMessage}</Alert>}
           </Form>
         </div>
       </div>

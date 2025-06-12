@@ -1,0 +1,395 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Sen:wght@400..800&display=swap');
+
+body {
+    font-family: "Montserrat", serif;
+}
+
+.header-text {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: #4c4c4c;
+}
+
+button {
+    outline: 0 !important;
+}
+
+.border-1 {
+    border: 1px solid #ddd !important;
+}
+
+.map-action>.k-button.k-state-active {
+    background: #435fff;
+    color: #fff;
+}
+
+/* .page-content{
+  margin-top: 75px;
+} */
+.page-content .k-button {
+    padding: 5px 10px;
+    font-size: 14px;
+    color: #4c4c4c;
+    background: none #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.header-title {
+    margin-left: 0.5rem;
+    padding-right: 0.5rem;
+    font-size: 18px;
+    color: #4c4c4c;
+}
+
+.main-content2 .button {
+    background-image: none;
+    border-radius: 2px;
+    color: #4c4c4c;
+    background-color: #fff;
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+    padding-top: 0.38rem;
+    padding-bottom: 0.47rem;
+}
+
+.main-content2 .button .svg {
+    position: absolute;
+    right: 5px;
+}
+
+.button1 {
+    background-color: #435fff;
+    color: #fff;
+    box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.1) !important;
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+    padding-top: 0.38rem;
+    padding-bottom: 0.47rem;
+    margin: 0 !important;
+    border-radius: 2px;
+}
+
+.button3 {
+    background-color: #435fff;
+    color: #fff;
+    box-shadow: 0 1px 5px 1px rgba(0, 0, 0, 0.1) !important;
+    padding-right: 2rem !important;
+    padding-left: 2rem !important;
+    padding-top: 0.38rem;
+    padding-bottom: 0.47rem;
+    border-radius: 2px;
+}
+
+.button3-changes {
+    color: #4c4c4c !important;
+    background-color: #fff !important;
+
+}
+
+.button-order {
+    height: fit-content;
+    order: 2;
+}
+
+.border-radius-2 {
+    border-radius: 2px !important;
+}
+
+.dropdown-toggle::after {
+    display: none !important;
+}
+
+.main-content1 .btn {
+    padding-right: 10px !important;
+    padding-left: 10px !important;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.btn-secondary {
+    background-color: #f9f9f9;
+    color: black;
+    border-color: #E9E9E9;
+    box-shadow: 0 2px 5px rgba(87, 87, 87, 0.2);
+}
+
+.btn-secondary:hover {
+    background-color: #8C52FF;
+}
+
+.blue {
+    color: blue;
+}
+
+.right-auto {
+    right: -2px;
+}
+
+.form-content {
+    padding-top: 35px;
+}
+
+.form-content .form-heading {
+    margin-left: .5rem;
+    padding-right: .5rem;
+    font-size: 1.5rem;
+    color: #4c4c4c;
+}
+
+.white-space {
+    white-space: nowrap;
+}
+
+.w-40 {
+    width: 40% !important;
+}
+
+.dropdown-container .dropdown-menu1 {
+    max-height: 150px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1000;
+}
+.p-7{
+    padding: 8px;
+}
+.form-button{
+    border: 1px solid #ddd;
+background-color: #fff;
+border-radius: 2px;
+}
+.hw-16{
+    height: 16px;
+    width: 16px;
+}
+.hw-20{
+    height: 20px;
+    width: 20px;
+}
+.hw-18{
+    height: 18px;
+    width: 18px;
+}
+.hw-15{
+    height: 15px;
+    width: 15px;
+}
+.hw-14{
+    height: 14px;
+    width: 14px;
+}
+
+
+/* For WebKit browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+    width: 12px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Background of the scrollbar track */
+    border-radius: 10px; /* Rounded corners for the track */
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the scrollbar thumb */
+    border-radius: 10px; /* Rounded corners for the thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color of the thumb on hover */
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin; /* Make scrollbar thin */
+    scrollbar-color: #888 #f1f1f1; /* Thumb color and track color */
+}
+.fs-20{
+    font-size: 20px;
+}
+
+/* Add any missing styles from your Employees.css */
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  background-color: transparent;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: middle;
+}
+
+.pagination-buttons .btn {
+  margin: 0 2px;
+}
+
+.btn-outline-secondary {
+  border-color: #ced4da;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f8f9fa;
+  border-color: #ced4da;
+}
+
+/* Add any additional styles you need */
+
+/* Add these if missing */
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  z-index: 1;
+}
+
+.selected-row {
+  background-color: rgba(67, 95, 255, 0.05);
+}
+
+.table th {
+  position: relative;
+  user-select: none;
+}
+
+.table td {
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pagination-buttons .btn {
+  margin: 0 2px;
+}
+
+/* Add these styles */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  padding: 0.75rem;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody td {
+  padding: 0.75rem;
+  vertical-align: middle;
+  background-color: #fff;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 13px;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+  user-select: none;
+}
+
+.resize-handle:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.filter-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-popup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background: white;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 250px;
+  margin-top: 0.5rem;
+}
+
+/* Dark mode styles */
+[data-bs-theme='dark'] .table thead th {
+  background-color: #2a2a2a;
+  color: #e4e4e4;
+  border-color: #404040;
+}
+
+[data-bs-theme='dark'] .table tbody td {
+  background-color: #333333;
+  color: #e4e4e4;
+  border-color: #404040;
+}
+
+[data-bs-theme='dark'] .table tbody tr:hover {
+  background-color: #404040;
+}
+
+/* Add this style for the clear button */
+.position-absolute {
+  position: absolute;
+}
+
+.btn-link.text-danger {
+  color: #dc3545;
+  text-decoration: none;
+}
+
+.btn-link.text-danger:hover {
+  color: #bb2d3b;
+}
+
+/* Custom scrollbar styles */
+.form-control1::-webkit-scrollbar {
+  height: 8px; /* Height of the scrollbar */
+ 
+}
+
+.form-control1::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Background of the scrollbar track */
+  border-radius: 4px; /* Rounded corners for the track */
+}
+
+.form-control1::-webkit-scrollbar-thumb {
+  background: #888; /* Color of the scrollbar thumb */
+  border-radius: 4px; /* Rounded corners for the thumb */
+}
+
+.form-control1::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Color of the thumb on hover */
+}
+
+
+

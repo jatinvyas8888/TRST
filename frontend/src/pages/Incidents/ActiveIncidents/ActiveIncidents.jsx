@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link, NavLink } from "react-router-dom";
+import { RiDeleteBin6Line } from "react-icons/ri";
 import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
 import { HiMiniWrench } from "react-icons/hi2";
 import { BiSolidEdit } from "react-icons/bi";
+import { CiEdit } from "react-icons/ci"; 
 import { FcSettings } from "react-icons/fc";
 import { LuRefreshCw, LuTableOfContents, LuClock9 } from "react-icons/lu";
 import { FaPrint } from "react-icons/fa6";
@@ -17,6 +19,9 @@ function ActiveIncidents() {
   const [isOpen, setIsOpen] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isColumnOpen, setIsColumnOpen] = useState(false);
+  const [incidents, setIncidents] = useState([]); // Initialize as an empty array
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -25,13 +30,42 @@ function ActiveIncidents() {
   const toggleToolDropDown = () => {
     setIsToolOpen(!isToolOpen);
   };
+
   const ColumnDropDown = () => {
     setIsColumnOpen(!isColumnOpen);
   };
+
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/api/v1/activeincident/getall");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const result = await response.json();
+        
+        // Log the result to see its structure
+        console.log("API Response:", result);
+  
+        // Ensure data is an array
+        if (Array.isArray(result.data)) {
+          setIncidents(result.data); // Set incidents to the data array
+        } else {
+          throw new Error("Expected an array from the API");
+        }
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchIncidents();
+  }, []); // Empty dependency array means this effect runs once on mount
   return (
     <React.Fragment>
       <Helmet>
-        <title>Active Incidents Page| TRST</title>
+        <title>Active Incidents Page | TRST</title>
         <meta name="description" content="This is the home page description" />
         <meta name="keywords" content="home, react, meta tags" />
       </Helmet>
@@ -57,9 +91,7 @@ function ActiveIncidents() {
                   <HiMiniWrench className="wh-16" />
                 </button>
                 <ul
-                  className={`right-auto dropdown-menu ${
-                    isToolOpen ? "show" : ""
-                  }`}
+                  className={`right-auto dropdown-menu ${isToolOpen ? "show" : ""}`}
                   aria-labelledby="TollFropdown"
                 >
                   <li>
@@ -77,7 +109,7 @@ function ActiveIncidents() {
                   <li>
                     <a className="dropdown-item" href="#">
                       <LuTableOfContents className="hw-15 mr-5px" />
-                      tab Definition
+                      Tab Definition
                     </a>
                   </li>
                   <div className="border-1"></div>
@@ -186,49 +218,49 @@ function ActiveIncidents() {
                     <span className="fw-bold">Columns</span>{" "}
                     <a className="blue">Reset</a>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Status Summary
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Incident
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Severity
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Incident Type (s)
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Declaration Time
                     </label>
                   </li>{" "}
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Closed Time
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Updated At
                     </label>
                   </li>{" "}
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Updated By
@@ -243,7 +275,7 @@ function ActiveIncidents() {
             <div>
               <NavLink className="button1 border-1" to="/new-active-incidents">
                 <TiPlus className="hw-20" />
-                Incident
+                Active Incident
               </NavLink>
               <button className="button border-1 ms-1">
                 <FaRegTrashCan className="hw-18" />
@@ -257,6 +289,62 @@ function ActiveIncidents() {
             </div>
           </div>
           <div className="border-1 mt-2 mb-2"></div>
+          <div className="table-responsive">
+            <h3>Active Incidents</h3>
+            {loading ? (
+              <p>Loading...</p>
+            ) : error ? (
+              <p>Error: {error}</p>
+            ) : (
+              <table className="table table-hover">
+                <thead>
+                  <tr>
+                    <th>
+                      <input type="checkbox" />
+                    </th>
+                    <th>Actions</th>
+                  
+                    <th>Incident Name</th>
+                    <th>Status</th>
+                    <th>Severity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.isArray(incidents) && incidents.length > 0 ? (
+                    incidents.map((incident) => (
+                      <tr key={incident.id}>
+                        <td>
+                          <input type="checkbox" />
+                        </td>
+                        <td>
+                        <CiEdit
+                                                        style={{
+                                                          cursor: "pointer",
+                                                          fontSize: "1.2em",
+                                                          color: "green",
+                                                        }}
+                                                        size={18}
+                                                      />
+                      <RiDeleteBin6Line
+                                                        className="text-danger"
+                                                        size={18}
+                                                      />
+                        </td>
+                     
+                        <td>{incident.incident}</td>
+                        <td>{incident.incidentType}</td>
+                        <td>{incident.severity}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6">No incidents found.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       </div>
     </React.Fragment>

@@ -5,32 +5,32 @@ import { BusinessEntity } from "../models/organizationalEntities.model.js";
 import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
 import Location from "../models/locations.model.js";
+import Employee from "../models/employees.model.js";
+
+
 
 const createOrganizationalEntity = asyncHandler(async (req, res) => {
     const {
-        businessEntityType, 
+        businessEntityType,
         businessEntityId,
-        businessEntity, 
-        editors, 
-        description, 
+        businessEntity,
+        editors,
+        description,
         parentBusinessEntity,
-        childBusinessEntities, 
-        relatedLocations
-    } = req.body
+        childBusinessEntities,
+        relatedLocations,
+        employees, // New Field Added
+        applications,
+        locations
+    } = req.body;
 
     // Validate required fields
     if (!businessEntityType || !businessEntity) {
-        throw new ApiError(400, "businessEntityType, businessEntityId and businessEntity fields must be provided")
-            res.status(400)
+        throw new ApiError(400, "businessEntityType and businessEntity fields must be provided");
     }
 
-    // Check if businessEntityType is provided and valid
-    // if (businessEntityType && !BUSINESS_ENTITY_TYPES.includes(businessEntityType)) {
-    //     throw new ApiError(400, "Invalid businessEntityType");
-    // }
-
     // Check if businessEntityId is provided and unique
-    let businessEntityIdValue = businessEntityId || null; // Ensure it is explicitly set to null if not provided
+    let businessEntityIdValue = businessEntityId || null;
     if (businessEntityIdValue) {
         const existingBusinessEntityId = await BusinessEntity.findOne({ businessEntityId: businessEntityIdValue });
         if (existingBusinessEntityId) {
@@ -44,51 +44,37 @@ const createOrganizationalEntity = asyncHandler(async (req, res) => {
         throw new ApiError(409, "Entity with this name already exists");
     }
 
-    // First, verify if the parent business entity exists by name
+    // Validate and find parent business entity
     let parentEntityId = null;
-    let parentEntityName = null;
     if (parentBusinessEntity) {
         const parentEntity = await BusinessEntity.findOne({ businessEntity: parentBusinessEntity });
         if (!parentEntity) {
             throw new ApiError(404, "Parent business entity not found");
         }
-        parentEntityId = parentEntity._id; // Get the ObjectId of the found entity
-        parentEntityName = parentEntity.businessEntity; // Store the name if needed
+        parentEntityId = parentEntity._id;
     }
 
     // Validate and find related locations
     let relatedLocationIds = [];
     if (relatedLocations?.length) {
-        // Convert input to array if it's a string
-        const locationIdentifiers = Array.isArray(relatedLocations) 
-            ? relatedLocations 
-            : relatedLocations.split(',').map(loc => loc.trim());
-
-        // Find locations by either name or ID
         const foundLocations = await Location.find({
             $or: [
-                { locationName: { $in: locationIdentifiers } },
-                { locationId: { $in: locationIdentifiers } }
+                { locationName: { $in: relatedLocations } },
+                { locationId: { $in: relatedLocations } }
             ]
         });
 
-        // Verify all locations were found
-        if (foundLocations.length !== locationIdentifiers.length) {
-            const foundNames = foundLocations.map(loc => loc.locationName);
-            const foundIds = foundLocations.map(loc => loc.locationId);
-            const notFoundLocations = locationIdentifiers.filter(
-                identifier => !foundNames.includes(identifier) && !foundIds.includes(identifier)
+        if (foundLocations.length !== relatedLocations.length) {
+            const notFoundLocations = relatedLocations.filter(
+                loc => !foundLocations.some(found => found.locationName === loc || found.locationId === loc)
             );
-            throw new ApiError(
-                400, 
-                `Some locations were not found: ${notFoundLocations.join(', ')}`
-            );
+            // throw new ApiError(400, Some locations were not found: ${notFoundLocations.join(', ')});
         }
 
         relatedLocationIds = foundLocations.map(location => location._id);
     }
 
-    // Find editors by username or fullName
+    // Validate and find editors
     let editorIds = [];
     if (editors?.length) {
         editorIds = await User.find({
@@ -103,189 +89,244 @@ const createOrganizationalEntity = asyncHandler(async (req, res) => {
         }
     }
 
-    // Convert string IDs to ObjectIds and handle arrays properly
-    const formattedData = {
-        businessEntityType,
-        businessEntityId: businessEntityId || null,
-        businessEntity,
-        description,
-        editors: editorIds, // Use the found editor IDs
-        parentBusinessEntity: parentEntityId,
-        parentBusinessEntityName: parentEntityName,
-        childBusinessEntities: childBusinessEntities?.length ? 
-            await BusinessEntity.find({ businessEntity: { $in: childBusinessEntities } }).distinct('_id') : [],
-        relatedLocations: relatedLocationIds // Use the validated location IDs
-    }
+    // Validate and find employees
+    // Validate and find employees (removed validation)
+let employeeIds = [];
+if (employees?.length) {
+    // Directly associate the provided employee names or usernames without validation
+    employeeIds = employees; // Just assign the values directly without querying the database
+}
 
-    // Validate that editors are valid ObjectIds if provided
-    if (editors?.length) {
-        try {
-            editorIds.forEach(editorId => {
-                if (!mongoose.Types.ObjectId.isValid(editorId)) {
-                    throw new ApiError(400, "Invalid editor ID format");
-                }
-            });
-        } catch (error) {
-            throw new ApiError(400, "Invalid editor IDs provided");
+let locationIds = [];
+if (locations?.length) {
+    // Directly associate the provided location names or usernames without validation
+    locationIds = locations; // Just assign the values directly without querying the database
+}
+
+let applicationIds = [];
+if (applications?.length) {
+    // Directly associate the provided location names or usernames without validation
+    applicationIds =applications; // Just assign the values directly without querying the database
+}
+// You can now proceed with the rest of the logic where employeeIds will be directly used
+
+
+    // Validate and find child business entities
+    let childEntityIds = [];
+    if (childBusinessEntities?.length) {
+        childEntityIds = await BusinessEntity.find({
+            businessEntity: { $in: childBusinessEntities }
+        }).distinct('_id');
+
+        if (childEntityIds.length === 0) {
+            throw new ApiError(400, "No valid child business entities found");
         }
     }
 
-    // Create new entity
-    const newOrganizationalEntity = await BusinessEntity.create(formattedData)
+    // Create the organizational entity
+    const newOrganizationalEntity = await BusinessEntity.create({
+        businessEntityType,
+        businessEntityId: businessEntityIdValue,
+        businessEntity,
+        description,
+        editors: editorIds,
+        employees: employeeIds,
+        locations: locationIds,
+        applications: applicationIds,
+        parentBusinessEntity: parentEntityId,
+        childBusinessEntities: childEntityIds,
+        relatedLocations: relatedLocationIds
+    });
 
-    // Update parent's childBusinessEntities only if parent exists
+    // Update parent's childBusinessEntities if parent exists
     if (parentEntityId) {
         await BusinessEntity.findByIdAndUpdate(
             parentEntityId,
-            {
-                $addToSet: { childBusinessEntities: newOrganizationalEntity._id }
-            }
-        )
+            { $addToSet: { childBusinessEntities: newOrganizationalEntity._id } }
+        );
     }
-
-    // Populate the related locations in the response
+    await Employee.updateMany(
+        { _id: { $in: employeeIds } },
+        { $addToSet: { businessEntities: newOrganizationalEntity._id } } // Add the business entity to each employee
+      );
+      
+    // Populate the response with related data
     const populatedEntity = await BusinessEntity.findById(newOrganizationalEntity._id)
         .populate('parentBusinessEntity', 'businessEntity businessEntityType businessEntityId description')
         .populate('childBusinessEntities', 'businessEntity businessEntityType businessEntityId description')
         .populate('editors', 'username fullName email')
+        .populate('employees', 'departmentNames')
+        .populate('locations', 'locationName')
+        .populate('applications', 'applicationName applicationId applicationType city stateProvince country')
         .populate('relatedLocations', 'locationName locationId locationType city stateProvince country');
 
     return res.status(201).json(
         new ApiResponse(201, populatedEntity, "Organizational Entity Created Successfully!")
-    )
-})
+    );
+});
+
 
 const updateOrganizationalEntity = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const updateData = { ...req.body };
+    const { id } = req.params; // Get the ID from URL parameters
+    const {
+        businessEntityType,
+        businessEntityId,
+        businessEntity,
+        editors,
+        description,
+        parentBusinessEntity,
+        childBusinessEntities,
+        relatedLocations,
+        employees, // New Field Added
+        locations,
+        applications
+    } = req.body;
 
-    // Log the incoming request data
-    console.log("Incoming Update Data:", updateData);
+    // Validate required fields
+    if (!businessEntityType || !businessEntity) {
+        throw new ApiError(400, "businessEntityType and businessEntity fields must be provided");
+    }
 
-    // First check if the entity exists
+    // Check if the entity exists
     const existingEntity = await BusinessEntity.findById(id);
     if (!existingEntity) {
-        throw new ApiError(404, "Organizational Entity not found");
+        throw new ApiError(404, "Organizational entity not found");
     }
 
-    // Check if the provided ID matches the entity being updated
-    if (updateData.id && updateData.id !== id) {
-        throw new ApiError(400, "ID cannot be changed");
-    }
-
-    // Check if businessEntityId is provided and unique
-    // if (updateData.businessEntityId && updateData.businessEntityId !== existingEntity.businessEntityId) {
-    //     const duplicateEntity = await BusinessEntity.findOne({
-    //         businessEntityId: updateData.businessEntityId,
-    //         _id: { $ne: id } // exclude current entity
-    //     });
-    //     if (duplicateEntity) {
-    //         throw new ApiError(409, "businessEntityId must be unique");
-    //     }
-    // }
-
-    // Check if businessEntityType is provided and valid
-    // if (updateData.businessEntityType && !BUSINESS_ENTITY_TYPES.includes(updateData.businessEntityType)) {
-    //     throw new ApiError(400, "Invalid businessEntityType");
-    // }
-
-    // Check for duplicate businessEntity name only if it's being changed
-    if (updateData.businessEntity && updateData.businessEntity !== existingEntity.businessEntity) {
-        const duplicateEntity = await BusinessEntity.findOne({
-            businessEntity: updateData.businessEntity,
-            _id: { $ne: id } // exclude current entity
-        });
-        if (duplicateEntity) {
-            throw new ApiError(409, "An entity with this name already exists. Please use a different name.");
+    // Check if businessEntityId is provided and unique (if it's updated)
+    if (businessEntityId && businessEntityId !== existingEntity.businessEntityId) {
+        const existingBusinessEntityId = await BusinessEntity.findOne({ businessEntityId });
+        if (existingBusinessEntityId) {
+            throw new ApiError(409, "businessEntityId must be unique");
         }
     }
 
-    // Find editors by username or fullName
-    if (updateData.editors?.length) {
-        const editorIds = await User.find({
+    // Check if entity name is updated and exists
+    if (businessEntity !== existingEntity.businessEntity) {
+        const duplicateEntity = await BusinessEntity.findOne({ businessEntity });
+        if (duplicateEntity) {
+            throw new ApiError(409, "Entity with this name already exists");
+        }
+    }
+
+    // Validate and find parent business entity
+    let parentEntityId = existingEntity.parentBusinessEntity;
+    if (parentBusinessEntity) {
+        const parentEntity = await BusinessEntity.findOne({ businessEntity: parentBusinessEntity });
+        if (!parentEntity) {
+            throw new ApiError(404, "Parent business entity not found");
+        }
+        parentEntityId = parentEntity._id;
+    }
+
+    // Validate and find related locations
+    let relatedLocationIds = existingEntity.relatedLocations;
+    if (relatedLocations?.length) {
+        const foundLocations = await Location.find({
             $or: [
-                { username: { $in: updateData.editors } },
-                { fullName: { $in: updateData.editors } }
+                { locationName: { $in: relatedLocations } },
+                { locationId: { $in: relatedLocations } }
+            ]
+        });
+
+        if (foundLocations.length !== relatedLocations.length) {
+            const notFoundLocations = relatedLocations.filter(
+                loc => !foundLocations.some(found => found.locationName === loc || found.locationId === loc)
+            );
+            // throw new ApiError(400, Some locations were not found: ${notFoundLocations.join(', ')});
+        }
+
+        relatedLocationIds = foundLocations.map(location => location._id);
+    }
+
+    // Validate and find editors
+    let editorIds = existingEntity.editors;
+    if (editors?.length) {
+        editorIds = await User.find({
+            $or: [
+                { username: { $in: editors } },
+                { fullName: { $in: editors } }
             ]
         }).distinct('_id');
 
         if (editorIds.length === 0) {
             throw new ApiError(400, "No editors found with the provided names/usernames");
         }
-        updateData.editors = editorIds; // Update to use ObjectIds
     }
 
-    // Check if parentBusinessEntity is provided and handle removal
-    if (updateData.parentBusinessEntity === "") {
-        console.log("Removing parentBusinessEntity");
-        updateData.parentBusinessEntity = null; // Set to null to remove the parent entity
-    } else if (updateData.parentBusinessEntity) {
-        // If a name is provided, find the parent entity by name
-        const parentEntity = await BusinessEntity.findOne({ businessEntity: updateData.parentBusinessEntity });
-        if (parentEntity) {
-            updateData.parentBusinessEntity = parentEntity._id; // Set to the ObjectId of the found entity
-        } else {
-            throw new ApiError(404, "Parent business entity not found by name");
+    // Validate and find employees
+    let employeeIds = existingEntity.employees;
+    if (employees?.length) {
+        employeeIds = employees; // Directly assign the values
+    }
+
+    let locationIds = existingEntity.locations;
+    if (locations?.length) {
+        locationIds = locations; // Directly assign the values
+    }
+
+    let applicationIds = existingEntity.applications;
+    if (applications?.length) {
+        applicationIds = applications; // Directly assign the values
         }
-    }
-
-
-    // Find child business entities by name and convert to ObjectIds
-    if (updateData.childBusinessEntities?.length) {
-        const childEntities = await BusinessEntity.find({
-            businessEntity: { $in: updateData.childBusinessEntities }
+    // Validate and find child business entities
+    let childEntityIds = existingEntity.childBusinessEntities;
+    if (childBusinessEntities?.length) {
+        childEntityIds = await BusinessEntity.find({
+            businessEntity: { $in: childBusinessEntities }
         }).distinct('_id');
 
-        if (childEntities.length === 0) {
+        if (childEntityIds.length === 0) {
             throw new ApiError(400, "No valid child business entities found");
         }
-        updateData.childBusinessEntities = childEntities; // Update to use ObjectIds
     }
 
-    // Add location validation
-    if (updateData.relatedLocations?.length) {
-        // Convert string array to array if it's a comma-separated string
-        const locationNames = Array.isArray(updateData.relatedLocations) 
-            ? updateData.relatedLocations 
-            : updateData.relatedLocations.split(',').map(loc => loc.trim());
+    // Update the organizational entity
+    existingEntity.businessEntityType = businessEntityType || existingEntity.businessEntityType;
+    existingEntity.businessEntityId = businessEntityId || existingEntity.businessEntityId;
+    existingEntity.businessEntity = businessEntity || existingEntity.businessEntity;
+    existingEntity.description = description || existingEntity.description;
+    existingEntity.editors = editorIds.length > 0 ? editorIds : existingEntity.editors;
+    existingEntity.employees = employeeIds.length > 0 ? employeeIds : existingEntity.employees;
+    existingEntity.locations = locationIds.length > 0 ? locationIds : existingEntity.locations;
+    existingEntity.applications = applicationIds.length > 0 ? applicationIds : existingEntity.applications
+    existingEntity.parentBusinessEntity = parentEntityId || existingEntity.parentBusinessEntity;
+    existingEntity.childBusinessEntities = childEntityIds.length > 0 ? childEntityIds : existingEntity.childBusinessEntities;
+    existingEntity.relatedLocations = relatedLocationIds.length > 0 ? relatedLocationIds : existingEntity.relatedLocations;
 
-        // Find locations by name or locationId
-        const locations = await Location.find({
-            $or: [
-                { locationName: { $in: locationNames } },
-                { locationId: { $in: locationNames } }
-            ]
-        });
+    await existingEntity.save();
 
-        // Check if all locations exist
-        if (locations.length !== locationNames.length) {
-            const foundLocationNames = locations.map(loc => loc.locationName);
-            const notFoundLocations = locationNames.filter(
-                name => !foundLocationNames.includes(name)
-            );
-            throw new ApiError(
-                400, 
-                `Some locations were not found: ${notFoundLocations.join(', ')}`
-            );
-        }
-
-        // Update the relatedLocations with the found location IDs
-        updateData.relatedLocations = locations.map(loc => loc._id);
+    // Update parent's childBusinessEntities if parent exists
+    if (parentEntityId && !existingEntity.parentBusinessEntity.equals(parentEntityId)) {
+        await BusinessEntity.findByIdAndUpdate(
+            parentEntityId,
+            { $addToSet: { childBusinessEntities: existingEntity._id } }
+        );
     }
 
-    const updatedEntity = await BusinessEntity.findByIdAndUpdate(
-        id,
-        updateData,
-        { 
-            new: true, 
-            runValidators: true 
-        }
-    ).populate('relatedLocations', 'locationName locationId');
+    // Explicitly update employee and location associations
+    await Employee.updateMany(
+        { _id: { $in: employeeIds } },
+        { $addToSet: { businessEntities: existingEntity._id } } // Add the business entity to each employee
+    );
+
+    // Populate the response with related data
+    const populatedEntity = await BusinessEntity.findById(existingEntity._id)
+        .populate('parentBusinessEntity', 'businessEntity businessEntityType businessEntityId description')
+        .populate('childBusinessEntities', 'businessEntity businessEntityType businessEntityId description')
+        .populate('editors', 'username fullName email')
+        .populate('employees', 'departmentNames')
+        .populate('locations', 'locationName')
+        .populate('applications', 'applicationName ')
+        .populate('relatedLocations', 'locationName locationId locationType city stateProvince country');
+        
 
     return res.status(200).json(
-        new ApiResponse(200, updatedEntity, "Organizational Entity Updated Successfully!")
+        new ApiResponse(200, populatedEntity, "Organizational Entity Updated Successfully!")
     );
-})
+});
+
+
 
 const deleteOrganizationalEntity = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -332,12 +373,23 @@ const deleteOrganizationalEntity = asyncHandler(async (req, res) => {
 const getOrganizationalEntityDetails = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
+    // ✅ Validate ID before querying
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+        throw new ApiError(400, "Invalid Business Entity ID");
+    }
+
+    // ✅ Fetch Business Entity and populate related fields
     const entity = await BusinessEntity.findById(id)
         .populate('parentBusinessEntity', 'businessEntity businessEntityType businessEntityId description')
         .populate('childBusinessEntities', 'businessEntity businessEntityType businessEntityId description')
         .populate('editors', 'username fullName email')
-        .populate('relatedLocations', 'locationName locationId locationType city stateProvince country');
+        .populate('locations', 'locationName locationId locationType city stateProvince country mainPhone capacity capacityUsed latitude longitude siteOwnership siteManager accessSafetySecurityEquipment streetAddress1 streetAddress2 zipPostalCode')
+        .populate('employees', 'employeeID firstName lastName preferredName title timeZone workEmailAddress workPhone workMobilePhone fax manager subordinates employeeStatus departmentNames')
+        .populate('applications', 'applicationName applicationID applicationType applicationAlias applicationURL description hostedType drStrategy rto rpo city stateProvince country')
+        .populate('relatedLocations', 'locationName locationId locationType city stateProvince country ');
 
+
+    // ✅ Handle case where Business Entity is not found
     if (!entity) {
         throw new ApiError(404, "Organizational Entity not found");
     }
@@ -346,6 +398,7 @@ const getOrganizationalEntityDetails = asyncHandler(async (req, res) => {
         new ApiResponse(200, entity, "Organizational Entity details fetched successfully!")
     );
 });
+
 
 const getAllOrganizationalEntities = asyncHandler(async (req, res) => {
     const entities = await BusinessEntity.find()
@@ -358,11 +411,28 @@ const getAllOrganizationalEntities = asyncHandler(async (req, res) => {
         new ApiResponse(200, entities, "Organizational Entities fetched successfully!")
     );
 });
-
+const updateApplications = async (req, res) => {
+    try {
+      const { applicationIds } = req.body;
+      const businessEntityId = req.params.id;
+  
+      const updatedBusiness = await BusinessEntity.findByIdAndUpdate(
+        businessEntityId,
+        { applicationIds },
+        { new: true }
+      );
+  
+      res.status(200).json(updatedBusiness);
+    } catch (error) {
+      console.error("Error updating applications:", error);
+      res.status(500).json({ error: 'Failed to update applications' });
+    }
+};
 export {
     createOrganizationalEntity,
     updateOrganizationalEntity,
     deleteOrganizationalEntity,
     getOrganizationalEntityDetails,
-    getAllOrganizationalEntities
+    getAllOrganizationalEntities,
+    updateApplications
 }

@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+// import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Helmet } from "react-helmet";
 import { Link, NavLink } from "react-router-dom";
 import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
 import { HiMiniWrench } from "react-icons/hi2";
 import { BiSolidEdit } from "react-icons/bi";
+import { CiEdit } from "react-icons/ci";
 import { FcSettings } from "react-icons/fc";
 import { LuRefreshCw, LuTableOfContents, LuClock9 } from "react-icons/lu";
 import { FaPrint } from "react-icons/fa6";
@@ -12,12 +15,16 @@ import { TiExport, TiPlus } from "react-icons/ti";
 import { FaRegTrashCan, FaTableColumns } from "react-icons/fa6";
 import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal } from "react-icons/hi";
-
+import { useNavigate } from "react-router-dom";
+import { Button } from "reactstrap";
 function CallTrees() {
+  const [callTrees, setCallTrees] = useState([]); // State to store CallTrees data
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
     const [isOpen, setIsOpen] = useState(false);
     const [isToolOpen, setIsToolOpen] = useState(false);
     const [isColumnOpen, setIsColumnOpen] = useState(false);
-  
+    const navigate = useNavigate();
     const toggleDropdown = () => {
       setIsOpen(!isOpen);
     };
@@ -25,9 +32,68 @@ function CallTrees() {
     const toggleToolDropDown = () => {
       setIsToolOpen(!isToolOpen);
     };
+
+    const handleCheckboxChange = (id) => {
+      setCallTrees((prevCallTrees) =>
+        prevCallTrees.map((callTree) =>
+          callTree._id === id
+        ? { ...callTree, isChecked: !callTree.isChecked }
+        : callTree
+        )
+      );
+    };
     const ColumnDropDown = () => {
       setIsColumnOpen(!isColumnOpen);
     };
+
+    useEffect(() => {
+      const fetchCallTrees = async () => {
+        try {
+          const response = await axios.get("http://localhost:8000/api/v1/call-trees/getall");
+    
+          console.log("✅ Full API Response:", response);
+          console.log("✅ API Data:", response.data || response);
+    
+          // Fix: Use response directly if response.data is undefined
+          const data = response.data || response;
+    
+          if (!Array.isArray(data)) {
+            throw new Error("API did not return an array");
+          }
+    
+          setCallTrees(data);
+          setError(null);
+        } catch (err) {
+          console.error("❌ API Fetch Error:", err.message);
+          setError("Failed to fetch Call Trees. Please try again later.");
+        } finally {
+          setLoading(false);
+        }
+      };
+    
+      fetchCallTrees();
+    }, []);
+    
+  // Handle Edit Button Click
+  const handleEdit = (id) => {
+    navigate(`/edit-call-trees/${id}`); // Navigate to the EditCallTree page with the ID
+  };
+   // Handle Delete Button Click
+   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this Call Tree?");
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(`http://localhost:8000/api/v1/call-trees/${id}`);
+      alert("Call Tree deleted successfully!");
+      setCallTrees(callTrees.filter((callTree) => callTree._id !== id)); // Remove the deleted CallTree from the state
+    } catch (error) {
+      console.error("Error deleting Call Tree:", error.message);
+      alert("Failed to delete Call Tree.");
+    }
+  };
+
+    
   return (
     <React.Fragment>
     <Helmet>
@@ -223,9 +289,95 @@ function CallTrees() {
         </div>
         <div className="border-1 mt-2 mb-2"></div>
       </div>
-    </div>
+      <div className="table-responsive">
+          <h3>Call Trees Records</h3>
+          {loading ? (
+            <p>Loading...</p>
+          ) : error ? (
+            <p className="text-danger">{error}</p>
+          ) : (
+            <table className="table table-hover">
+              <thead>
+                <tr>
+                <th>Actions</th>
+                  <th>Call Tree Name</th>
+                  <th>Description</th>
+                  <th>Employees</th>
+                  <th>Client Contacts</th>
+            
+                </tr>
+              </thead>
+              <tbody>
+                {callTrees.length > 0 ? (
+                  callTrees.map((callTree, index) => (
+                    <tr key={callTree._id}>
+                      <td>
+                        <div style={{ gap: "10px" }} className="d-flex align-items-center">
+                          <Link className="btn btn-sm btn-link"
+                          to={`/edit-call-trees/${callTree._id}`} // Navigate to the EditCallTree page with the ID
+
+                            >
+                             <CiEdit
+                                                                        style={{
+                                                                          cursor: "pointer",
+                                                                          fontSize: "1.2em",
+                                                                          color: "green",
+                                                                        }}
+                                                                        size={18}
+                                                                      />
+                          </Link>
+                          <Button className="btn btn-sm btn-link text-danger"
+                            onClick={() => handleDelete(callTree._id)} >
+                           <FaRegTrashCan className="text-danger" />
+                          </Button>
+                        </div>
+                      </td>
+                      <td>{callTree.callTreeName || "No Name"}</td>
+                      <td>{callTree.description || "No Description"}</td>
+                      <td>
+                        {Array.isArray(callTree.employees) && callTree.employees.length > 0 ? (
+                          callTree.employees.map((employee) => (
+                            <div key={employee._id}>
+                              {employee.firstName} {employee.lastName}
+                            </div>
+                          ))
+                        ) : (
+                          <span>No Employees</span>
+                        )}
+                      </td>
+                      <td>
+                        {Array.isArray(callTree.clientContacts) && callTree.clientContacts.length > 0 ? (
+                          callTree.clientContacts.map((contact) => (
+                            <div key={contact._id}>
+                              {contact.firstName} {contact.lastName}
+                            </div>
+                          ))
+                        ) : (
+                          <span>No Client Contacts</span>
+                        )}
+                      </td>
+                      
+                    </tr>
+                  ))  
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="text-center">
+                      No Call Trees Found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+      </div>
+
+
+     
   </React.Fragment>
   )
 }
 
 export default CallTrees
+				

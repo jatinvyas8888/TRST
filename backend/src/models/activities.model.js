@@ -1,46 +1,17 @@
 import mongoose from 'mongoose';
 
-const activitySchema = new mongoose.Schema(
-  {
-    bia: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'BIA',
-    },
-    plan: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Plan',
-    },
-    activity: {
-      type: String,
-    },
-    outlineTheActivitySteps: {
-      type: String,
-    },
-    businessEntity: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'BusinessEntity',
-    },
-    processEditor: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'ProcessEditor',
-    },
-    rto: {
-      type: String,
-    },
-    activityMTPD: {
-      type: String,
-    },
-    activityRTO: {
-      type: String,
-    },
-    updatedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-  },
-  { timestamps: true }
-);
+const activitySchema = new mongoose.Schema({
+  bia: { type: String, required: true },
+  plan: { type: String, required: true },
+  activity: { type: String, required: true },
+  outlineSteps: { type: String, required: true },
+  businessEntity: { type: String, required: true },
+  processEditor: { type: String, required: true },
+  rto: { type: String, enum: ['15 Mins', '1 Hour', '0.5 Hours', '2 Hrs', '3 Hrs'], required: true },
+  activityMtpd: { type: String, enum: ['2 Hrs', '4 Hrs', '8 Hrs', '12 Hrs'], required: true },
+  activityRto: { type: String, enum: ['2 Hrs', '4 Hrs', '8 Hrs', '12 Hrs'], required: true },
+}, { timestamps: true });
 
-const Activities = mongoose.model('Activities', activitySchema);
+const Activity = mongoose.model('Activity', activitySchema);
 
-export default Activities;
+export default Activity;

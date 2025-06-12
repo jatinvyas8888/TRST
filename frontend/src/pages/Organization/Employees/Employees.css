@@ -487,10 +487,11 @@ button {
     margin-left: 0.5rem;
 }
 
+
 .table-responsive {
-    position: relative;
-    overflow-x: auto;
-}
+    overflow-x: auto !important;
+  }
+  
 
 .table th:first-child,
 .table td:first-child {

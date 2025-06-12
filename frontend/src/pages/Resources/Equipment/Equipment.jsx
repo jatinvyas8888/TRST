@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link, NavLink } from "react-router-dom";
 import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
@@ -13,6 +13,8 @@ import { FaRegTrashCan, FaTableColumns } from "react-icons/fa6";
 import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal } from "react-icons/hi";
 import "./Equipment.css";
+import { Spinner } from 'reactstrap'; // Import Spinner from reactstrap
+import axios from 'axios'; // Import Axios
 
 function Equipment() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,6 +31,40 @@ function Equipment() {
   const ColumnDropDown = () => {
     setIsColumnOpen(!isColumnOpen);
   };
+  const [equipmentRecords, setEquipmentRecords] = useState([]); // Initialize as an empty array
+    const [loading, setLoading] = useState(true); // State for loading
+
+    // Fetch equipment records from the API
+    const fetchEquipmentRecords = async () => {
+        setLoading(true); // Set loading to true before fetching
+        try {
+            const response = await axios.get('http://localhost:8000/api/v1/equipment'); // Adjust the URL as needed
+            console.log("Fetched data:", response.data); // Log the fetched data
+            setEquipmentRecords(response.data); // Directly set the equipment records from the response
+        } catch (error) {
+            console.error("Error fetching equipment records:", error);
+        } finally {
+            setLoading(false); // Reset loading state
+        }
+    };
+    //delete equipment
+    const handleDelete = async (id) => {
+      if (!window.confirm("Are you sure you want to delete this equipment?")) return;
+    
+      try {
+        await axios.delete(`http://localhost:8000/api/v1/equipment/${id}`);
+        alert("Equipment deleted successfully!");
+        fetchEquipmentRecords(); // Refresh the list after deletion
+      } catch (error) {
+        console.error("Error deleting equipment:", error);
+        alert("Failed to delete equipment.");
+      }
+    };
+    
+
+    useEffect(() => {
+        fetchEquipmentRecords(); // Call the function to fetch records when the component mounts
+    }, []);
   return (
     <React.Fragment>
       <Helmet>
@@ -247,8 +283,62 @@ function Equipment() {
                 <HiDotsHorizontal className="hw-20" />
               </button>
             </div>
-          </div> 
-          <div className="border-1 mt-2 mb-2"></div>
+          </div>
+          <div className="page-content">
+                <h3>Equipment Records</h3>
+                {loading ? (
+                    <Spinner color="primary" /> // Show loading spinner while fetching data
+                ) : (
+                    <table className="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" /> {/* Checkbox in the header */}
+                                </th>
+                                <th>Actions</th>
+                                <th>Equipment</th>
+                                <th>Equipment Type</th>
+                                <th>Model Name</th>
+                                <th>Vendor(s)</th>
+                                <th>Description</th>
+                                <th>BIA Equipment Dependency</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {equipmentRecords.length > 0 ? (
+                                equipmentRecords.map((record) => (
+                                    <tr key={record._id}> {/* Use _id as the key */}
+                                        <td>
+                                            <input type="checkbox" /> {/* Checkbox for each row */}
+                                        </td>
+                                        <td>
+                                            <Link to={`/equipment/edit/${record._id}`}  className="btn btn-sm btn-link" onClick={() => console.log(`Edit ${record._id}`)}>Edit</Link>
+                                            <button className="btn btn-sm btn-link text-danger" onClick={() => handleDelete(record._id)}>Delete</button>
+                                        </td>
+                                        <td>{record.equipment}</td>
+                                        <td>{record.equipmentType}</td>
+                                        <td>{record.modelName}</td>
+                                        <td>
+                                      {record.vendors.length > 0 ? (
+                                  record.vendors.map((vendor) => vendor.vendor).join(", ")
+                                        ) : (
+                                      "No Vendor"
+                                    )}
+                                      </td>
+
+                                        <td>{record.description}</td>
+                                        <td>{record.biaEquipmentDependency}</td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="8" className="text-center">No equipment records found.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                )}
+            </div>
         </div>
       </div>
     </React.Fragment>

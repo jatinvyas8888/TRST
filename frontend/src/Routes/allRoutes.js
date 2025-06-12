@@ -57,10 +57,15 @@ import ClientContacts from "../pages/Resources/Clients/ClientContacts/ClientCont
 import NewClientContact from "../pages/Resources/Clients/ClientContacts/NewClientContact.jsx";
 import BCMSeatsRequirements from "../pages/Resources/BCMSeatsRequirements/BCMSeatsRequirements.jsx";
 import NewBCMSeatsRequirements from "../pages/Resources/BCMSeatsRequirements/NewBCMSeatsRequirements.jsx";
+import EditBCMSeatsRequirements from "../pages/Resources/BCMSeatsRequirements/EditBCMSeatsRequirements.jsx";
 import Equipment from "../pages/Resources/Equipment/Equipment.jsx";
 import NewEquipment from "../pages/Resources/Equipment/NewEquipment.jsx";
+import EditEquipment from "../pages/Resources/Equipment/EditEquipment.jsx";
 import Applications from "../pages/Resources/IT/Applications/Applications.jsx";
 import NewApplication from "../pages/Resources/IT/Applications/NewApplication.jsx";
+import EditApplication from "../pages/Resources/IT/Applications/EditApplication.jsx";
+
+import ViewApplication from "../pages/Resources/IT/Applications/ApplicationView.jsx";
 import Databases from "../pages/Resources/IT/Databases/Databases.jsx";
 import NewDatabase from "../pages/Resources/IT/Databases/NewDatabase.jsx";
 import Hardware from "../pages/Resources/IT/Hardware/Hardware.jsx";
@@ -93,15 +98,21 @@ import Plan from "../pages/Plans/Plan.jsx";
 import NewPlan from "../pages/Plans/NewPlan.jsx";
 import ApprovalGroup from "../pages/Plans/ApprovalGroups/ApprovalGroups.jsx";
 import NewApprovalGroup from "../pages/Plans/ApprovalGroups/NewApprovalGroups.jsx";
+import EditApprovalGroup from "../pages/Plans/ApprovalGroups/EditApprovalGroups.jsx";
 import Attachments from "../pages/Plans/Attachments/Attachments.jsx";
 import NewAttachments from "../pages/Plans/Attachments/NewAttachment.jsx";
+import EditAttachments from "../pages/Plans/Attachments/EditAttachment.jsx";
 import CallTrees from "../pages/Plans/CallTrees/CallTrees.jsx";
+import EditCallTrees from "../pages/Plans/CallTrees/EditCallTrees.jsx";
 import NewCallTrees from "../pages/Plans/CallTrees/NewCallTrees.jsx";
 import Plans from "../pages/Plans/Plans/Plan.jsx";
 import NewPlans from "../pages/Plans/Plans/NewPlan.jsx";
+import EditPlans from "../pages/Plans/Plans/EditPlan.jsx";
 import Sections from "../pages/Plans/Sections/Sections.jsx";
 import Teams from "../pages/Plans/Teams/Teams.jsx";
 import NewTeam from "../pages/Plans/Teams/NewTeams.jsx";
+import EditTeam from "../pages/Plans/Teams/EditTeams.jsx";
+
 
 //Risks Routes
 import Risk from "../pages/Risks/Risk.jsx";
@@ -178,6 +189,7 @@ const authProtectedRoutes = [
   { path: "/employees", component: <Employees /> },
   { path: "/new-employee", component: <NewEmployee /> },
   { path: "/employees/edit/:id", component: <EditEmployee /> },
+ 
   {
     path: "/employees/view/:id",
     component: <ViewEmployee />,
@@ -209,16 +221,20 @@ const authProtectedRoutes = [
     path: "/new-bcm-seats-requirement",
     component: <NewBCMSeatsRequirements />,
   },
+  { path: "/bcm-seats-requirements/edit/:id", component: <EditBCMSeatsRequirements /> },
 
   // Equipment Routes
   { path: "/equipment", component: <Equipment /> },
   { path: "/new-equipment", component: <NewEquipment /> },
+  { path: "/equipment/edit/:id", component: <EditEquipment /> },
 
   // IT Routes
   { path: "/it", component: <IT /> },
   { path: "/new-it", component: <NewIT /> },
   { path: "/applications", component: <Applications /> },
   { path: "/new-application", component: <NewApplication /> },
+  { path: "/applications/edit/:id", component: < EditApplication /> },
+{path: "/applications/viewdata/:id", component: <ViewApplication />},
   { path: "/databases", component: <Databases /> },
   { path: "/new-database", component: <NewDatabase /> },
   { path: "/hardware", component: <Hardware /> },
@@ -254,17 +270,22 @@ const authProtectedRoutes = [
   //Plans Routes
   { path: "/plan", component: <Plan /> },
   { path: "/new-plan", component: <NewPlan /> },
-  { path: "/approval-group", component: <ApprovalGroup /> },
-  { path: "/new-approval-group", component: <NewApprovalGroup /> },
+  { path: "/plan_approval-group", component: <ApprovalGroup /> },
+  { path: "/plan_new-approval-group", component: <NewApprovalGroup /> },
+  { path: "/edit-plan-approval-group/:id", component: <EditApprovalGroup /> },
   { path: "/attachments", component: <Attachments /> },
   { path: "/new-attachments", component: <NewAttachments /> },
+  { path: "/edit-attachments/:id", component: <EditAttachments /> },
   { path: "/call-trees", component: <CallTrees /> },
   { path: "/new-call-trees", component: <NewCallTrees /> },
+  { path: "/edit-call-trees/:id", component: <EditCallTrees /> },
   { path: "/plans", component: <Plans /> },
   { path: "/new-plans", component: <NewPlans /> },
+  { path: "/Edit-plans/:id", component: <EditPlans /> },
   { path: "/sections", component: <Sections /> },
   { path: "/teams", component: <Teams /> },
   { path: "/new-teams", component: <NewTeam /> },
+  { path: "/edit-teams/:id", component: <EditTeam /> },
 
   //Risks Routes
   { path: "/risks", component: <Risk /> },

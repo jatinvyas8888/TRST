@@ -18,6 +18,89 @@ function IT() {
   const [isOpen, setIsOpen] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isColumnOpen, setIsColumnOpen] = useState(false);
+  const [checkedItems, setCheckedItems] = useState([]);
+  const [applications, setApplications] = useState([
+    {
+      applicationID: '1',
+      applicationName: 'App One',
+      applicationType: 'Type A',
+      hostedType: 'Cloud',
+      applicationAlias: 'Alias One',
+      applicationURL: 'http://appone.com',
+      description: 'Description for App One',
+      applicationOwner: 'Owner One',
+      businessOwner: 'Business Owner One',
+      applicationVendor: 'Vendor One',
+      businessEntity: 'Entity One',
+      rto: '24 hours',
+      drStrategy: 'Strategy One',
+      primaryDataCenter: 'Data Center One',
+    },
+    {
+      applicationID: '2',
+      applicationName: 'App Two',
+      applicationType: 'Type B',
+      hostedType: 'On-Premise',
+      applicationAlias: 'Alias Two',
+      applicationURL: 'http://apptwo.com',
+      description: 'Description for App Two',
+      applicationOwner: 'Owner Two',
+      businessOwner: 'Business Owner Two',
+      applicationVendor: 'Vendor Two',
+      businessEntity: 'Entity Two',
+      rto: '48 hours',
+      drStrategy: 'Strategy Two',
+      primaryDataCenter: 'Data Center Two',
+    },
+    {
+      applicationID: '3',
+      applicationName: 'App Three',
+      applicationType: 'Type C',
+      hostedType: 'Hybrid',
+      applicationAlias: 'Alias Three',
+      applicationURL: 'http://appthree.com',
+      description: 'Description for App Three',
+      applicationOwner: 'Owner Three',
+      businessOwner: 'Business Owner Three',
+      applicationVendor: 'Vendor Three',
+      businessEntity: 'Entity Three',
+      rto: '72 hours',
+      drStrategy: 'Strategy Three',
+      primaryDataCenter: 'Data Center Three',
+    },
+    {
+      applicationID: '4',
+      applicationName: 'App Four',
+      applicationType: 'Type D',
+      hostedType: 'Cloud',
+      applicationAlias: 'Alias Four',
+      applicationURL: 'http://appfour.com',
+      description: 'Description for App Four',
+      applicationOwner: 'Owner Four',
+      businessOwner: 'Business Owner Four',
+      applicationVendor: 'Vendor Four',
+      businessEntity: 'Entity Four',
+      rto: '96 hours',
+      drStrategy: 'Strategy Four',
+      primaryDataCenter: 'Data Center Four',
+    },
+    {
+      applicationID: '5',
+      applicationName: 'App Five',
+      applicationType: 'Type E',
+      hostedType: 'On-Premise',
+      applicationAlias: 'Alias Five',
+      applicationURL: 'http://appfive.com',
+      description: 'Description for App Five',
+      applicationOwner: 'Owner Five',
+      businessOwner: 'Business Owner Five',
+      applicationVendor: 'Vendor Five',
+      businessEntity: 'Entity Five',
+      rto: '120 hours',
+      drStrategy: 'Strategy Five',
+      primaryDataCenter: 'Data Center Five',
+    },
+  ]);
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -26,20 +109,40 @@ function IT() {
   const toggleToolDropDown = () => {
     setIsToolOpen(!isToolOpen);
   };
+
   const ColumnDropDown = () => {
     setIsColumnOpen(!isColumnOpen);
   };
+
+  const handleCheckboxChange = (id) => {
+    setCheckedItems((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter(item => item !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  const handleEdit = (id) => {
+    console.log("Edit item with ID:", id);
+  };
+
+  const handleDelete = (id) => {
+    console.log("Delete item with ID:", id);
+  };
+
   return (
     <React.Fragment>
       <Helmet>
-        <title>IT | TRST</title>
-        <meta name="description" content="This is the home page description" />
-        <meta name="keywords" content="home, react, meta tags" />
+        <title>IT Applications Page | TRST</title>
+        <meta name="description" content="This is the IT applications page description" />
+        <meta name="keywords" content="IT, applications, react, meta tags" />
       </Helmet>
       <div className="page-content">
         <div className="main-content1">
           <div className="d-flex align-items-center justify-content-between">
-            <div className="header-text">IT</div>
+            <div className="header-text">IT Applications</div>
             <div
               className="map-action k-widget k-button-group order-1"
               id="map-action-toggle"
@@ -78,7 +181,7 @@ function IT() {
                   <li>
                     <a className="dropdown-item" href="#">
                       <LuTableOfContents className="hw-15 mr-5px" />
-                      tab Definition
+                      Tab Definition
                     </a>
                   </li>
                   <div className="border-1"></div>
@@ -109,7 +212,7 @@ function IT() {
         <div className="main-content2 pt-3">
           <div className="d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center">
-              <span className="header-title">Applications</span>
+              <span className="header-title">IT Applications</span>
               <div className="dropdown">
                 <button
                   className="btn btn-secondary dropdown-toggle border-radius-2"
@@ -119,8 +222,7 @@ function IT() {
                   aria-expanded={isOpen}
                   onClick={toggleDropdown}
                 >
-                  All Applications
-                  <IoMdArrowDropdown className="hw-20" />
+                  All IT Applications <IoMdArrowDropdown className="hw-20" />
                 </button>
                 <ul
                   className={`dropdown-menu ${isOpen ? "show" : ""}`}
@@ -139,7 +241,7 @@ function IT() {
                   <li>
                     <a className="dropdown-item" href="#">
                       <IoMdArrowDropright className="hw-20" />
-                      All Applications
+                      All IT Applications{" "}
                       <BiSolidEdit className="hw-15 ml-20px" />
                       <FaTableColumns className="hw-15 ml-5px" />
                       <ImCopy className="hw-15 ml-5px" />
@@ -148,27 +250,12 @@ function IT() {
                   <span className="ms-1">Select Another View...</span>
                   <li>
                     <a className="dropdown-item" href="#">
-                      Dependency Map View
+                      Export Only
                     </a>
                   </li>
                   <li>
                     <a className="dropdown-item" href="#">
-                      Impact View
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      My Application
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      Application Requiring Updates (Icon Counts)
-                    </a>
-                  </li>
-                  <li>
-                    <a className="dropdown-item" href="#">
-                      All Applications (Export)
+                      Data Migration
                     </a>
                   </li>
                 </ul>
@@ -202,52 +289,82 @@ function IT() {
                     <span className="fw-bold">Columns</span>{" "}
                     <a className="blue">Reset</a>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Application Name{" "}
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
+                    <label>
+                      <input type="checkbox" className="ms-2 me-1" />
+                      Application Type{" "}
+                    </label>
+                  </li>
+                  <li className="dropdown-checkbox">
+                    <label>
+                      <input type="checkbox" className="ms-2 me-1" />
+                      Hosted Type{" "}
+                    </label>
+                  </li>
+                  <li className="dropdown-checkbox">
+                    <label>
+                      <input type="checkbox" className="ms-2 me-1" />
+                      Application Alias{" "}
+                    </label>
+                  </li>
+                  <li className="dropdown-checkbox">
+                    <label>
+                      <input type="checkbox" className="ms-2 me-1" />
+                      Application URL{" "}
+                    </label>
+                  </li>
+                  <li className="dropdown-checkbox">
+                    <label>
+                      <input type="checkbox" className="ms-2 me-1" />
+                      Description{" "}
+                    </label>
+                  </li>
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Application Owner{" "}
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
+                    <label>
+                      <input type="checkbox" className="ms-2 me-1" />
+                      Business Owner{" "}
+                    </label>
+                  </li>
+                  <li className="dropdown-checkbox">
+                    <label>
+                      <input type="checkbox" className="ms-2 me-1" />
+                      Application Vendor{" "}
+                    </label>
+                  </li>
+                  <li className="dropdown-checkbox">
+                    <label>
+                      <input type="checkbox" className="ms-2 me-1" />
+                      Business Entity{" "}
+                    </label>
+                  </li>
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       RTO{" "}
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
-                      RPO Value{" "}
+                      DR Strategy{" "}
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
-                      Aggregate Risk{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Updated At{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      Updated By{" "}
-                    </label>
-                  </li>
-                  <li class="dropdown-checkbox">
-                    <label>
-                      <input type="checkbox" className="ms-2 me-1" />
-                      RPO Text{" "}
+                      Primary Data Center{" "}
                     </label>
                   </li>
                 </ul>
@@ -257,7 +374,7 @@ function IT() {
               </button>
             </div>
             <div>
-              <NavLink className="button1 border-1" to="/new-hardware">
+              <NavLink className="button1 border-1" to="/new-application">
                 <TiPlus className="hw-20" />
                 Application
               </NavLink>
@@ -273,6 +390,79 @@ function IT() {
             </div>
           </div>
           <div className="border-1 mt-2 mb-2"></div>
+        </div>
+        <div className="table-responsive">
+          <h3>Applications Records</h3>
+          <table className="table table-hover">
+            <thead>
+              <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    onChange={(e) => {
+                      const isChecked = e.target.checked;
+                      setCheckedItems(isChecked ? applications.map(app => app.applicationID) : []);
+                    }}
+                    checked={checkedItems.length === applications.length}
+                  />
+                </th>
+                <th>Actions</th>
+                <th>Application Name</th>
+                <th>Application Type</th>
+                <th>Hosted Type</th>
+                <th>Application Alias</th>
+                <th>Application URL</th>
+                <th>Description</th>
+                <th>Application Owner</th>
+                <th>Business Owner</th>
+                <th>Application Vendor</th>
+                <th>Business Entity</th>
+                <th>RTO</th>
+                <th>DR Strategy</th>
+                <th>Primary Data Center</th>
+              </tr>
+            </thead>
+            <tbody>
+              {applications.map((app) => (
+                <tr key={app.applicationID}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={checkedItems.includes(app.applicationID)}
+                      onChange={() => handleCheckboxChange(app.applicationID)}
+                    />
+                  </td>
+                  <td>
+                    {/* <div style={{ gap: "10px" }} className="d-flex align-items-center">
+                      <button onClick={() => handleEdit(app.applicationID)} className="btn btn-sm btn-link">Edit</button>
+                      <button onClick={() => handleDelete(app.applicationID)} className="btn btn-sm btn-link text-danger">Delete</button>
+                    </div> */}
+                     <div style={{ gap: "10px" }} className="d-flex align-items-center">
+                      <button onClick={() => handleEdit(record.id)} className="btn btn-sm btn-link">
+                        <BiSolidEdit className="hw-15" />
+                      </button>
+                      <button onClick={() => handleDelete(record.id)} className="btn btn-sm btn-link text-danger">
+                        <FaRegTrashCan className="hw-15" />
+                      </button>
+                    </div>
+                  </td>
+                  <td>{app.applicationName}</td>
+                  <td>{app.applicationType}</td>
+                  <td>{app.hostedType}</td>
+                  <td>{app.applicationAlias}</td>
+                  <td>{app.applicationURL}</td>
+                  <td>{app.description}</td>
+                  <td>{app.applicationOwner}</td>
+                  <td>{app.businessOwner}</td>
+                  <td>{app.applicationVendor}</td>
+                  <td>{app.businessEntity}</td>
+                  <td>{app.rto}</td>
+                  <td>{app.drStrategy}</td>
+                  <td>{app.primaryDataCenter}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </React.Fragment>

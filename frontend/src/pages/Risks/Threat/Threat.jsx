@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet";
 import { Link, NavLink } from "react-router-dom";
 import { IoMdArrowDropdown, IoMdArrowDropright } from "react-icons/io";
@@ -12,11 +12,17 @@ import { TiExport, TiPlus } from "react-icons/ti";
 import { FaRegTrashCan, FaTableColumns } from "react-icons/fa6";
 import { ImCopy } from "react-icons/im";
 import { HiDotsHorizontal } from "react-icons/hi";
+import { CiEdit } from "react-icons/ci"; 
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 function Threat() {
   const [isOpen, setIsOpen] = useState(false);
   const [isToolOpen, setIsToolOpen] = useState(false);
   const [isColumnOpen, setIsColumnOpen] = useState(false);
+  const [threats, setThreats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectAll, setSelectAll] = useState(false); // State for select all checkbox
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -25,9 +31,45 @@ function Threat() {
   const toggleToolDropDown = () => {
     setIsToolOpen(!isToolOpen);
   };
+
   const ColumnDropDown = () => {
     setIsColumnOpen(!isColumnOpen);
   };
+
+  // Fetch Threats Data from API
+  useEffect(() => {
+    const fetchThreats = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch("http://localhost:8000/api/v1/threats");
+        const result = await response.json();
+
+        if (response.ok) {
+          setThreats(result);
+        } else {
+          setError(result.message || "Error fetching threats");
+        }
+      } catch (error) {
+        setError("Network error! Please try again.");
+      }
+      setLoading(false);
+    };
+
+    fetchThreats();
+  }, []);
+
+  // Handle select all checkbox change
+  const handleSelectAllChange = () => {
+    setSelectAll(!selectAll);
+    setThreats(threats.map(threat => ({ ...threat, isSelected: !selectAll })));
+  };
+
+  // Handle individual checkbox change
+  const handleCheckboxChange = (id) => {
+    setThreats(threats.map(threat => threat._id === id ? { ...threat, isSelected: !threat.isSelected } : threat));
+  };
+
   return (
     <React.Fragment>
       <Helmet>
@@ -57,9 +99,7 @@ function Threat() {
                   <HiMiniWrench className="wh-16" />
                 </button>
                 <ul
-                  className={`right-auto dropdown-menu ${
-                    isToolOpen ? "show" : ""
-                  }`}
+                  className={`right-auto dropdown-menu ${isToolOpen ? "show" : ""}`}
                   aria-labelledby="TollFropdown"
                 >
                   <li>
@@ -77,7 +117,7 @@ function Threat() {
                   <li>
                     <a className="dropdown-item" href="#">
                       <LuTableOfContents className="hw-15 mr-5px" />
-                      tab Definition
+                      Tab Definition
                     </a>
                   </li>
                   <div className="border-1"></div>
@@ -206,43 +246,43 @@ function Threat() {
                     <span className="fw-bold">Columns</span>{" "}
                     <a className="blue">Reset</a>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Threat
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Likelihood
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Impact
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Mitigating Controls
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Control Description
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Threat Risk Score
                     </label>
                   </li>
-                  <li class="dropdown-checkbox">
+                  <li className="dropdown-checkbox">
                     <label>
                       <input type="checkbox" className="ms-2 me-1" />
                       Risk Rating
@@ -271,6 +311,72 @@ function Threat() {
             </div>
           </div>
           <div className="border-1 mt-2 mb-2"></div>
+
+          {/* Show loading and error messages */}
+          {loading && <p>Loading data...</p>}
+          {error && <p style={{ color: "red" }}>{error}</p>}
+
+          {/* Display data in a table */}
+          <div style={{ width: "100%", overflowX: "auto" }}>
+            <div style={{ maxHeight: "300px", overflowY: "auto", border: "1px solid #ccc" }}>
+              <table className="table table-bordered mt-3" style={{ minWidth: "2800px" }}>
+                <thead>
+                  <tr>
+                    <th className="sticky-col">
+                      <input type="checkbox" checked={selectAll} onChange={handleSelectAllChange} />
+                    </th>
+                    <th className="sticky-col" style={{ width: "10%", overflowX: "auto" }}>Action</th>
+                    <th>Threat</th>
+                    <th>Threat Type</th>
+                    <th>Weight</th>
+                    <th>Likelihood</th>
+                    <th>Impact</th>
+                    <th>Mitigating Controls</th>
+                    <th>Control Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {threats.length > 0 ? (
+                    threats.map((threat) => (
+                      <tr key={threat._id}>
+                        <td className="sticky-col">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={threat.isSelected || false}
+                            onChange={() => handleCheckboxChange(threat._id)}
+                          />
+                        </td>
+                        <td className="text-center">
+                          <div className="d-flex align-items-center gap-2 justify-content-center">
+                            <button className="btn btn-sm btn-link p-0" title="Edit">
+                              <CiEdit style={{ cursor: "pointer", fontSize: "1.2em", color: "green" }} size={18} />
+                            </button>
+                            <button className="btn btn-sm btn-link p-0" title="Delete">
+                              <RiDeleteBin6Line className="text-danger" size={18} />
+                            </button>
+                          </div>
+                        </td>
+                        <td>{threat.threat}</td>
+                        <td>{threat.threatType}</td>
+                        <td>{threat.weight}</td>
+                        <td>{threat.likelihood}</td>
+                        <td>{threat.impact}</td>
+                        <td>{threat.mitigatingControls}</td>
+                        <td>{threat.controlDescription}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="9" className="text-center">
+                        No data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </React.Fragment>
